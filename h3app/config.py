@@ -116,6 +116,11 @@ GEMINI_MODEL = "gemini-4-hydrogen"
 GEMINI_FALLBACK_MODELS = ("gemini-3.8-flash", "gemini-3.5-flash-lite", "gemma-4-31b-it")
 # Her model ilk metin parçasını bu kadar saniyede göndermezse ya da yoğunsa (503/429) sıradakine geçilir
 FIRST_CHUNK_SECONDS = 10
+# Üretilen videoyu izleyen Gemini modelleri (sırayla). 16.11.2026 kör testinde fazladan eli 2.5-flash ve
+# 3-flash-preview buldu, 3.5-flash-lite kaçırdı: izlemede lite model kullanılmaz.
+REVIEW_MODELS = ("gemini-2.5-flash", "gemini-3-flash-preview")
+# İzleme yüksek önemde kusur bulursa yeni seed ile en fazla bu kadar yeniden deneme; en iyi aday tutulur
+REVIEW_RETRIES = 2
 
 MIN_SECONDS, MAX_SECONDS = 4, 15
 MAX_TOTAL_SECONDS = 60      # Çok çekimli uzun video üst sınırı (4 blok × 15 sn)

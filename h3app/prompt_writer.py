@@ -48,6 +48,11 @@ _FOOTSTEPS = """- Footsteps: never heels, clicking or tapping steps unless asked
   steps are soft and buried under the ambience."""
 _ANIMALS = """- Animals: a cat, dog or other animal moves on the ground (between legs, along the floor, under stalls)
   unless the user asks otherwise; never write that it darts past lanterns or anything hanging in the air."""
+_STAGING = """- Staging and hands: say where every visible person stands on screen (left / centre / right, foreground /
+  background) and which hand holds what. Describe the first 2 seconds as one clear opening image in which every
+  visible person is named and already in place. An object is handed only between two people who are both
+  visible, hand to hand, never from outside the frame. The camera never shows a character's point of view and
+  no extra hands, arms or people enter the frame unless the user asks for it."""
 _SIGNAGE_NONE = ("No readable text, signboards, banners or lettering anywhere in the background; shopfronts are "
                  "identified only by their goods, architectural arches, lanterns and displays, with no written signs.")
 _SIGNAGE_ONLY = ("Only the exact quoted sign text appears; no other signs, extra boards or background lettering "
@@ -63,7 +68,7 @@ _MUSIC_MODE = f"""- Music montage mode (no speech): do NOT write any spoken dial
   voices. In overall_soundscape state explicitly "{_MUSIC_SILENT}" along with natural environmental foley,
   and in non_diegetic_music write "N/A" (external music will be mixed later)."""
 _DIRECTION_HEAD = "Default direction (use only when the user did not ask for something else):"
-DIRECTION_RULES = "\n".join([_DIRECTION_HEAD, _FRAMING, _REALISM, _FOOTSTEPS, _ANIMALS, _SIGNAGE, _SPEECH])
+DIRECTION_RULES = "\n".join([_DIRECTION_HEAD, _FRAMING, _STAGING, _REALISM, _FOOTSTEPS, _ANIMALS, _SIGNAGE, _SPEECH])
 
 # Gerçek dünya dışındaki stillerde gerçekçilik kuralı: mekân tanınır kalır ama stilde yeniden çizilir
 _REALISM_STYLED = """- Real places: a named real place keeps what makes it recognisable (its architecture, the shops and
@@ -105,9 +110,10 @@ def direction_rules(style=config.DEFAULT_STYLE, n_images=0, audio_mode=config.DE
     if "look" not in s:
         if audio_mode == config.DEFAULT_AUDIO_MODE:
             return DIRECTION_RULES
-        return "\n".join([_DIRECTION_HEAD, _FRAMING, _REALISM, _FOOTSTEPS, _ANIMALS, _SIGNAGE, sound_rule])
+        return "\n".join([_DIRECTION_HEAD, _FRAMING, _STAGING, _REALISM, _FOOTSTEPS, _ANIMALS, _SIGNAGE, sound_rule])
     rules = STYLE_RULES.format(**s) + ("\n" + STYLE_REF_RULE.format(**s) if n_images else "")
-    return rules + "\n\n" + "\n".join([_DIRECTION_HEAD, _FRAMING, _REALISM_STYLED, _FOOTSTEPS, _ANIMALS, _SIGNAGE, sound_rule])
+    return rules + "\n\n" + "\n".join([_DIRECTION_HEAD, _FRAMING, _STAGING, _REALISM_STYLED, _FOOTSTEPS, _ANIMALS,
+                                        _SIGNAGE, sound_rule])
 
 
 COMMON_RULES = """Hard rules:
@@ -315,6 +321,10 @@ def check(prompt, request, n_images=0, style=config.DEFAULT_STYLE, audio_mode=co
                 kind = "arka plan/mekân" if spec["role"] == ROLE_SCENE else "nesne"
                 problems.append(f"<Picture {i}> bir {kind} görseli ama kişi gibi 'identity anchor' olarak tanımlanmış; "
                                 f"{'scene anchor' if spec['role'] == ROLE_SCENE else 'prop reference'} olmalı.")
+    pov = re.compile(r"\b(point[- ]of[- ]view|POV|first[- ]person|from (?:his|her|their) (?:eyes|perspective))\b", re.I)
+    if pov.search(prompt) and not re.search(pov.pattern + r"|bakış açısı|gözünden|birinci şahıs", request or "", re.I):
+        problems.append("Kullanıcı istemediği halde bakış açısı (POV) çekimi yazılmış; kamera hiçbir karakterin gözünden "
+                        "bakmamalı, kadraja fazladan el girmemeli.")
     if re.search(r"\bheel", prompt, re.I) and not re.search(r"\bheel|topuk", request, re.I):
         problems.append("Kullanıcı istemediği halde topuklu ayakkabı / topuk sesi yazılmış; düz bot ve yumuşak adım sesi kullan.")
     if not literals(request) and not re.search(

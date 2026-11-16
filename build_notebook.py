@@ -5,7 +5,7 @@ import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "notebooks", "h3_video_studyosu.ipynb")
-MODULES = ["__init__", "config", "prompt_writer", "graphs", "setup_env", "comfy_client", "qa", "assemble", "ui"]
+MODULES = ["__init__", "config", "prompt_writer", "graphs", "setup_env", "comfy_client", "qa", "review", "assemble", "ui"]
 GRADIO, GENAI = "6.31.0", "2.34.0"
 
 INTRO = """# H3 Video Stüdyosu (grafik arayüzlü uygulama)

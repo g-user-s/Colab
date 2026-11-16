@@ -13,7 +13,7 @@ import time
 
 import gradio as gr
 
-from . import assemble, comfy_client, config, graphs, prompt_writer, qa, setup_env
+from . import assemble, comfy_client, config, graphs, prompt_writer, qa, review, setup_env
 
 FAKE = os.environ.get("H3APP_FAKE") == "1"   # yerel arayüz testi: GPU ve Gemini olmadan
 # H3APP_FAKE=1 ile birlikte H3APP_REAL_GEMINI=1: video sahte, Gemini gerçek (yerel prompt denemesi)
@@ -687,8 +687,11 @@ def reassemble_blocks(audio_mode, music_file, keep_ambient, bstate):
 
 
 def _generate_job(h3_prompt, methods, resolution, seconds, seed, idea, brief, refs, style=config.DEFAULT_STYLE,
-             picks=None, styled=None, ref_roles=None):
-    """Generator: (günlük, taslak video, final video, indirilecek dosyalar, kontrol görselleri)."""
+             picks=None, styled=None, ref_roles=None, review_on=True, review_retries=config.REVIEW_RETRIES,
+             typed_key=None):
+    """Generator: (günlük, taslak video, final video, indirilecek dosyalar, kontrol görselleri).
+    review_on: her video Gemini ile izlenir; yüksek önemde kusur varsa yeni seed ile en fazla `review_retries`
+    kez yeniden üretilir ve en az kusurlu aday seçilir."""
     log, videos, files, sheets = [], {m: None for m in config.METHODS}, [], []
 
     def say(msg):
@@ -759,10 +762,17 @@ def _generate_job(h3_prompt, methods, resolution, seconds, seed, idea, brief, re
         files += [prompt_file, info_file]
         _sync_to_drive([prompt_file, info_file] + kept_refs)
         yield out()
-        for method in [m for m in config.METHODS if m in methods]:
-            name = f"{stamp}_{config.METHODS[method]['file']}_seed{int(seed)}.mp4"
+        rv_key = _key(typed_key)
+        rv_on = bool(review_on) and bool(rv_key) and not _fake_gemini(rv_key)
+        if review_on and not rv_on:
+            say("ℹ️ Otomatik izleme atlandı: " + ("Gemini anahtarı yok." if not rv_key else "test modu."))
+        retries = max(0, min(5, int(review_retries or 0))) if rv_on else 0
+        roles = _roles(ref_roles, refs)
+
+        def render(method, s_used):
+            name = f"{stamp}_{config.METHODS[method]['file']}_seed{s_used}.mp4"
             dest = os.path.join(config.OUTPUT_DIR, name)
-            say(f"▶ {config.METHODS[method]['label']} başladı ({width}×{height}, {frames} kare).")
+            say(f"▶ {config.METHODS[method]['label']} başladı ({width}×{height}, {frames} kare, seed {s_used}).")
             yield out()
             t0 = time.time()
             if FAKE:
@@ -772,7 +782,7 @@ def _generate_job(h3_prompt, methods, resolution, seconds, seed, idea, brief, re
                 shutil.copyfile(os.environ["H3APP_FAKE_VIDEO"], dest)
             else:
                 te = setup_env.text_encoder_role()
-                g = graphs.build(method, h3_prompt.strip(), seed, width, height, frames, te,
+                g = graphs.build(method, h3_prompt.strip(), s_used, width, height, frames, te,
                                  prefix=f"h3app/{stamp}_{method}", ref_images=ref_names)
                 shown = 0
                 for sec in comfy_client.run(g, dest):
@@ -784,31 +794,64 @@ def _generate_job(h3_prompt, methods, resolution, seconds, seed, idea, brief, re
             norm = qa.normalize_audio(dest)
             if norm:
                 say(f"   🔊 Ses dengelendi: {norm[0]:.1f} → {norm[1]:.1f} LUFS".replace(".", ","))
-            videos[method] = dest
-            files.append(dest)
-            info["videolar"][method] = {"dosya": name, "sure_sn": took}
             say(f"✅ Bitti: {name} ({took} sn, {os.path.getsize(dest) / 1e6:.1f} MB)")
-            to_sync = [dest]
-            try:   # GPU'suz kontrol: kesmeler prompt'la karşılaştırılır, temas sayfası ve kırpıntılar çıkarılır
-                stem = dest[:-4]
-                ref_v = (videos.get("pika") or videos.get("turbo")) if method == "h3" else None
-                r = qa.check(dest, h3_prompt, sheet=stem + "_kontrol.jpg", crops=stem + "_kirpinti.jpg",
-                             style=style, ref_video=ref_v)
-                say("   " + qa.summary(r))
-                info["videolar"][method]["kontrol"] = {
-                    k: r[k] for k in ("kesmeler", "beklenen", "bulunamayan", "beklenmeyen", "donmus",
-                                      "lufs", "ses", "son_kayma", "stil_kontrol")
-                }
-                sheets += [(_to_pil(r["temas"]), f"{config.METHODS[method]['file']} · anlar"),
-                           (_to_pil(r["kirpinti"]), f"{config.METHODS[method]['file']} · %100 kırpıntı")]
-                files += [r["temas"], r["kirpinti"]]
-                to_sync += [r["temas"], r["kirpinti"]]
-            except Exception as e:
-                say(f"   Kontrol yapılamadı: {e}")
-            # Her yöntem biter bitmez bilgi.json ve çıktı dosyalarını anında diske ve Drive'a kaydet
+            return dest, name, took
+
+        for method in [m for m in config.METHODS if m in methods]:
+            cands = []
+            for attempt in range(retries + 1):
+                s_used = int(seed) + 1000 * attempt
+                dest, name, took = yield from render(method, s_used)
+                files.append(dest)
+                cand = {"dest": dest, "dosya": name, "seed": s_used, "sure_sn": took, "kontrol": None,
+                        "inceleme": None}
+                to_sync = [dest]
+                try:   # GPU'suz kontrol: kesmeler prompt'la karşılaştırılır, temas sayfası ve kırpıntılar çıkarılır
+                    stem = dest[:-4]
+                    ref_v = (videos.get("pika") or videos.get("turbo")) if method == "h3" else None
+                    r = qa.check(dest, h3_prompt, sheet=stem + "_kontrol.jpg", crops=stem + "_kirpinti.jpg",
+                                 style=style, ref_video=ref_v)
+                    say("   " + qa.summary(r))
+                    cand["kontrol"] = {k: r[k] for k in ("kesmeler", "beklenen", "bulunamayan", "beklenmeyen",
+                                                         "donmus", "lufs", "ses", "son_kayma", "stil_kontrol")}
+                    tag = f"{config.METHODS[method]['file']} · seed {s_used}"
+                    sheets += [(_to_pil(r["temas"]), f"{tag} · anlar"), (_to_pil(r["kirpinti"]), f"{tag} · %100 kırpıntı")]
+                    files += [r["temas"], r["kirpinti"]]
+                    to_sync += [r["temas"], r["kirpinti"]]
+                except Exception as e:
+                    say(f"   Kontrol yapılamadı: {e}")
+                if rv_on:
+                    say("   🔍 Gemini videoyu izliyor…")
+                    yield out()
+                    res = yield from _heartbeat(lambda: review.review_video(dest, h3_prompt, rv_key, images, roles,
+                                                                          log=say), out)
+                    cand["inceleme"] = res
+                    say("   " + review.summary(res))
+                cands.append(cand)
+                # Her aday biter bitmez bilgi.json ve dosyalar diske ve Drive'a (kesinti koruması)
+                info["videolar"][method] = {"adaylar": [{k: c[k] for k in ("dosya", "seed", "sure_sn", "inceleme")}
+                                                        for c in cands]}
+                _write_json(info_file, info)
+                to_sync += [prompt_file, info_file]
+                _sync_to_drive(to_sync, say=say)
+                yield out()
+                if not review.blocking(cand["inceleme"]):
+                    break
+                if attempt < retries:
+                    say(f"🔁 Yüksek önemde kusur var; yeni seed ({int(seed) + 1000 * (attempt + 1)}) ile yeniden "
+                        f"üretiliyor ({attempt + 1}/{retries}).")
+                    yield out()
+            best = min(cands, key=lambda c: review.score(c["inceleme"])) if rv_on else cands[-1]
+            videos[method] = best["dest"]
+            info["videolar"][method].update({k: best[k] for k in ("dosya", "seed", "sure_sn", "kontrol", "inceleme")})
+            if rv_on:
+                say(f"⭐ Seçilen: {best['dosya']} (seed {best['seed']}, {len(cands)} aday) — "
+                    f"izleme: {review.short(best['inceleme'])}")
+            if review.blocking(best["inceleme"]):
+                say("⚠️ Denemelerin hepsinde yüksek önemde kusur kaldı; en az kusurlu aday seçildi. "
+                    "Prompt'u sadeleştirip tekrar deneyin.")
             _write_json(info_file, info)
-            to_sync += [prompt_file, info_file]
-            _sync_to_drive(to_sync, say=say)
+            _sync_to_drive([info_file], say=say)
             yield out()
         say(f"Tamamlandı. Dosyalar: {config.OUTPUT_DIR}")
     except Exception as e:
@@ -946,11 +989,14 @@ def load_last_outputs():
     prompt_file = os.path.join(config.OUTPUT_DIR, f"{stamp}_prompt.txt")
     prompt_upd = open(prompt_file, encoding="utf-8").read().strip() if os.path.isfile(prompt_file) else gr.update()
     for mkey, mmeta in config.METHODS.items():
-        for p in session_files:
-            bn = os.path.basename(p)
-            if bn.startswith(f"{stamp}_{mmeta['file']}_seed") and bn.endswith(".mp4"):
-                videos[mkey] = p
-                log.append(f"   🎬 Video ({mmeta['label']}): {bn}")
+        chosen = ((info.get("videolar") or {}).get(mkey) or {}).get("dosya")
+        cands = [p for p in session_files if os.path.basename(p).startswith(f"{stamp}_{mmeta['file']}_seed")
+                 and p.endswith(".mp4")]
+        pick = next((p for p in cands if os.path.basename(p) == chosen), cands[-1] if cands else None)
+        if pick:
+            videos[mkey] = pick
+            note = f" ({len(cands)} aday, seçilen)" if len(cands) > 1 else ""
+            log.append(f"   🎬 Video ({mmeta['label']}): {os.path.basename(pick)}{note}")
     for p in session_files:
         bn = os.path.basename(p)
         if bn.endswith("_kontrol.jpg"):
@@ -1064,7 +1110,7 @@ QUICK_METHODS = [(config.METHODS[k]["label"], k) for k in ("pika", "turbo", "h3"
 
 
 def _quick_job(idea, seconds, style, method, resolution, seed, model, typed_key, refs=None, ref_roles=None,
-               picks=None, styled=None):
+               picks=None, styled=None, review_on=True, review_retries=config.REVIEW_RETRIES):
     """Generator: (durum, brief, H3 prompt'u, video, indirilecek dosyalar, ayrıntılı günlük)."""
     state = {"status": "", "brief": "", "prompt": "", "video": None, "files": None, "log": ""}
 
@@ -1115,7 +1161,7 @@ def _quick_job(idea, seconds, style, method, resolution, seed, model, typed_key,
     last_log = ""
     for log, v_left, v_right, files, _sheets in _generate_job(state["prompt"], [method], resolution, seconds, seed,
                                                             idea, state["brief"], refs, style, picks, styled,
-                                                            ref_roles):
+                                                            ref_roles, review_on, review_retries, typed_key):
         last_log = log or ""
         state["log"] = (pre + "\n" + last_log).strip()
         state["files"] = files
@@ -1129,7 +1175,9 @@ def _quick_job(idea, seconds, style, method, resolution, seed, model, typed_key,
     errors = [ln.split("] ", 1)[-1] for ln in last_log.splitlines() if "❌" in ln]
     if state["video"] and os.path.isfile(state["video"]):
         where = f" · Drive: {_state['drive_dir']}" if _state.get("drive_dir") else ""
-        yield out(f"✅ Hazır: {os.path.basename(state['video'])}{where}")
+        chosen = [ln for ln in last_log.splitlines() if "⭐ Seçilen:" in ln]
+        rv = (" · " + chosen[-1].split(" — ", 1)[1]) if chosen else ""
+        yield out(f"✅ Hazır: {os.path.basename(state['video'])}{rv}{where}")
     else:
         yield out(errors[-1] if errors else "❌ Hata: video üretilemedi; ayrıntılı günlüğe bakın.")
 
@@ -1281,6 +1329,11 @@ def build():
                 resolution = gr.Dropdown(list(config.RESOLUTIONS), value=list(config.RESOLUTIONS)[0], label="Boyut")
                 seed = gr.Number(value=22, precision=0, label="Seed")
         with gr.Row():
+            review_on = gr.Checkbox(value=True, label="Otomatik izleme: Gemini videoyu sesiyle izlesin, ciddi kusurda "
+                                    "yeni seed ile yeniden üretsin", scale=3, elem_id="izleme-acik")
+            review_retries = gr.Slider(0, 3, value=config.REVIEW_RETRIES, step=1, scale=1, elem_id="izleme-deneme",
+                                       label="En fazla yeniden deneme")
+        with gr.Row():
             gen_btn = gr.Button("Video üret", variant="primary", scale=3)
             load_btn = gr.Button("📂 Son Üretimleri Yükle (Bağlantı Koptuysa)", scale=1)
 
@@ -1350,7 +1403,7 @@ def build():
         rewrite_btn.click(do_rewrite, [idea, brief, seconds, model, key, refs, style, picks, styled, ref_roles],
                           [h3_prompt, rewrite_msg])
         gen_btn.click(generate, [h3_prompt, methods, resolution, seconds, seed, idea, brief, refs, style, picks, styled,
-                                 ref_roles],
+                                 ref_roles, review_on, review_retries, key],
                       [logbox, pika_video, h3_video, files, checks], concurrency_limit=1)
         load_btn.click(
             load_or_follow,
@@ -1385,7 +1438,8 @@ def build():
             [logbox, pika_video, h3_video, files],
         )
         q_btn.click(quick_generate,
-                    [q_idea, q_seconds, q_style, q_method, resolution, seed, model, key, refs, ref_roles, picks, styled],
+                    [q_idea, q_seconds, q_style, q_method, resolution, seed, model, key, refs, ref_roles, picks, styled,
+                     review_on, review_retries],
                     [q_status, brief, h3_prompt, q_video, q_files, q_log], concurrency_limit=1)
         # Stil seçimi iki yerde: kullanıcı hangisini değiştirirse öbürü de aynı olur (yalnızca elle değişimde)
         q_style.input(lambda v: v, q_style, style)
