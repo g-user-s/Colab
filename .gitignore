@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Üretilen videolar ve büyük medya
+*.mp4
+*.mov
+*.webm
+
+# Anahtarlar asla repoya girmez
+*.key
+anahtar*.txt
+gemini
+.env

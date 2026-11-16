@@ -1,0 +1,7 @@
+# Yerel testler için (GPU gerekmez). Ayrıca sistemde ffmpeg/ffprobe kurulu olmalı.
+pytest
+numpy
+opencv-python-headless
+pillow
+gradio==6.31.0
+google-genai==2.34.0
