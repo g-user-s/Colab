@@ -71,11 +71,22 @@ if SAVE_TO_DRIVE or DRIVE_MODEL_DIRS or SAVE_MODELS_TO_DRIVE:
     if SAVE_MODELS_TO_DRIVE:
         model_save_dir = (DRIVE_MODEL_DIRS or ["/content/drive/MyDrive/MiniMax-H3/models"])[0]
 
-sys.path.insert(0, "/content/h3_video_app")
-for m in [m for m in sys.modules if m == "h3app" or m.startswith("h3app.")]:
-    del sys.modules[m]
-import h3app
-h3app.launch(drive_dir=drive_dir, model_dirs=model_dirs, model_save_dir=model_save_dir, server_port=7860)
+# Hücre aynı oturumda yeniden çalıştırılırsa eski arayüz 7860'ı tutar (17.11.2026). Süren bir üretim varsa ona
+# dokunulmaz, eski arayüze devam edilir; yoksa eski sunucu kapatılıp yenisi açılır.
+import threading
+running = [t.name for t in threading.enumerate() if t.name.startswith("h3app-") and t.name != "h3app-model-save"]
+if running:
+    print("⚠️ Bu oturumda süren bir üretim var (" + ", ".join(running) + "); uygulama yeniden başlatılmadı. "
+          "Arayüze aşağıdaki adresten devam edin ve 📂 Son Üretimleri Yükle'ye basın. Üretim bitince bu hücreyi "
+          "yeniden çalıştırabilirsiniz.")
+else:
+    import gradio as gr
+    gr.close_all()
+    sys.path.insert(0, "/content/h3_video_app")
+    for m in [m for m in sys.modules if m == "h3app" or m.startswith("h3app.")]:
+        del sys.modules[m]
+    import h3app
+    h3app.launch(drive_dir=drive_dir, model_dirs=model_dirs, model_save_dir=model_save_dir, server_port=7860)
 try:
     from google.colab import output
     print("PROXY_URL:", output.eval_js("google.colab.kernel.proxyPort(7860)"))

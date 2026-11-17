@@ -62,16 +62,21 @@ _DETAIL = """- Contact, materials and timing: whenever a hand, paw or tool touch
   chewing) stay slow, even and clearly readable, never a jittery blur. Give every spoken line an explicit start
   time ("At about N seconds") inside the clip, start the first line early unless the user asks otherwise, and
   move the speaker's lips only while the line is spoken."""
-_SIGNAGE_NONE = ("No readable text, signboards, banners or lettering anywhere in the background; shopfronts are "
-                 "identified only by their goods, architectural arches, lanterns and displays, with no written signs.")
+# 17.11.2026: iki gerçek denemede de (toplantı odası, sahaf) yazı camdan/kemerden görünen karşı binada çıktı; eski
+# cümle "shopfronts, arches, lanterns" diyerek dükkân cephelerini sahneye davet ediyordu.
+_SIGNAGE_NONE = ("No readable text, signboards, logos, banners or lettering anywhere in the frame, including on "
+                 "buildings, shops and streets seen through windows, doorways or in the distance; any distant sign "
+                 "is a blank, out-of-focus shape with no letters. Places are identified by their goods and "
+                 "architecture, never by written signs.")
 _SIGNAGE_ONLY = ("Only the exact quoted sign text appears; no other signs, extra boards or background lettering "
                  "anywhere in the frame.")
 _SIGNAGE = f"""- Signage: when the user did not ask for on-screen text in quotes, state explicitly: "{_SIGNAGE_NONE}"
   When the user asked for specific quoted sign text, state explicitly: "{_SIGNAGE_ONLY}\""""
-_SPEECH = """- Background speech: when people talk, call out, bargain or chat in a crowd or market, write 2-3 short,
-  natural background lines in the local language (Turkish for Turkey) as real dialogue, e.g. a vendor
-  and a customer bargaining, heard at a lower level under the ambience; the crowd voices are the dominant
-  sound layer, not footsteps."""
+_SPEECH = """- Background speech: ONLY when the user's scene has a crowd, market, bazaar or busy public place, write
+  2-3 short, natural background lines in the local language (Turkish for Turkey) as real dialogue, e.g. a
+  vendor and a customer bargaining, heard at a lower level under the ambience; the crowd voices are the
+  dominant sound layer, not footsteps. In any other scene (a shop, a room, a car, a quiet street with the
+  named characters) add NO background lines and no extra voices: only the characters the user named speak."""
 _MUSIC_SILENT = ("ambient sound only, no voices, no speech, no singing")
 _MUSIC_MODE = f"""- Music montage mode (no speech): do NOT write any spoken dialogue (<d>...</d>), crowd chatter or human
   voices. In overall_soundscape state explicitly "{_MUSIC_SILENT}" along with natural environmental foley,
@@ -140,8 +145,8 @@ COMMON_RULES = """Hard rules:
 - Prefer concrete visual and audio details. Keep every requirement of the user (camera, lens,
   lighting, palette, sound, consistency) and do not add music when the user did not ask for any
   (then write non_diegetic_music: N/A).
-- Background lines you add yourself also use speaker IDs and <d>[Turkish] ...</d>; say they come from
-  background speakers at a lower volume.
+- Background lines you add yourself (only in crowd or market scenes) also use speaker IDs and
+  <d>[Turkish] ...</d>; say they come from background speakers at a lower volume.
 
 {direction}"""
 
@@ -302,6 +307,11 @@ def clean(text):
     return re.sub(r"^```[a-zA-Z]*\n|\n```$", "", text).strip()
 
 
+CROWD_RE = re.compile(r"\b(?:crowd\w*|market\w*|bazaar\w*|souk|festival\w*|station|vendors?|merchants?|"
+                      r"busy|packed|bargain\w*|passers?-?by|kalabal\w*|pazar\w*|çarşı\w*|panayır\w*|esnaf\w*|"
+                      r"istasyon\w*|meydan\w*|izdiham\w*)", re.I)
+
+
 def check(prompt, request, n_images=0, style=config.DEFAULT_STYLE, audio_mode=config.DEFAULT_AUDIO_MODE, roles=None):
     """Prompt'taki sorunların listesi; boş liste kullanılabilir demektir."""
     fields = REF_FIELDS if n_images else T2V_FIELDS
@@ -348,6 +358,10 @@ def check(prompt, request, n_images=0, style=config.DEFAULT_STYLE, audio_mode=co
         if signs:
             problems.append(f"Kullanıcı yazı/tabela istemediği halde arka planda tabela veya yazı tarif edilmiş ({signs[0]}); "
                             f'kaldır ve "{_SIGNAGE_NONE}" kuralını uygula.')
+    # 17.11.2026 sahaf testi: iki kişilik sessiz sahneye "background speakers" eklendi, fazladan ses son çekimi geciktirdi
+    if re.search(r"background (?:speakers?|voices?|lines?|chatter)", prompt, re.I) and not CROWD_RE.search(request or ""):
+        problems.append("Kullanıcının sahnesinde kalabalık/pazar yok ama arka plan konuşması eklenmiş; o replikleri ve "
+                        "'background speakers' ifadesini kaldır, yalnızca kullanıcının adlandırdığı karakterler konuşsun.")
     if audio_mode == "music":
         if "<d>" in prompt or "</d>" in prompt:
             problems.append("Müzikli konuşmasız modda konuşma (<d>...</d>) yazılmamalı; kaldır.")
@@ -520,9 +534,10 @@ def _stream_text(api_key, model, system, contents, temperature, first_chunk=None
 
 
 last_model = {"name": None, "fallback": False}   # son başarılı _generate çağrısının modeli (arayüz gösterir)
+used_models = {}   # adım -> metni yazan model ("brief", "H3 prompt'u", "çekim planı"); bilgi.json'a yazılır
 
 
-def _generate(api_key, model, system, contents, temperature, log=None):
+def _generate(api_key, model, system, contents, temperature, log=None, step=None):
     """Seçili modelle dener; ilk parça FIRST_CHUNK_SECONDS içinde gelmezse ya da model yoğunsa (503/429/zaman aşımı)
     beklemeden sıradaki yedek modele geçer ve bunu `log` ile arayüze yazar. Kalıcı hatada (ör. geçersiz anahtar) durur."""
     models = available([model, config.GEMINI_MODEL, *config.GEMINI_FALLBACK_MODELS])
@@ -537,12 +552,15 @@ def _generate(api_key, model, system, contents, temperature, log=None):
                 raise
             errors.append(f"{m}: {str(e)[:160]}")
             if log and i + 1 < len(models):
-                log(f"⚠️ {m} yanıt vermedi ({str(e)[:120]}); yedek modele geçiliyor: {models[i + 1]}")
+                log(f"⚠️ {step + ': ' if step else ''}{m} yanıt vermedi ({str(e)[:120]}); "
+                    f"yedek modele geçiliyor: {models[i + 1]}")
             continue
         last_model["name"], last_model["fallback"] = m, m != models[0]
+        if step:
+            used_models[step] = m + (" (yedek)" if i else "")
         if i and log:
-            log(f"↪️ Bu adım yedek modelle yazıldı: {m} (ilk tercih {models[0]} yanıt vermedi; çıktı daha zayıf "
-                "olabilir)")
+            log(f"↪️ {step or 'Bu adım'} yedek modelle yazıldı: {m} — ilk tercih {models[0]} yanıt vermedi, "
+                "çıktı daha zayıf olabilir")
         return clean(text)
     raise RuntimeError("Hiçbir Gemini modeli yanıt vermedi:\n- " + "\n- ".join(errors))
 
@@ -553,7 +571,7 @@ def expand(idea, seconds, api_key, model, images=(), log=print, style=config.DEF
     head = f"Duration: {seconds} seconds.\n\nIdea:\n{idea.strip()}"
     contents = [head] + _image_parts(images, roles)
     return _generate(api_key, model, brief_prompt(seconds, len(images or ()), style, audio_mode), contents, 0.7,
-                     log=log)
+                     log=log, step="brief")
 
 
 def rewrite(request, seconds, api_key, model, images=(), retries=1, log=print, style=config.DEFAULT_STYLE,
@@ -565,7 +583,7 @@ def rewrite(request, seconds, api_key, model, images=(), retries=1, log=print, s
     prompt, problems = "", ["Gemini yanıt vermedi."]
     contents = [head] + _image_parts(images, roles)
     for attempt in range(retries + 1):
-        prompt = _generate(api_key, model, system, contents, 0.3, log=log)
+        prompt = _generate(api_key, model, system, contents, 0.3, log=log, step="H3 prompt'u")
         problems = check(prompt, request, len(images), style, audio_mode, roles=roles)
         if not problems:
             break
@@ -721,7 +739,7 @@ def plan_shots(idea, total_seconds, api_key, model, images=(), style=config.DEFA
     contents = [head] + _image_parts(images, roles)
     plan, problems = {"world_anchor": "", "shots": []}, ["Gemini yanıt vermedi."]
     for attempt in range(retries + 1):
-        raw = _generate(api_key, model, system, contents, 0.4, log=log)
+        raw = _generate(api_key, model, system, contents, 0.4, log=log, step="çekim planı")
         try:
             plan = _parse_json(raw)
             problems = check_plan(plan, total_seconds, idea=idea, audio_mode=audio_mode)

@@ -2,6 +2,7 @@
 
 import copy
 import datetime
+import inspect
 import json
 import os
 import queue
@@ -187,6 +188,28 @@ def _collect_roles(files, *vals):
     return roles, (gallery or None)
 
 
+def _roles_from_inputs(vals):
+    """Rol açılır menüleri + ad kutularının o anki değerlerinden rol listesi (MAX_REF_IMAGES uzunluğunda)."""
+    m = len(vals) // 2
+    return [{"role": vals[i] or prompt_writer.ROLE_CHARACTER, "name": (vals[m + i] or "").strip()} for i in range(m)]
+
+
+def _live_roles(fn, inputs, state, role_inputs):
+    """İşleyicinin girdilerindeki rol State'ini, rol menüleri ve ad kutularının kendisiyle değiştirir.
+    17.11.2026: ad kutusu her tuşta State'e yazıyordu; Colab proxy'si güncellemeyi geciktirince "Patron Kedi"
+    yerine ilk harf "P" kaydedildi. Değerler tıklama anında doğrudan okunursa yarış olmaz."""
+    i = next(j for j, c in enumerate(inputs) if c is state)
+    k = len(role_inputs)
+    if inspect.isgeneratorfunction(fn):
+        def wrapped(*a):
+            yield from fn(*a[:i], _roles_from_inputs(a[i:i + k]), *a[i + k:])
+    else:
+        def wrapped(*a):
+            return fn(*a[:i], _roles_from_inputs(a[i:i + k]), *a[i + k:])
+    wrapped.__name__ = getattr(fn, "__name__", "handler")
+    return wrapped, list(inputs[:i]) + list(role_inputs) + list(inputs[i + 1:])
+
+
 def do_stylize(refs, style, typed_key, idea="", ref_roles=None):
     """Yüklenen her referansı seçilen stilde 2 kez yeniden çizdirir: (galeri, seçim kutusu, eşlem, mesaj)."""
     none = (None, gr.update(choices=[], value=[]), {})
@@ -251,7 +274,11 @@ def _ready(typed_key, model):
 
 def _used_model(notes, model):
     """Yedek modele geçildiyse metni gerçekten yazan model; yoksa seçili model."""
-    return next((n.rsplit(": ", 1)[1] for n in reversed(notes) if n.startswith("↪️")), model)
+    for n in reversed(notes):
+        m = re.match(r"↪️ .*?yazıldı: (\S+)", n)
+        if m:
+            return m.group(1)
+    return model
 
 
 def do_expand(idea, seconds, model, typed_key, refs, style, picks, styled, ref_roles=None):
@@ -505,6 +532,7 @@ def _generate_long_job(block_prompts_text, world_anchor, shot_rows, audio_mode, 
         bstate = {
             "uzun_video": True, "stamp": stamp, "resolution": resolution, "style": style, "audio_mode": audio_mode,
             "fikir": idea, "world_anchor": world_anchor or "", "shots": shots,
+            "gemini_modelleri": dict(prompt_writer.used_models),
             "ref_names": ref_names, "images": images, "roller": _roles(ref_roles, refs),
             "methods": list(methods), "blocks": {}, "finals": {},
         }
@@ -730,6 +758,7 @@ def _generate_job(h3_prompt, methods, resolution, seconds, seed, idea, brief, re
         info_file = base + "_bilgi.json"
         open(prompt_file, "w", encoding="utf-8").write(h3_prompt.strip() + "\n")
         info = {"stil": config.STYLES[style]["label"], "fikir": idea, "brief": brief,
+                "gemini_modelleri": dict(prompt_writer.used_models),
                 "roller": _roles(ref_roles, refs),
                 "referanslar": [os.path.basename(p) for p in images],
                 "yontemler": methods, "seed": int(seed), "boyut": [width, height],
@@ -1141,6 +1170,7 @@ def _quick_job(idea, seconds, style, method, resolution, seed, model, typed_key,
     notes, weak = [], []   # weak: yedek modelle yazılan adımlar (durum satırında da gösterilir)
     try:
         prompt_writer.last_model.update(name=None, fallback=False)
+        prompt_writer.used_models.clear()
         yield out("⏳ 1/3 Gemini detaylı brief'i yazıyor…")
         if _fake_gemini(key):
             state["brief"] = prompt_writer.BRIEF_EXAMPLES[1][1]
@@ -1404,17 +1434,22 @@ def build():
         list_btn.click(list_models, [key], [model, rewrite_msg])
         key.submit(list_models, [key], [model, rewrite_msg])
         key.blur(list_models, [key], [model, rewrite_msg])
+        role_inputs = [*role_dds, *role_names]
+
+        def live(fn, inputs):
+            return _live_roles(fn, inputs, ref_roles, role_inputs)
+
         refs.change(_on_refs, [refs], [ref_preview, *role_rows, *role_dds, *role_names, ref_roles])
         for comp in [*role_dds, *role_names]:
             comp.change(_collect_roles, [refs, *role_dds, *role_names], [ref_roles, ref_preview])
-        stylize_btn.click(do_stylize, [refs, style, key, idea, ref_roles], [styled_gallery, picks, styled, stylize_msg])
+        stylize_btn.click(*live(do_stylize, [refs, style, key, idea, ref_roles]), [styled_gallery, picks, styled, stylize_msg])
         style.change(lambda: (None, gr.update(choices=[], value=[]), {}), None, [styled_gallery, picks, styled])
-        expand_btn.click(do_expand, [idea, seconds, model, key, refs, style, picks, styled, ref_roles],
+        expand_btn.click(*live(do_expand, [idea, seconds, model, key, refs, style, picks, styled, ref_roles]),
                          [brief, rewrite_msg])
-        rewrite_btn.click(do_rewrite, [idea, brief, seconds, model, key, refs, style, picks, styled, ref_roles],
+        rewrite_btn.click(*live(do_rewrite, [idea, brief, seconds, model, key, refs, style, picks, styled, ref_roles]),
                           [h3_prompt, rewrite_msg])
-        gen_btn.click(generate, [h3_prompt, methods, resolution, seconds, seed, idea, brief, refs, style, picks, styled,
-                                 ref_roles, review_on, review_retries, key],
+        gen_btn.click(*live(generate, [h3_prompt, methods, resolution, seconds, seed, idea, brief, refs, style, picks,
+                                       styled, ref_roles, review_on, review_retries, key]),
                       [logbox, pika_video, h3_video, files, checks], concurrency_limit=1)
         load_btn.click(
             load_or_follow,
@@ -1422,18 +1457,18 @@ def build():
             [logbox, pika_video, h3_video, files, checks, h3_prompt,
              block_prompts_box, world_anchor, shot_table, block_videos_gallery, blocks_state],
         )
-        plan_btn.click(do_plan_shots, [idea, total_seconds, audio_mode, model, key, refs, style, picks, styled,
-                                       ref_roles],
+        plan_btn.click(*live(do_plan_shots, [idea, total_seconds, audio_mode, model, key, refs, style, picks, styled,
+                                             ref_roles]),
                        [world_anchor, shot_table, long_msg])
         blocks_prompts_btn.click(
-            do_rewrite_blocks,
-            [idea, world_anchor, shot_table, audio_mode, model, key, refs, style, picks, styled, ref_roles],
+            *live(do_rewrite_blocks,
+                  [idea, world_anchor, shot_table, audio_mode, model, key, refs, style, picks, styled, ref_roles]),
             [block_prompts_box, reroll_block_num, long_msg],
         )
         gen_blocks_btn.click(
-            generate_long,
-            [block_prompts_box, world_anchor, shot_table, audio_mode, music_file, keep_ambient,
-             methods, resolution, seed, idea, refs, style, picks, styled, ref_roles],
+            *live(generate_long,
+                  [block_prompts_box, world_anchor, shot_table, audio_mode, music_file, keep_ambient,
+                   methods, resolution, seed, idea, refs, style, picks, styled, ref_roles]),
             [logbox, pika_video, h3_video, block_videos_gallery, files, checks, blocks_state],
             concurrency_limit=1,
         )
@@ -1448,9 +1483,9 @@ def build():
             [audio_mode, music_file, keep_ambient, blocks_state],
             [logbox, pika_video, h3_video, files],
         )
-        q_btn.click(quick_generate,
-                    [q_idea, q_seconds, q_style, q_method, resolution, seed, model, key, refs, ref_roles, picks, styled,
-                     review_on, review_retries],
+        q_btn.click(*live(quick_generate,
+                          [q_idea, q_seconds, q_style, q_method, resolution, seed, model, key, refs, ref_roles, picks,
+                           styled, review_on, review_retries]),
                     [q_status, brief, h3_prompt, q_video, q_files, q_log], concurrency_limit=1)
         # Stil seçimi iki yerde: kullanıcı hangisini değiştirirse öbürü de aynı olur (yalnızca elle değişimde)
         q_style.input(lambda v: v, q_style, style)

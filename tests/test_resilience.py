@@ -270,3 +270,51 @@ def test_model_save_skips_when_drive_is_full_or_option_off(monkeypatch, tmp_path
     logs.clear()
     setup_env.ensure_models(["t_big"], log=logs.append, source_dirs=[])
     assert not any("Drive" in m for m in logs)
+
+
+def test_fallback_log_names_the_step_and_models_are_recorded(monkeypatch):
+    """Muse 17.11.2026: günlük hangi adımın yedekle yazıldığını ayırt etmiyordu, bilgi.json model adı saklamıyordu."""
+    from h3app import prompt_writer as pw
+    monkeypatch.setattr(pw, "_gone_models", set())
+    monkeypatch.setattr(config, "GEMINI_MODEL", "first")
+    monkeypatch.setattr(config, "GEMINI_FALLBACK_MODELS", ("second",))
+
+    def fake_stream(key, m, system, contents, temperature):
+        if m == "first":
+            raise pw.FirstChunkTimeout("first 10 sn içinde yanıt vermeye başlamadı")
+        return "ok"
+    monkeypatch.setattr(pw, "_stream_text", fake_stream)
+    pw.used_models.clear()
+    logs = []
+    pw._generate("k", "first", "s", ["c"], 0.7, log=logs.append, step="brief")
+    assert any(l.startswith("↪️ brief yedek modelle yazıldı: second") for l in logs)
+    assert any(l.startswith("⚠️ brief: first") for l in logs)
+    assert pw.used_models == {"brief": "second (yedek)"}
+    ui = _ui(monkeypatch)
+    assert ui._used_model(logs, "first") == "second"
+
+
+def test_roles_are_read_live_from_inputs_not_stale_state(monkeypatch):
+    """Muse 17.11.2026: rol adı 'Patron Kedi' yerine 'P' kaydedildi (State her tuşta güncelleniyordu, proxy gecikti)."""
+    ui = _ui(monkeypatch)
+    state, a, b = object(), object(), object()
+    M = config.MAX_REF_IMAGES
+    role_inputs = [object() for _ in range(2 * M)]
+    seen = []
+
+    def plain(x, roles, y):
+        seen.append(roles)
+        return x, y
+
+    def gen(x, roles):
+        seen.append(roles)
+        yield x
+
+    fn, inputs = ui._live_roles(plain, [a, state, b], state, role_inputs)
+    assert inputs == [a, *role_inputs, b]
+    vals = ["sahne"] + [None] * (M - 1) + ["  Patron Kedi "] + [""] * (M - 1)
+    assert fn("x", *vals, "y") == ("x", "y")
+    assert seen[-1][0] == {"role": "sahne", "name": "Patron Kedi"}
+    assert seen[-1][1]["role"] == ui.prompt_writer.ROLE_CHARACTER
+    gfn, ginputs = ui._live_roles(gen, [a, state], state, role_inputs)
+    assert list(gfn("x", *vals)) == ["x"] and seen[-1][0]["name"] == "Patron Kedi"

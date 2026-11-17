@@ -82,7 +82,7 @@ def test_direction_rules_and_heel_check(tmp_path):
     for s in (prompt_writer.system_prompt(15, guides), prompt_writer.system_prompt(15, guides, 1),
               prompt_writer.brief_prompt(15, 1)):
         assert "full-body" in s and "never heels" in s and "bargain" in s
-        assert "No readable text, signboards, banners or lettering anywhere in the background" in s
+        assert "No readable text, signboards, logos, banners or lettering anywhere in the frame" in s and "through windows" in s
         assert "Only the exact quoted sign text appears" in s
     t2v = "\n\n".join(f + " x" for f in prompt_writer.T2V_FIELDS)
     assert any("topuk" in p for p in prompt_writer.check(t2v + " high heels clicking", "a woman walks"))
@@ -184,3 +184,21 @@ def test_generate_falls_back_when_first_chunk_is_late_or_model_busy(monkeypatch)
         prompt_writer._generate("k", "a", "sys", ["x"], 0.3)
 
 
+
+
+def test_background_speech_only_in_crowd_scenes():
+    """17.11.2026 sahaf testi: iki kişilik sessiz dükkâna 'background speakers' eklendi, fazladan ses son kesmeyi
+    ve repliği ~1 sn geciktirdi. Kalabalık/pazar yoksa arka plan konuşması kontrolde sorun sayılır."""
+    from h3app import prompt_writer as pw
+    quiet = ("A small, old antiquarian bookshop in Istanbul. An elderly bookseller sits behind a wooden counter; "
+             "a young woman places an old leather-bound book on it.")
+    added = (pw.EXAMPLE_OUTPUT.replace("non_diegetic_music: N/A", "").rstrip() +
+             " Background speakers at a lower volume say: <d>[Turkish] Bir bakayım mı?</d>\n\nnon_diegetic_music: N/A")
+    probs = pw.check(added, quiet)
+    assert any("arka plan konuşması" in p for p in probs)
+    assert not any("arka plan konuşması" in p for p in pw.check(pw.EXAMPLE_OUTPUT, quiet))
+    bazaar = "A woman walks through the packed Grand Bazaar while merchants call out and bargain."
+    assert not any("arka plan konuşması" in p for p in pw.check(added, bazaar))
+    assert not any("arka plan konuşması" in p for p in pw.check(added, "Kapalıçarşı'da kalabalığın içinde yürüyor."))
+    assert pw.CROWD_RE.search("fair-haired woman") is None
+    assert "ONLY when the user's scene has a crowd" in pw.DIRECTION_RULES

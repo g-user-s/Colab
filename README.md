@@ -34,7 +34,9 @@ kısa fikir ──► Gemini: yönetmen brief'i ──► Gemini: H3 prompt'u (r
 
 **Modelleri Drive'a kaydetmek (isteğe bağlı):** Ayarlar hücresindeki `SAVE_MODELS_TO_DRIVE` kutusunu işaretlerseniz, Drive'da bulunmayan her model indirilip doğrulandıktan sonra arka planda `DRIVE_MODEL_DIRS`'in ilk klasörüne de kopyalanır; Hugging Face'e ulaşılamayan oturumlarda modeller oradan alınır. Bunun için Drive'da ~55–65 GB boş yer gerekir (ücretsiz 15 GB'a sığmaz); yer yoksa kopya atlanır ve üretim etkilenmez. Varsayılan olarak kapalıdır.
 
-**Tarayıcı kullanan yapay zekâ ajanlarıyla:** Hızlı üretim paneli, tarayıcıyı kullanabilen kişisel ajanların (ör. Meta Muse; henüz Muse ile denenmedi) da uygulamayı çalıştırabilmesi için sade tutuldu. Öğelerin sabit kimlikleri var: `hizli-fikir`, `hizli-sure`, `hizli-stil`, `hizli-yontem`, `hizli-uret` (düğme), `hizli-durum` (durum satırı), `hizli-video`, `hizli-dosyalar`. Ajan durum satırı `✅` ya da `❌` ile başlayana kadar beklemelidir. Colab oturumu Google hesabınıza bağlıdır; ajana bu erişimi vermeden önce iyi düşünün.
+**Tarayıcı kullanan yapay zekâ ajanlarıyla:** Hızlı üretim paneli, tarayıcıyı kullanabilen kişisel ajanların (ör. Meta Muse; 16–17 Kasım 2026'da Muse ile gerçek üretimlerde denendi) da uygulamayı çalıştırabilmesi için sade tutuldu. Öğelerin sabit kimlikleri var: `hizli-fikir`, `hizli-sure`, `hizli-stil`, `hizli-yontem`, `hizli-uret` (düğme), `hizli-durum` (durum satırı), `hizli-video`, `hizli-dosyalar`. Ajan durum satırı `✅` ya da `❌` ile başlayana kadar beklemelidir. Colab oturumu Google hesabınıza bağlıdır; ajana bu erişimi vermeden önce iyi düşünün.
+
+**Başlatma hücresini yeniden çalıştırmak:** Aynı oturumda süren bir üretim varsa hücre ona dokunmaz, arayüze devam edilecek proxy adresini yazar (orada 📂 Son Üretimleri Yükle'ye basın). Süren iş yoksa eski arayüzü kapatıp yenisini açar.
 
 **İşiniz bitince:** Çalışma zamanı → Çalışma zamanı bağlantısını kes ve sil. GPU açık kaldıkça Colab işlem birimi harcar.
 
@@ -96,6 +98,7 @@ Arayüzü GPU'suz denemek için: `H3APP_FAKE=1 H3APP_FAKE_VIDEO=ornek.mp4 H3APP_
 - Bilgisayar uzun süre uykuda kalırsa Colab runtime'ı silebilir. Bitmiş videolar Drive'a yazıldığı için korunur; yarım kalan üretim kaybolur.
 - Uzun video (çok bloklu) modu yalnızca sahte modda test edildi; gerçek GPU'da henüz denenmedi.
 - Gerçek GPU'da yalnızca tek referans görselle üretim yapıldı; birden fazla görsel ve rol (karakter + arka plan + nesne) henüz denenmedi.
+- Prompt'ta yazı yasağı olsa da model bazen camdan ya da uzaktan görünen binalarda bulanık, kısmen okunabilir tabela çiziyor (17 Kasım 2026'daki iki gerçek denemede görüldü). Otomatik izleme bunu "orta" önemde bildirir; yeniden üretim tetiklenmez.
 - H3 tek üretimde 5–15 saniye için eğitilmiştir; daha uzun videolar bloklar hâlinde üretilir.
 
 ## Lisanslar
