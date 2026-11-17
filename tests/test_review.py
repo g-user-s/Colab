@@ -38,15 +38,15 @@ def test_review_video_falls_back_between_models_and_never_blocks(monkeypatch, tm
     class Models:
         def generate_content(self, model, contents, config):
             calls.append((model, config.system_instruction))
-            if model == "gemini-2.5-flash":
+            if model == "gemini-3-flash-preview":
                 raise RuntimeError("503 UNAVAILABLE")
             return pytypes.SimpleNamespace(text=json.dumps({"verdict": "fail", "defects": [HAND], "summary": "el"}))
 
     monkeypatch.setattr(prompt_writer, "_client", lambda key, timeout_ms=0: pytypes.SimpleNamespace(models=Models()))
     logs = []
     r = review.review_video(vid, "prompt", "k", log=logs.append)
-    assert r["model"] == "gemini-3-flash-preview" and review.blocking(r)
-    assert [c[0] for c in calls] == ["gemini-2.5-flash", "gemini-3-flash-preview"]
+    assert r["model"] == "gemini-3.8-flash" and review.blocking(r)
+    assert [c[0] for c in calls] == ["gemini-3-flash-preview", "gemini-3.8-flash"]
     assert "frame by frame" in calls[0][1] and any("izleyemedi" in m for m in logs)
     assert not any("lite" in m for m in config.REVIEW_MODELS)
 
@@ -55,6 +55,40 @@ def test_review_video_falls_back_between_models_and_never_blocks(monkeypatch, tm
             raise RuntimeError("429 RESOURCE_EXHAUSTED")
     monkeypatch.setattr(prompt_writer, "_client", lambda key, timeout_ms=0: pytypes.SimpleNamespace(models=Down()))
     assert review.review_video(vid, "prompt", "k") is None
+
+
+def test_404_model_is_skipped_for_the_rest_of_the_session(monkeypatch, tmp_path):
+    """17.11.2026: gemini-2.5-flash yeni kullanıcılara 404 NOT_FOUND veriyordu; her izlemede boşa çağrı gitmesin."""
+    vid = _make_av_clip(str(tmp_path / "v.mp4"), "red", seconds=1)
+    monkeypatch.setattr(prompt_writer, "_gone_models", set())
+    calls = []
+
+    class Models:
+        def generate_content(self, model, contents, config):
+            calls.append(model)
+            if model == "old-model":
+                raise RuntimeError("404 NOT_FOUND. models/old-model is no longer available to new users")
+            return pytypes.SimpleNamespace(text=json.dumps({"verdict": "pass", "defects": [], "summary": ""}))
+
+    monkeypatch.setattr(prompt_writer, "_client", lambda key, timeout_ms=0: pytypes.SimpleNamespace(models=Models()))
+    logs = []
+    for _ in range(3):
+        r = review.review_video(vid, "p", "k", models=("old-model", "new-model"), log=logs.append)
+        assert r["model"] == "new-model"
+    assert calls == ["old-model", "new-model", "new-model", "new-model"]
+    assert sum("404" in m for m in logs) == 1
+
+    # Metin zinciri de 404'te durmaz, sıradaki modele geçer ve yedek kullanıldığını kaydeder
+    def fake_stream(key, m, system, contents, temperature):
+        if m == "gone-text":
+            raise RuntimeError("404 NOT_FOUND")
+        return "ok"
+    monkeypatch.setattr(prompt_writer, "_stream_text", fake_stream)
+    monkeypatch.setattr(config, "GEMINI_MODEL", "gone-text")
+    monkeypatch.setattr(config, "GEMINI_FALLBACK_MODELS", ("alive-text",))
+    assert prompt_writer._generate("k", "gone-text", "s", ["c"], 0.3) == "ok"
+    assert prompt_writer.last_model == {"name": "alive-text", "fallback": True}
+    assert "gone-text" not in prompt_writer.available(["gone-text", "alive-text"])
 
 
 def _ui(monkeypatch, tmp_path, results):

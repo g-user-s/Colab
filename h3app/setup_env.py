@@ -147,9 +147,25 @@ def wait_model_saves(timeout=None):
     return True
 
 
+def _download_hf(rel, dst, size, sha, log):
+    """Sabit Hugging Face revizyonundan indirir, boyut + SHA-256 doğrular, yerine koyar. Bozuksa siler ve hata verir."""
+    from huggingface_hub import hf_hub_download
+    name = os.path.basename(rel)
+    log(f"İndiriliyor: {name} ({size / 1e9:.1f} GB)…")
+    p = hf_hub_download(config.HF_REPO, rel, revision=config.HF_REVISION,
+                        local_dir=os.path.join(config.WORK_DIR, "h3app_hf"))
+    if os.path.getsize(p) != size or _sha256(p) != sha:
+        os.remove(p)
+        raise RuntimeError(f"Bozuk indirme: {rel}")
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
+    os.replace(p, dst)
+    log(f"Doğrulandı: {name}")
+
+
 def ensure_models(roles, log=print, source_dirs=None, save_dir=None):
-    """Eksik modelleri önce `source_dirs` (varsayılan config.MODEL_SOURCE_DIRS, ör. Drive) içindeki doğrulanmış
-    kopyalardan, yoksa sabit Hugging Face revizyonundan alır. Her dosya boyut + SHA-256 ile doğrulanır.
+    """Eksik modelleri önce sabit Hugging Face revizyonundan indirir; HF'e ulaşılamazsa ya da indirme bozuksa
+    `source_dirs` (varsayılan config.MODEL_SOURCE_DIRS, ör. Drive) içindeki kopyalardan alır. Her dosya boyut +
+    SHA-256 ile doğrulanır.
     `save_dir` (varsayılan config.MODEL_SAVE_DIR) verilmişse Drive'da bulunmayan her model, doğrulandıktan sonra
     arka planda oraya da kopyalanır (`save_dir/<alt klasör>/<ad>`), böylece sonraki oturum Drive'dan alır."""
     source_dirs = config.MODEL_SOURCE_DIRS if source_dirs is None else source_dirs
@@ -159,26 +175,27 @@ def ensure_models(roles, log=print, source_dirs=None, save_dir=None):
         rel, sub, size, sha = config.MODELS[role]
         name = os.path.basename(rel)
         dst = os.path.join(config.COMFY_DIR, "models", sub, name)
-        if idx is None and (save_dir or not (os.path.isfile(dst) and os.path.getsize(dst) == size)):
-            idx = _index_dirs(list(source_dirs or []) + ([save_dir] if save_dir else []))
+        if idx is None and save_dir:   # Drive'da zaten var mı? (varsa tekrar kaydedilmez)
+            idx = _index_dirs(list(source_dirs or []) + [save_dir])
         on_drive = idx is not None and any(os.path.getsize(p) == size for p in idx.get(name, []))
         if not (os.path.isfile(dst) and os.path.getsize(dst) == size):
-            src = next((p for p in (idx or {}).get(name, []) if os.path.getsize(p) == size), None)
-            if src:
-                log(f"Drive'dan kopyalanıyor: {name} ({size / 1e9:.1f} GB)…")
-                if _copy_verified(src, dst, size, sha, log):
-                    log(f"Doğrulandı: {name}")
-                    continue
-            from huggingface_hub import hf_hub_download
-            log(f"İndiriliyor: {name} ({size / 1e9:.1f} GB)…")
-            p = hf_hub_download(config.HF_REPO, rel, revision=config.HF_REVISION,
-                                local_dir=os.path.join(config.WORK_DIR, "h3app_hf"))
-            if os.path.getsize(p) != size or _sha256(p) != sha:
-                os.remove(p)
-                raise RuntimeError(f"Bozuk indirme: {rel}")
-            os.makedirs(os.path.dirname(dst), exist_ok=True)
-            os.replace(p, dst)
-            log(f"Doğrulandı: {name}")
+            # Önce Hugging Face: 17.11.2026 ölçümü HF kurulum + indirme ~6 dk, 42 GB'ın Drive kopyası ~12 dk.
+            # Drive yalnızca HF'e ulaşılamazsa ya da indirme bozuk çıkarsa yedek.
+            try:
+                _download_hf(rel, dst, size, sha, log)
+            except Exception as e:
+                src = next((p for p in (idx or {}).get(name, []) if os.path.getsize(p) == size), None)
+                if src is None and idx is None and source_dirs:
+                    idx = _index_dirs(list(source_dirs) + ([save_dir] if save_dir else []))
+                    src = next((p for p in idx.get(name, []) if os.path.getsize(p) == size), None)
+                if not src:
+                    raise
+                log(f"Hugging Face'ten alınamadı ({str(e)[:120]}); Drive'dan kopyalanıyor: {name} "
+                    f"({size / 1e9:.1f} GB)…")
+                if not _copy_verified(src, dst, size, sha, log):
+                    raise
+                log(f"Doğrulandı: {name}")
+                continue   # Drive'dan geldi: zaten orada, yeniden kaydedilmez
         if save_dir and not on_drive:
             log(f"💾 {name} arka planda Drive'a da kaydedilecek ({size / 1e9:.1f} GB).")
             queue_model_save(dst, os.path.join(save_dir, sub, name), size, log)

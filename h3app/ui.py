@@ -23,7 +23,7 @@ REAL_GEMINI = os.environ.get("H3APP_REAL_GEMINI") == "1"
 def _fake_gemini(key):
     return FAKE and not (REAL_GEMINI and key)
 _lock = threading.Lock()
-_state = {"secret_key": None, "drive_dir": None}
+_state = {"secret_key": None, "secret_hint": None, "drive_dir": None}
 STAMP_RE = re.compile(r"^(\d{8}_\d{6})_")
 
 
@@ -81,8 +81,11 @@ def _colab_secret(name):
         val = userdata.get(name)
         if val:
             return val
-    except Exception:
-        pass
+    except Exception as e:
+        # Sır var ama "Notebook erişimi" kapalıysa NotebookAccessError gelir: kullanıcıya nedenini söyle
+        if "Access" in type(e).__name__ or "access" in str(e).lower():
+            _state["secret_hint"] = (f"Colab Secrets'ta {name} var ama bu notebook'a erişimi kapalı: 🔑 panelinde "
+                                     "'Notebook erişimi' anahtarını açıp hücreyi yeniden çalıştırın")
     return (os.environ.get(name) or "").strip() or None
 
 
@@ -93,10 +96,12 @@ def _key(typed):
 def _status_line():
     g = setup_env.gpu()
     gpu = f"{g[0]} · {g[1]} GB" if g else "GPU yok (Çalışma zamanı → türünü değiştir → G4 GPU seçin)"
-    key = "Colab Secrets'tan alındı" if _state["secret_key"] else "girilmedi"
+    key = ("Colab Secrets'tan alındı" if _state["secret_key"]
+           else f"girilmedi ⚠️ ({_state['secret_hint']})" if _state.get("secret_hint") else
+           "girilmedi (Colab Secrets'a GEMINI ya da GEMINI_API_KEY adıyla ekleyin)")
     drive = _state["drive_dir"] or "kapalı ⚠️ (bağlantı koparsa videolar kaybolur)"
     models = (f"Drive'a da kaydedilir ({config.MODEL_SAVE_DIR})" if config.MODEL_SAVE_DIR
-              else ("Drive'da aranır, kaydedilmez" if config.MODEL_SOURCE_DIRS else "her oturumda indirilir"))
+              else ("HF'ten iner, HF yoksa Drive'dan" if config.MODEL_SOURCE_DIRS else "her oturumda indirilir"))
     return (f"**GPU:** {gpu} &nbsp;·&nbsp; **Gemini anahtarı:** {key} &nbsp;·&nbsp; **Drive'a kayıt:** {drive}"
             f" &nbsp;·&nbsp; **Modeller:** {models}")
 
@@ -106,7 +111,7 @@ def list_models(typed_key):
     if _fake_gemini(key):
         return gr.update(choices=["gemini-test-pro"], value="gemini-test-pro"), "Model listesi alındı (test modu)."
     if not key:
-        return gr.update(), "Önce Gemini API anahtarını girin ya da Colab Secrets'a GEMINI adıyla ekleyin."
+        return gr.update(), "Önce Gemini API anahtarını girin ya da Colab Secrets'a GEMINI (veya GEMINI_API_KEY) adıyla ekleyip notebook erişimini açın."
     try:
         names = prompt_writer.gemini_models(key)
     except Exception as e:
@@ -1133,21 +1138,26 @@ def _quick_job(idea, seconds, style, method, resolution, seed, model, typed_key,
         return
     images = _refs(refs, style, picks, styled)
     roles = _roles(ref_roles, refs)
-    notes = []
+    notes, weak = [], []   # weak: yedek modelle yazılan adımlar (durum satırında da gösterilir)
     try:
+        prompt_writer.last_model.update(name=None, fallback=False)
         yield out("⏳ 1/3 Gemini detaylı brief'i yazıyor…")
         if _fake_gemini(key):
             state["brief"] = prompt_writer.BRIEF_EXAMPLES[1][1]
         else:
             state["brief"] = prompt_writer.expand(idea, seconds, key, model, images, log=notes.append, style=style,
                                                   roles=roles)
-        yield out("⏳ 2/3 Gemini H3 prompt'unu yazıyor…")
+            if prompt_writer.last_model["fallback"]:
+                weak.append(f"brief {prompt_writer.last_model['name']}")
+        yield out("⏳ 2/3 Gemini H3 prompt'unu yazıyor…" + (f" (⚠️ {weak[0]} yedek modeliyle yazıldı)" if weak else ""))
         problems = []
         if _fake_gemini(key):
             state["prompt"] = prompt_writer.EXAMPLE_OUTPUT
         else:
             state["prompt"], problems = prompt_writer.rewrite(state["brief"], seconds, key, model, images,
                                                               log=notes.append, style=style, roles=roles)
+            if prompt_writer.last_model["fallback"]:
+                weak.append(f"prompt {prompt_writer.last_model['name']}")
         if not state["prompt"].strip():
             yield out("❌ Hata: Gemini prompt yazamadı. Biraz sonra tekrar deneyin.")
             return
@@ -1177,7 +1187,8 @@ def _quick_job(idea, seconds, style, method, resolution, seed, model, typed_key,
         where = f" · Drive: {_state['drive_dir']}" if _state.get("drive_dir") else ""
         chosen = [ln for ln in last_log.splitlines() if "⭐ Seçilen:" in ln]
         rv = (" · " + chosen[-1].split(" — ", 1)[1]) if chosen else ""
-        yield out(f"✅ Hazır: {os.path.basename(state['video'])}{rv}{where}")
+        fb = f" · ⚠️ yedek modelle yazıldı: {', '.join(weak)}" if weak else ""
+        yield out(f"✅ Hazır: {os.path.basename(state['video'])}{rv}{fb}{where}")
     else:
         yield out(errors[-1] if errors else "❌ Hata: video üretilemedi; ayrıntılı günlüğe bakın.")
 
@@ -1309,7 +1320,7 @@ def build():
             model = gr.Dropdown(label="Gemini modeli", choices=[], allow_custom_value=True)
         with gr.Row():
             key = gr.Textbox(label="Gemini API anahtarı", type="password", scale=3,
-                             placeholder="Colab Secrets'ta GEMINI varsa boş bırakın")
+                             placeholder="Colab Secrets'ta GEMINI / GEMINI_API_KEY varsa boş bırakın")
             list_btn = gr.Button("Modelleri listele", scale=1)
         expand_btn = gr.Button("Gemini ile detaylandır (brief)", variant="primary")
         brief = gr.Textbox(label="Detaylı brief (Gemini yazar; düzenleyebilir ya da doğrudan kendi brief'inizi yazabilirsiniz)",
@@ -1454,7 +1465,12 @@ def launch(drive_dir=None, model_dirs=None, model_save_dir=None, **kwargs):
     """Colab'de: hücrenin altında açılır ve arka planda çalışmaya devam eder.
     model_dirs: model dosyalarının Hugging Face'ten önce aranacağı klasörler (ör. Drive'daki kopyalar).
     model_save_dir: verilirse Drive'da olmayan modeller indirildikten sonra arka planda buraya da kaydedilir."""
+    _state["secret_hint"] = None
     _state["secret_key"] = _colab_secret("GEMINI") or _colab_secret("GEMINI_API_KEY")
+    if _state["secret_key"]:
+        _state["secret_hint"] = None
+    elif _state["secret_hint"]:
+        print("⚠️ Gemini anahtarı:", _state["secret_hint"])
     _state["drive_dir"] = drive_dir
     config.MODEL_SOURCE_DIRS = [d for d in (model_dirs or []) if d]
     config.MODEL_SAVE_DIR = model_save_dir or None

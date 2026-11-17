@@ -14,8 +14,8 @@ Kısa bir fikir yazın → **Gemini** onu önce detaylı bir yönetmen brief'ine
 İsterseniz **karakter görseli** yükleyin (en fazla 9): uygulama referanslı moda (Ref2VA) geçer, görseldeki kişinin yüzü video boyunca korunur.
 
 **Gerekenler**
-1. **Çalışma zamanı → Çalışma zamanı türünü değiştir → G4 GPU** (RTX PRO 6000). Başka GPU'da da çalışır ama NVFP4 yerine daha büyük int8 metin kodlayıcı iner.
-2. **Gemini API anahtarı:** Sol paneldeki 🔑 *Secrets* bölümüne `GEMINI` adıyla ekleyip bu notebook'a erişim izni verin. (Ya da anahtarı uygulamadaki şifre kutusuna yazın.)
+1. **Çalışma zamanı → Çalışma zamanı türünü değiştir → G4 GPU** (RTX PRO 6000). Başka GPU'da da çalışır ama NVFP4 yerine 27 GB'lık int8 metin kodlayıcı iner. Colab G4 seçiliyken bile L4/A100 verebiliyor; başlatma hücresi tahsis edilen GPU'yu yazar.
+2. **Gemini API anahtarı:** Sol paneldeki 🔑 *Secrets* bölümüne `GEMINI` (ya da `GEMINI_API_KEY`) adıyla ekleyin ve yanındaki **Notebook erişimi** anahtarını açın; kapalıysa anahtar okunamaz. (Ya da anahtarı uygulamadaki şifre kutusuna yazın.)
 3. **Çalışma zamanı → Tümünü çalıştır.** Arayüz en alttaki hücrenin altında açılır.
 
 **İlk üretim:** ComfyUI kurulumu + modeller (~42 GB, Hugging Face'ten, SHA-256 doğrulamalı) ~5 dk sürer; sonra Pika ~6 dk, MiniMax-H3 ~18 dk (15 sn video).
@@ -26,11 +26,12 @@ SETTINGS = """# Videolar üretilir üretilmez Drive'a da kopyalansın mı? Açı
 # uykuya geçti, sekme kapandı) runtime silinebilir; Drive'a yazılmamış videolar kaybolur.
 SAVE_TO_DRIVE = True
 DRIVE_FOLDER = "/content/drive/MyDrive/H3_Video_Studyosu"
-# Model dosyaları önce bu Drive klasörlerinde aranır (boyut + SHA-256 kontrolüyle kopyalanır); bulunamazsa
-# Hugging Face'ten iner. Drive'ınızda yoksa sorun değil; istemezseniz [] yapın.
+# Modeller önce Hugging Face'ten iner (ölçüm: ~6 dk; Drive'dan kopya 42 GB için ~12 dk, daha yavaş). HF'e
+# ulaşılamazsa ya da indirme bozuksa bu Drive klasörlerindeki kopyalar kullanılır (boyut + SHA-256 kontrolüyle).
+# Drive'ınızda yoksa sorun değil; istemezseniz [] yapın.
 DRIVE_MODEL_DIRS = ["/content/drive/MyDrive/MiniMax-H3/models", "/content/drive/MyDrive/Pika-H3-Flex"]
 # Modeller Drive'da yoksa, indirildikten sonra Drive'a da kaydedilsin mi? (DRIVE_MODEL_DIRS'in ilk klasörüne)
-# Açarsanız bir sonraki oturumda ~55-65 GB yeniden inmez, Drive'dan alınır. Drive'ınızda bu kadar boş yer
+# Açarsanız HF'e ulaşılamayan bir oturumda yedek olarak Drive'dan alınır. Drive'ınızda ~55-65 GB boş yer
 # olmalı (ücretsiz 15 GB'a sığmaz); yer yoksa kopya atlanır. Kopya arka planda yapılır, üretimi bekletmez.
 SAVE_MODELS_TO_DRIVE = False  #@param {type:"boolean"}
 """
@@ -38,10 +39,33 @@ SAVE_MODELS_TO_DRIVE = False  #@param {type:"boolean"}
 LAUNCH = f"""import subprocess, sys
 subprocess.run([sys.executable, "-m", "pip", "install", "-q", "gradio=={GRADIO}", "google-genai=={GENAI}"], check=True)
 
+# Hangi GPU tahsis edildi? Colab G4 seçilse bile sessizce L4/A100 verebiliyor (17.11.2026 denemeleri).
+gpu_name = subprocess.run(["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"],
+                          capture_output=True, text=True).stdout.strip() or "yok"
+print("GPU:", gpu_name)
+if "RTX PRO 6000" not in gpu_name:
+    print("⚠️ G4 (RTX PRO 6000) değil. Uygulama çalışır, ama NVFP4 yerine 27 GB'lık int8 metin kodlayıcı iner ve "
+          "üretim daha yavaş olabilir. G4 istiyorsanız: Çalışma zamanı → Bağlantıyı kes ve sil → türü G4 seçip "
+          "yeniden bağlanın (tahsis birkaç denemede değişebiliyor).")
+
 drive_dir, model_dirs, model_save_dir = None, [], None
 if SAVE_TO_DRIVE or DRIVE_MODEL_DIRS or SAVE_MODELS_TO_DRIVE:
     from google.colab import drive
-    drive.mount("/content/drive")
+    # "credential propagation was unsuccessful" oturumdan oturuma değişiyor: birkaç kez dene, olmazsa Drive'sız sür
+    mounted = False
+    for attempt in range(1, 4):
+        try:
+            drive.mount("/content/drive", force_remount=attempt > 1)
+            mounted = True
+            break
+        except Exception as e:
+            print(f"⚠️ Drive bağlanamadı ({{attempt}}/3): {{e}}")
+    if not mounted:
+        print("⚠️ Drive'sız devam ediliyor: modeller Hugging Face'ten iner (~6 dk), videolar yalnızca bu runtime'da "
+              "kalır (arayüzden indirin). Drive'ı sonra denemek için bu hücreyi yeniden çalıştırın; olmazsa "
+              "Çalışma zamanı → Bağlantıyı kes ve sil ile yeni oturum açın.")
+        SAVE_TO_DRIVE, DRIVE_MODEL_DIRS, SAVE_MODELS_TO_DRIVE = False, [], False
+if SAVE_TO_DRIVE or DRIVE_MODEL_DIRS or SAVE_MODELS_TO_DRIVE:
     drive_dir = DRIVE_FOLDER if SAVE_TO_DRIVE else None
     model_dirs = DRIVE_MODEL_DIRS
     if SAVE_MODELS_TO_DRIVE:

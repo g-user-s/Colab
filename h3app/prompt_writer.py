@@ -53,6 +53,15 @@ _STAGING = """- Staging and hands: say where every visible person stands on scre
   visible person is named and already in place. An object is handed only between two people who are both
   visible, hand to hand, never from outside the frame. The camera never shows a character's point of view and
   no extra hands, arms or people enter the frame unless the user asks for it."""
+# 16-17.11.2026 gerçek denemelerindeki orta kusurların genel karşılığı: nesne tutan elde parmak bozukluğu, katı
+# görünen sıvı, titreyen küçük tekrarlı hareketler, geç başlayan replik. Konuya özel değil, her sahneye uygulanır.
+_DETAIL = """- Contact, materials and timing: whenever a hand, paw or tool touches or holds something, describe the
+  contact plainly (which hand, how it grips, that it stays fully in frame) and keep it stable while it moves;
+  hands keep a natural number of fingers. Fluids, smoke, steam, fire and fabric move with their real physical
+  weight and translucency, never as stiff or solid shapes. Small repeated motions (tapping, stirring, writing,
+  chewing) stay slow, even and clearly readable, never a jittery blur. Give every spoken line an explicit start
+  time ("At about N seconds") inside the clip, start the first line early unless the user asks otherwise, and
+  move the speaker's lips only while the line is spoken."""
 _SIGNAGE_NONE = ("No readable text, signboards, banners or lettering anywhere in the background; shopfronts are "
                  "identified only by their goods, architectural arches, lanterns and displays, with no written signs.")
 _SIGNAGE_ONLY = ("Only the exact quoted sign text appears; no other signs, extra boards or background lettering "
@@ -68,7 +77,7 @@ _MUSIC_MODE = f"""- Music montage mode (no speech): do NOT write any spoken dial
   voices. In overall_soundscape state explicitly "{_MUSIC_SILENT}" along with natural environmental foley,
   and in non_diegetic_music write "N/A" (external music will be mixed later)."""
 _DIRECTION_HEAD = "Default direction (use only when the user did not ask for something else):"
-DIRECTION_RULES = "\n".join([_DIRECTION_HEAD, _FRAMING, _STAGING, _REALISM, _FOOTSTEPS, _ANIMALS, _SIGNAGE, _SPEECH])
+DIRECTION_RULES = "\n".join([_DIRECTION_HEAD, _FRAMING, _STAGING, _DETAIL, _REALISM, _FOOTSTEPS, _ANIMALS, _SIGNAGE, _SPEECH])
 
 # Gerçek dünya dışındaki stillerde gerçekçilik kuralı: mekân tanınır kalır ama stilde yeniden çizilir
 _REALISM_STYLED = """- Real places: a named real place keeps what makes it recognisable (its architecture, the shops and
@@ -110,9 +119,9 @@ def direction_rules(style=config.DEFAULT_STYLE, n_images=0, audio_mode=config.DE
     if "look" not in s:
         if audio_mode == config.DEFAULT_AUDIO_MODE:
             return DIRECTION_RULES
-        return "\n".join([_DIRECTION_HEAD, _FRAMING, _STAGING, _REALISM, _FOOTSTEPS, _ANIMALS, _SIGNAGE, sound_rule])
+        return "\n".join([_DIRECTION_HEAD, _FRAMING, _STAGING, _DETAIL, _REALISM, _FOOTSTEPS, _ANIMALS, _SIGNAGE, sound_rule])
     rules = STYLE_RULES.format(**s) + ("\n" + STYLE_REF_RULE.format(**s) if n_images else "")
-    return rules + "\n\n" + "\n".join([_DIRECTION_HEAD, _FRAMING, _STAGING, _REALISM_STYLED, _FOOTSTEPS, _ANIMALS,
+    return rules + "\n\n" + "\n".join([_DIRECTION_HEAD, _FRAMING, _STAGING, _DETAIL, _REALISM_STYLED, _FOOTSTEPS, _ANIMALS,
                                         _SIGNAGE, sound_rule])
 
 
@@ -427,12 +436,32 @@ class FirstChunkTimeout(TimeoutError):
 
 TRANSIENT_RE = re.compile(r"\b(503|429|504|500)\b|UNAVAILABLE|RESOURCE_EXHAUSTED|DEADLINE_EXCEEDED|INTERNAL|"
                           r"high demand|overloaded|timed? ?out", re.I)
+# Model artık sunulmuyor (404 NOT_FOUND): oturumun geri kalanında hiç denenmez, boşa çağrı gitmez
+GONE_RE = re.compile(r"\b404\b|NOT_FOUND|is not found|not supported for generateContent", re.I)
+_gone_models = set()
 TEXT_TIMEOUT_MS = 180_000   # ilk parça geldikten sonra tüm yanıt için üst sınır
 IMAGE_TIMEOUT_MS = 300_000
 
 
 def _transient(e):
     return isinstance(e, TimeoutError) or "Timeout" in type(e).__name__ or bool(TRANSIENT_RE.search(str(e)))
+
+
+def gone(e):
+    return bool(GONE_RE.search(str(e)))
+
+
+def mark_gone(model, log=None):
+    """404 veren modeli oturum boyunca atlanacaklar listesine ekler (bir kez günlüğe yazar)."""
+    if model not in _gone_models:
+        _gone_models.add(model)
+        if log:
+            log(f"🚫 {model} bu hesapta sunulmuyor (404); bu oturumda bir daha denenmeyecek.")
+
+
+def available(models):
+    """Sırayı koruyarak tekrarları ve 404 vermiş modelleri çıkarır."""
+    return [m for m in dict.fromkeys(models) if m and m not in _gone_models]
 
 
 def _client(api_key, timeout_ms=TEXT_TIMEOUT_MS):
@@ -490,23 +519,30 @@ def _stream_text(api_key, model, system, contents, temperature, first_chunk=None
     return text
 
 
+last_model = {"name": None, "fallback": False}   # son başarılı _generate çağrısının modeli (arayüz gösterir)
+
+
 def _generate(api_key, model, system, contents, temperature, log=None):
     """Seçili modelle dener; ilk parça FIRST_CHUNK_SECONDS içinde gelmezse ya da model yoğunsa (503/429/zaman aşımı)
     beklemeden sıradaki yedek modele geçer ve bunu `log` ile arayüze yazar. Kalıcı hatada (ör. geçersiz anahtar) durur."""
-    models = list(dict.fromkeys([model, config.GEMINI_MODEL, *config.GEMINI_FALLBACK_MODELS]))
+    models = available([model, config.GEMINI_MODEL, *config.GEMINI_FALLBACK_MODELS])
     errors = []
     for i, m in enumerate(models):
         try:
             text = _stream_text(api_key, m, system, contents, temperature)
         except Exception as e:
-            if not _transient(e):
+            if gone(e):
+                mark_gone(m, log)
+            elif not _transient(e):
                 raise
             errors.append(f"{m}: {str(e)[:160]}")
             if log and i + 1 < len(models):
                 log(f"⚠️ {m} yanıt vermedi ({str(e)[:120]}); yedek modele geçiliyor: {models[i + 1]}")
             continue
+        last_model["name"], last_model["fallback"] = m, m != models[0]
         if i and log:
-            log(f"↪️ Bu adım yedek modelle yazıldı: {m}")
+            log(f"↪️ Bu adım yedek modelle yazıldı: {m} (ilk tercih {models[0]} yanıt vermedi; çıktı daha zayıf "
+                "olabilir)")
         return clean(text)
     raise RuntimeError("Hiçbir Gemini modeli yanıt vermedi:\n- " + "\n- ".join(errors))
 

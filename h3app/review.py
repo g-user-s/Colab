@@ -69,7 +69,7 @@ def normalize(raw):
 def review_video(path, prompt, api_key, images=(), roles=None, models=None, log=None):
     """Videoyu izletir. {'verdict', 'defects', 'summary', 'model'} ya da (hiçbir model yanıt vermezse) None döner."""
     from google.genai import types
-    models = [m for m in (models or config.REVIEW_MODELS) if m]
+    models = prompt_writer.available(models or config.REVIEW_MODELS)
     with tempfile.TemporaryDirectory(prefix="h3app_inceleme_") as tmp:
         data = open(_proxy(path, tmp), "rb").read()
     parts = [types.Part.from_bytes(data=data, mime_type="video/mp4")]
@@ -86,6 +86,9 @@ def review_video(path, prompt, api_key, images=(), roles=None, models=None, log=
             result["model"] = m
             return result
         except Exception as e:
+            if prompt_writer.gone(e):
+                prompt_writer.mark_gone(m, log)
+                continue
             if log:
                 log(f"   🔍 {m} videoyu izleyemedi ({str(e)[:120]}); sıradaki izleyici deneniyor.")
     return None

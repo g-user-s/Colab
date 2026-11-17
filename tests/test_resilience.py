@@ -109,7 +109,8 @@ def test_ready_returns_newest_model(monkeypatch):
     assert key is None and err
 
 
-def test_models_come_from_drive_copy_first(monkeypatch, tmp_path):
+def test_models_come_from_hf_first_and_drive_only_as_fallback(monkeypatch, tmp_path):
+    """17.11.2026 ölçümü: HF ~6 dk, Drive kopyası ~12 dk. HF önce; Drive yalnızca HF başarısızsa."""
     data = b"model-bytes"
     sha = hashlib.sha256(data).hexdigest()
     drive = tmp_path / "drive" / "MiniMax-H3" / "models" / "vae"
@@ -117,22 +118,39 @@ def test_models_come_from_drive_copy_first(monkeypatch, tmp_path):
     (drive / "x.safetensors").write_bytes(data)
     monkeypatch.setattr(config, "COMFY_DIR", str(tmp_path / "ComfyUI"))
     monkeypatch.setitem(config.MODELS, "test_ok", ("vae/x.safetensors", "vae", len(data), sha))
+    dst = tmp_path / "ComfyUI" / "models" / "vae" / "x.safetensors"
+
+    # HF çalışıyor: Drive'da kopya olsa bile HF'ten iner
+    _fake_hub(monkeypatch, tmp_path, data)
     logs = []
     setup_env.ensure_models(["test_ok"], log=logs.append, source_dirs=[str(tmp_path / "drive")])
-    dst = tmp_path / "ComfyUI" / "models" / "vae" / "x.safetensors"
-    assert dst.read_bytes() == data and any("Drive'dan" in m for m in logs)
+    assert dst.read_bytes() == data and any("İndiriliyor" in m for m in logs)
+    assert not any("Drive'dan" in m for m in logs)
 
-    # SHA tutmazsa yerel kopya silinir ve Hugging Face'e düşülür
-    (drive / "y.safetensors").write_bytes(b"bozuk-bytes")
-    monkeypatch.setitem(config.MODELS, "test_bad", ("vae/y.safetensors", "vae", len(b"bozuk-bytes"), sha))
+    # HF'e ulaşılamıyor: Drive kopyası kullanılır
+    os.remove(dst)
     calls = []
     fake_hub = pytypes.SimpleNamespace(hf_hub_download=lambda *a, **k: calls.append(a) or (_ for _ in ()).throw(OSError("ağ yok")))
     monkeypatch.setitem(sys.modules, "huggingface_hub", fake_hub)
-    try:
+    logs.clear()
+    setup_env.ensure_models(["test_ok"], log=logs.append, source_dirs=[str(tmp_path / "drive")])
+    assert calls and dst.read_bytes() == data and any("Drive'dan kopyalanıyor" in m for m in logs)
+
+    # HF bozuk indirme verirse de Drive'a düşülür
+    os.remove(dst)
+    _fake_hub(monkeypatch, tmp_path, b"model-byteZ")      # aynı boyut, yanlış SHA
+    logs.clear()
+    setup_env.ensure_models(["test_ok"], log=logs.append, source_dirs=[str(tmp_path / "drive")])
+    assert dst.read_bytes() == data and any("Bozuk indirme" in m for m in logs)
+
+    # HF yok, Drive kopyası da bozuk: hata verir, yarım dosya kalmaz
+    (drive / "y.safetensors").write_bytes(b"bozuk-bytes")
+    monkeypatch.setitem(config.MODELS, "test_bad", ("vae/y.safetensors", "vae", len(b"bozuk-bytes"), sha))
+    monkeypatch.setitem(sys.modules, "huggingface_hub", fake_hub)
+    import pytest
+    with pytest.raises(OSError):
         setup_env.ensure_models(["test_bad"], log=logs.append, source_dirs=[str(tmp_path / "drive")])
-    except OSError:
-        pass
-    assert calls and not (tmp_path / "ComfyUI" / "models" / "vae" / "y.safetensors").exists()
+    assert not (tmp_path / "ComfyUI" / "models" / "vae" / "y.safetensors").exists()
     assert not any(n.endswith(".part") for n in os.listdir(tmp_path / "ComfyUI" / "models" / "vae"))
 
 
@@ -222,9 +240,10 @@ def test_downloaded_models_are_saved_to_drive_when_asked(monkeypatch, tmp_path):
     assert (drive / "vae" / "z.safetensors").read_bytes() == data
     assert any("Drive'a kaydedildi" in m for m in logs)
 
-    # sonraki oturum: yerel kopya yok, model Drive'dan gelir ve tekrar kaydedilmez
+    # sonraki oturum, HF'e ulaşılamıyor: model Drive'dan gelir ve tekrar kaydedilmez
     os.remove(tmp_path / "ComfyUI" / "models" / "vae" / "z.safetensors")
-    _fake_hub(monkeypatch, tmp_path, b"KULLANILMAMALI")
+    monkeypatch.setitem(sys.modules, "huggingface_hub", pytypes.SimpleNamespace(
+        hf_hub_download=lambda *a, **k: (_ for _ in ()).throw(OSError("ağ yok"))))
     logs.clear()
     setup_env.ensure_models(["t_vae"], log=logs.append, source_dirs=[str(drive)], save_dir=str(drive))
     assert setup_env.wait_model_saves(5)

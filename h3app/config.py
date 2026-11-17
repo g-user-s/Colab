@@ -117,8 +117,9 @@ GEMINI_FALLBACK_MODELS = ("gemini-3.8-flash", "gemini-3.5-flash-lite", "gemma-4-
 # Her model ilk metin parçasını bu kadar saniyede göndermezse ya da yoğunsa (503/429) sıradakine geçilir
 FIRST_CHUNK_SECONDS = 10
 # Üretilen videoyu izleyen Gemini modelleri (sırayla). 16.11.2026 kör testinde fazladan eli 2.5-flash ve
-# 3-flash-preview buldu, 3.5-flash-lite kaçırdı: izlemede lite model kullanılmaz.
-REVIEW_MODELS = ("gemini-2.5-flash", "gemini-3-flash-preview")
+# 3-flash-preview buldu, 3.5-flash-lite kaçırdı: izlemede lite model kullanılmaz. 17.11.2026: gemini-2.5-flash
+# yeni kullanıcılara kapatıldı (404 NOT_FOUND), zincirden çıkarıldı; yedek olarak lite olmayan 3.8-flash.
+REVIEW_MODELS = ("gemini-3-flash-preview", "gemini-3.8-flash")
 # İzleme yüksek önemde kusur bulursa yeni seed ile en fazla bu kadar yeniden deneme; en iyi aday tutulur
 REVIEW_RETRIES = 2
 
