@@ -97,6 +97,8 @@ def _key(typed):
 def _status_line():
     g = setup_env.gpu()
     gpu = f"{g[0]} · {g[1]} GB" if g else "GPU yok (Çalışma zamanı → türünü değiştir → G4 GPU seçin)"
+    if g and g[1] < 40:
+        gpu += " ⛔ H3 için yetersiz (en az 40 GB; G4 ya da A100 seçin)"
     key = ("Colab Secrets'tan alındı" if _state["secret_key"]
            else f"girilmedi ⚠️ ({_state['secret_hint']})" if _state.get("secret_hint") else
            "girilmedi (Colab Secrets'a GEMINI ya da GEMINI_API_KEY adıyla ekleyin)")

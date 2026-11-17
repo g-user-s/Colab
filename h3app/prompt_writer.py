@@ -620,6 +620,9 @@ Output ONLY valid JSON (no markdown fences, no commentary) with this exact struc
 Hard rules for planning:
 - `block` is 1..{n_blocks}. Within each block, `shot` starts at 1 and increments (1, 2, 3...), and `start_sec`
   is the start time (in seconds) relative to the start of THAT block (so shot 1 of every block has `start_sec: 0.0`).
+- Do NOT write `At 00:SS.000` inside `action` or `sound`; the cut time comes from `start_sec`. If you time an
+  event or a spoken line inside a shot, write "At about N seconds" counted from the start of THAT SHOT
+  (e.g. a line 2 seconds into a shot that starts at 5.0 is "At about 2 seconds").
 - Every shot `duration` must be at least 2.0 seconds. Each block's shot durations must sum to ≤ 15.0 seconds
   (and ≥ 4.0 seconds), and the total across all blocks must equal {total_seconds} seconds.
 - Shot variety & 180-degree rule: vary framing across shots (wide establishing full-body shot -> medium tracking
@@ -773,6 +776,26 @@ def blocks_from_plan(plan):
     return blocks
 
 
+_AT_ABOUT_RE = re.compile(r"\b([Aa]t about )(\d+(?:\.\d+)?)( seconds?)")
+_SHOT_TS_RE = re.compile(r"^\s*At \d{1,2}:\d{2}(?:\.\d+)?,?\s*", re.I)
+
+
+def absolute_times(text, start, dur):
+    """Çekim içi "At about N seconds" zamanlarını blok başından mutlak zamana çevirir (17.11.2026 balıkçı testi:
+    plan çekime göre göreli yazdı, H3 klibin başından okur; replikler önceki çekime kayacaktı). Değer zaten
+    çekimin mutlak aralığındaysa dokunulmaz; çekim süresinden kısaysa göreli sayılıp çekim başlangıcı eklenir."""
+    text = _SHOT_TS_RE.sub("", text or "")
+    if start <= 0:
+        return text
+
+    def fix(m):
+        n = float(m.group(2))
+        if start <= n < start + dur or n >= dur:
+            return m.group(0)
+        return f"{m.group(1)}{start + n:g}{m.group(3)}"
+    return _AT_ABOUT_RE.sub(fix, text)
+
+
 def block_request(block_info, style=config.DEFAULT_STYLE, audio_mode=config.DEFAULT_AUDIO_MODE, idea=""):
     """Tek bir bloğun dünya çapası ve çekimlerini `rewrite()` için detaylı yönetmen brief'ine dönüştürür."""
     b = block_info["block"]
@@ -789,9 +812,11 @@ def block_request(block_info, style=config.DEFAULT_STYLE, audio_mode=config.DEFA
         mm, ss = divmod(start, 60.0)
         ts = f"At {int(mm):02d}:{ss:06.3f}" if j > 1 else "At 00:00.000 (opening shot)"
         hold = " Ends with a calm ~0.5-second hold/settling beat before the block ends." if j == len(shots) else ""
+        action = absolute_times(str(s.get("action", "")), start, dur)
+        sound = absolute_times(str(s.get("sound", "")), start, dur)
         lines.append(
             f"[Shot {j}] {ts} ({dur:.1f}s) — Framing: {s.get('framing', '')}. "
-            f"Action: {s.get('action', '')}.{hold} Camera: {s.get('camera', '')}. Sound: {s.get('sound', '')}."
+            f"Action: {action}.{hold} Camera: {s.get('camera', '')}. Sound: {sound}."
         )
     if audio_mode == "music":
         lines.append(f"Audio mode: music montage with no voices. In overall_soundscape write '{_MUSIC_SILENT}' and in non_diegetic_music write N/A.")

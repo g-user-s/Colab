@@ -202,3 +202,22 @@ def test_background_speech_only_in_crowd_scenes():
     assert not any("arka plan konuşması" in p for p in pw.check(added, "Kapalıçarşı'da kalabalığın içinde yürüyor."))
     assert pw.CROWD_RE.search("fair-haired woman") is None
     assert "ONLY when the user's scene has a crowd" in pw.DIRECTION_RULES
+
+
+def test_shot_relative_line_times_become_block_absolute():
+    """17.11.2026 balıkçı testi: plan 'At about 2 seconds' yazdı (5. saniyede başlayan çekime göre); H3 bunu klibin
+    başından okur ve replik önceki çekime kayar. block_request mutlak zamana çevirmeli."""
+    from h3app import prompt_writer as pw
+    plan = {"world_anchor": "Two people on a pier.", "shots": [
+        {"block": 1, "duration": 5, "framing": "Wide", "action": "At 00:00.000, wide shot of the pier.",
+         "camera": "Static", "sound": "Waves"},
+        {"block": 1, "duration": 5, "framing": "Medium", "camera": "Handheld", "sound": "Boy",
+         "action": "At 00:00.000, the boy turns. At about 2 seconds, the boy asks, \"Dede?\""},
+        {"block": 1, "duration": 5, "framing": "Close-up", "camera": "Locked", "sound": "",
+         "action": "At about 12.5 seconds, the grandfather says, \"Evet.\""},
+    ]}
+    req = pw.block_request(pw.blocks_from_plan(plan)[0])
+    assert "At about 7 seconds, the boy asks" in req           # 5 + 2
+    assert "At about 12.5 seconds, the grandfather" in req     # zaten mutlak: dokunma
+    assert "Action: At 00:00.000," not in req and "Action: wide shot of the pier." in req
+    assert pw.absolute_times("At about 1.5 seconds", 0.0, 5) == "At about 1.5 seconds"

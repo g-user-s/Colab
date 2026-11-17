@@ -25,7 +25,7 @@ kısa fikir ──► Gemini: yönetmen brief'i ──► Gemini: H3 prompt'u (r
 ## Hızlı başlangıç (Colab)
 
 1. [`notebooks/h3_video_studyosu.ipynb`](notebooks/h3_video_studyosu.ipynb) dosyasını Colab'de açın: **Dosya → Not defteri aç → GitHub** sekmesine bu reponun adresini yazın ya da dosyayı indirip **Yükle** sekmesinden açın.
-2. **Çalışma zamanı → Çalışma zamanı türünü değiştir → G4 GPU** seçin. G4 yoksa A100 de çalışır (aşağıdaki ölçümlere bakın). Colab G4 seçiliyken bile bazen L4/A100 verir; başlatma hücresi tahsis edilen GPU'yu yazar. Blackwell olmayan GPU'da NVFP4 yerine 27 GB'lık int8 metin kodlayıcı iner.
+2. **Çalışma zamanı → Çalışma zamanı türünü değiştir → G4 GPU** seçin. G4 yoksa A100 de çalışır (aşağıdaki ölçümlere bakın). Colab G4 seçiliyken bile bazen L4/A100 verir ve notebook ayarını da kendiliğinden değiştirir; başlatma hücresi tahsis edilen GPU'yu yazar. 40 GB'ın altındaki GPU'lar (L4, T4) H3 için yetersizdir: hücre bu durumda Drive izni sormadan durur; runtime'ı kapatıp G4 ya da A100 ile yeniden deneyin. Blackwell olmayan GPU'da NVFP4 yerine 27 GB'lık int8 metin kodlayıcı iner.
 3. Sol paneldeki 🔑 **Secrets** bölümüne Gemini API anahtarınızı `GEMINI` (ya da `GEMINI_API_KEY`) adıyla ekleyin ve yanındaki **Notebook erişimi** anahtarını açın; kapalıysa anahtar okunamaz ve arayüz bunu durum satırında söyler. Anahtar [Google AI Studio](https://aistudio.google.com/)'dan alınır. İsterseniz anahtarı arayüzdeki şifre kutusuna da yazabilirsiniz.
 4. **Çalışma zamanı → Tümünü çalıştır.** Drive bağlantı izni istenir (videoların kaybolmaması için önerilir; istemiyorsanız ayarlar hücresinde `SAVE_TO_DRIVE = False` yapın).
 5. Arayüz en alttaki hücrenin altında açılır. Hücre çıktısındaki `PROXY_URL` bağlantısı aynı arayüzü tam sayfa açar.
@@ -96,7 +96,7 @@ Arayüzü GPU'suz denemek için: `H3APP_FAKE=1 H3APP_FAKE_VIDEO=ornek.mp4 H3APP_
 
 - Colab'in tam sayfa proxy'si (`*.colab.dev`) canlı günlüğü tamponlayabilir; uygulama bunu sık güncellemeyle hafifletir, ama günlük birkaç saniye gecikebilir.
 - Bilgisayar uzun süre uykuda kalırsa Colab runtime'ı silebilir. Bitmiş videolar Drive'a yazıldığı için korunur; yarım kalan üretim kaybolur.
-- Uzun video (çok bloklu) modu yalnızca sahte modda test edildi; gerçek GPU'da henüz denenmedi.
+- Uzun video (çok bloklu) modu gerçek GPU'da 30 saniye / 2 blokla denendi (A100, 17 Kasım 2026: ~6 dk kurulum + blok başına ~11 dk; replikler ve kesmeler plandaki yerlerinde). Daha uzun (45–60 sn) videolar henüz denenmedi. Bu modda bloklar Gemini'nin otomatik izlemesinden geçmez; yalnızca kesme ve ses kontrolü yapılır.
 - Gerçek GPU'da yalnızca tek referans görselle üretim yapıldı; birden fazla görsel ve rol (karakter + arka plan + nesne) henüz denenmedi.
 - Prompt'ta yazı yasağı olsa da model bazen camdan ya da uzaktan görünen binalarda bulanık, kısmen okunabilir tabela çiziyor (17 Kasım 2026'daki iki gerçek denemede görüldü). Otomatik izleme bunu "orta" önemde bildirir; yeniden üretim tetiklenmez.
 - H3 tek üretimde 5–15 saniye için eğitilmiştir; daha uzun videolar bloklar hâlinde üretilir.

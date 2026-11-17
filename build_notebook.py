@@ -40,10 +40,18 @@ LAUNCH = f"""import subprocess, sys
 subprocess.run([sys.executable, "-m", "pip", "install", "-q", "gradio=={GRADIO}", "google-genai=={GENAI}"], check=True)
 
 # Hangi GPU tahsis edildi? Colab G4 seçilse bile sessizce L4/A100 verebiliyor (17.11.2026 denemeleri).
-gpu_name = subprocess.run(["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"],
-                          capture_output=True, text=True).stdout.strip() or "yok"
-print("GPU:", gpu_name)
-if "RTX PRO 6000" not in gpu_name:
+gpu_info = subprocess.run(["nvidia-smi", "--query-gpu=name,memory.total", "--format=csv,noheader,nounits"],
+                          capture_output=True, text=True).stdout.strip()
+gpu_name, _, gpu_mib = gpu_info.partition(",")
+gpu_name, gpu_gb = gpu_name.strip() or "yok", int(gpu_mib.strip() or 0) / 1024
+print(f"GPU: {{gpu_name}} ({{gpu_gb:.0f}} GB)")
+if gpu_gb < 40:
+    print("⛔ Bu GPU H3 için yetersiz (en az 40 GB bellek gerekir; video modeli ~21 GB, metin kodlayıcı 15-27 GB). "
+          "Colab G4/A100 boş değilse sessizce L4/T4 veriyor. Çalışma zamanı → Bağlantıyı kes ve sil → "
+          "Çalışma zamanı türünü değiştir'de G4 ya da A100 seçip yeniden bağlanın; olmazsa biraz sonra tekrar deneyin.")
+    # Drive izni ve kurulum boşuna yapılmasın: burada dur (yalnızca bu hücre durur, runtime'ı siz kapatın)
+    raise SystemExit("GPU yetersiz: uygulama başlatılmadı.")
+elif "RTX PRO 6000" not in gpu_name:
     print("⚠️ G4 (RTX PRO 6000) değil. Uygulama çalışır, ama NVFP4 yerine 27 GB'lık int8 metin kodlayıcı iner ve "
           "üretim daha yavaş olabilir. G4 istiyorsanız: Çalışma zamanı → Bağlantıyı kes ve sil → türü G4 seçip "
           "yeniden bağlanın (tahsis birkaç denemede değişebiliyor).")
