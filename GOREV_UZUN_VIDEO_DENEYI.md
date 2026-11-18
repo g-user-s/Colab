@@ -111,6 +111,10 @@ Orhan'ın değerlendirmesi, Gemini'nin puanlarından daha önemlidir. Hangi vide
    - Genel olarak hangisi daha iyi?
 3. Cevaptan sonra eşleşmeyi açıkla.
 
+## 6b. Kare incelemesi (ikinci göz)
+
+Kör karşılaştırmadan sonra iki birleşik videoya rehberin bölüm 3, Adım 6'daki gibi kare kare bak. Özellikle blok sınırlarına bak: 15. saniyenin hemen öncesi ve sonrası. Aynı kişi mi, aynı kıyafet mi, aynı mekân mı? Bulduklarını her kol için ayrı yaz.
+
 ## 7. Teslim ve rapor
 
 Drive'a `H3_Video_Studyosu/<tarih>_uzun_deney/` klasörüne şunları yükle ve boyutlarını doğrula:

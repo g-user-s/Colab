@@ -42,6 +42,11 @@ UZAK_J = UZAK.lstrip("/")          # Jupyter dosya yolu: content/h3muse
 ASAMALAR = ("yeni", "runtime_acik", "yuklendi", "uretim", "bitti", "kapatildi")
 
 
+GECICI_HATALAR = ("Read timed out", "ReadTimeout", "ConnectTimeout", "ConnectionError", "Connection aborted",
+                  "RemoteDisconnected", "502 Bad Gateway", "503 Service Unavailable", "504 Gateway")
+TEKRAR_SN = int(os.environ.get("H3MUSE_TEKRAR_SN", "15"))
+
+
 class Hata(Exception):
     pass
 
@@ -71,21 +76,38 @@ class Colab:
             raise Hata(f"colab sarmalayıcısı bulunamadı: {self.yol}")
         return r.returncode, (r.stdout or "") + (r.stderr or "")
 
-    def kod(self, ad, kod, sure=120):
-        """Runtime'da kısa bir kod çalıştırır, ISARET satırındaki JSON'u döner."""
+    def kod(self, ad, kod, sure=120, deneme=3):
+        """Runtime'da kısa bir kod çalıştırır, ISARET satırındaki JSON'u döner. Geçici ağ hatalarında
+        (ör. CLI'nın 10 sn'lik okuma zaman aşımı) bekleyip tekrar dener; buradaki kodlar tekrar güvenlidir."""
         dosya = os.path.join(self.gecici, f"k_{int(time.time() * 1000)}.py")
         with open(dosya, "w", encoding="utf-8") as f:
             f.write(kod)
         try:
-            rc, out = self.calistir("exec", "-s", ad, "-f", dosya, "--timeout", str(sure), sure=sure + 120)
+            for i in range(1, deneme + 1):
+                rc, out = self.calistir("exec", "-s", ad, "-f", dosya, "--timeout", str(sure), sure=sure + 120)
+                if "appears to be lost" in out:
+                    raise Hata("RUNTIME_KAYIP: runtime artık yok (Colab kapatmış olabilir).")
+                for satir in out.splitlines():
+                    if satir.startswith(ISARET):
+                        return json.loads(satir[len(ISARET):])
+                if i < deneme and any(x in out for x in GECICI_HATALAR):
+                    yaz(f"Runtime'a geçici olarak ulaşılamadı ({i}/{deneme}); {TEKRAR_SN} sn sonra tekrar.")
+                    time.sleep(TEKRAR_SN)
+                    continue
+                break
         finally:
             os.remove(dosya)
-        if "appears to be lost" in out:
-            raise Hata("RUNTIME_KAYIP: runtime artık yok (Colab kapatmış olabilir).")
-        for satir in out.splitlines():
-            if satir.startswith(ISARET):
-                return json.loads(satir[len(ISARET):])
         raise Hata(f"Runtime'dan yanıt alınamadı (rc={rc}): {out.strip()[-600:]}")
+
+    def yukle(self, ad, yerel, uzak, deneme=3):
+        for i in range(1, deneme + 1):
+            rc, out = self.calistir("upload", "-s", ad, yerel, uzak, sure=600)
+            if rc == 0:
+                return
+            if i < deneme:
+                yaz(f"Yükleme denemesi {i}/{deneme} başarısız ({os.path.basename(uzak)}); {TEKRAR_SN} sn sonra tekrar.")
+                time.sleep(TEKRAR_SN)
+        raise Hata(f"Yükleme başarısız ({uzak}): {out.strip()[-300:]}")
 
     def bakiye(self):
         rc, out = self.calistir("usage", sure=120)
@@ -225,9 +247,7 @@ def runtime_ac(c, o, gpular, deneme=3, bekle=None):
 
 
 def dosya_yukle(c, o, yerel, uzak):
-    rc, out = c.calistir("upload", "-s", o.v["ad"], yerel, f"{UZAK_J}/{uzak}", sure=600)
-    if rc != 0:
-        raise Hata(f"Yükleme başarısız ({uzak}): {out.strip()[-300:]}")
+    c.yukle(o.v["ad"], yerel, f"{UZAK_J}/{uzak}")
     yaz(f"Yüklendi: {uzak}")
 
 
@@ -316,9 +336,7 @@ def is_calistir(c, o, tanim):
     if not kayit:
         yerel = os.path.join(o.dizin, "_kod", f"is_{no}.json")
         ortak.json_yaz(yerel, tanim)
-        rc, out = c.calistir("upload", "-s", o.v["ad"], yerel, f"{UZAK_J}/is.json", sure=300)
-        if rc != 0:
-            raise Hata(f"İş tanımı yüklenemedi: {out.strip()[-300:]}")
+        c.yukle(o.v["ad"], yerel, f"{UZAK_J}/is.json")
         r = c.kod(o.v["ad"], KOD_BASLAT.replace("@NO@", str(no)))
         if r.get("hata"):
             raise Hata(f"İş {no} başlatılamadı: {r['hata']}")

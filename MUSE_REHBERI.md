@@ -250,10 +250,25 @@ Komut uzun sürer (15–60 dk). Çalışırken başka bir `uret` başlatma. Komu
 - `*_seedNN.mp4`: seçilen video;
 - `*_kontrol.jpg`: videodan kareler (temas sayfası). Mutlaka bak;
 - `*_kirpinti.jpg`: %100 kırpıntılar (yüz ve el detayları);
-- `*_bilgi.json`: ayarlar, adaylar, otomatik kontrol, Gemini izleme sonucu;
-- `*_prompt.txt`, `gunluk.txt`.
+- `*_bilgi.json`: ayarlar ve otomatik kontrol;
+- `*_prompt.txt`, `gunluk.txt`;
+- `$D/oturum/oturum.json` → `incelemeler`: Gemini'nin her aday için izleme sonucu (senin makinenden yapıldı).
 
-`_bilgi.json` dosyasında `videolar.<yöntem>.inceleme` alanına bak. `verdict: fail` ya da `severity: high` kusur varsa, betik zaten 2 kez yeni seed ile denemiş ve en az kusurlusunu seçmiştir. Bunu raporda açıkça yaz. Prompt'u sadeleştirip yeniden üretmek orhan'ın kararıdır.
+Gemini izlemesi yüksek önemde kusur bulduysa betik en fazla 2 kez yeni seed ile denemiş ve en az kusurlu adayı seçmiştir; rapordaki `aday` satırları bunu gösterir. Bunu raporunda açıkça yaz. Prompt'u sadeleştirip yeniden üretmek orhan'ın kararıdır.
+
+**Senin kare incelemen (ikinci göz).** 18 Kasım T13'te görüldü: Gemini sesi ve hareketi denetler ama durağan sapmaları kaçırabilir. Sen ise karelerde prompt'ta olmayan yeleği, çaycı getirmeden masada duran bardağı ve düzensiz kamera yaklaşmasını buldun. Bu yüzden teslimden önce seçilen videoya kendin de bak:
+```bash
+mkdir -p $D/kareler && ffmpeg -v error -i <seçilen video> -vf fps=2 $D/kareler/k_%03d.jpg
+```
+Tam çözünürlük kullan, ölçekleme. Küçük el kusurları 640 px'te kayboluyor. Şunları prompt'la karşılaştır:
+- kıyafet ve renkler;
+- nesneler (getirilmeden önce yerinde mi, kayboluyor mu?);
+- kişi sayısı ve konumları;
+- yazı;
+- eller (kare kare);
+- kamera hareketi.
+
+Bulduklarını raporda Gemini'nin bulduklarından ayrı bir başlıkla yaz. Ses, replik ve dudak senkronu için Gemini'nin sonucuna güven; sen bunları duyamıyorsun.
 
 ### Adım 7: Drive'a teslim
 

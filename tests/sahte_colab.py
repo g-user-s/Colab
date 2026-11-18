@@ -63,6 +63,12 @@ def main():
         kaydet(d)
         print("[colab] Session READY.")
         return 0
+    if komut == "exec" and int(os.environ.get("SAHTE_ZAMAN_ASIMI", "0")) > d.get("zaman_asimi", 0):
+        d["zaman_asimi"] = d.get("zaman_asimi", 0) + 1
+        kaydet(d)
+        print("requests.exceptions.ReadTimeout: HTTPSConnectionPool(host='x.colab.dev', port=443): "
+              "Read timed out. (read timeout=10)", file=sys.stderr)
+        return 1
     if komut == "exec":
         ad, dosya = secenek(args, "-s"), secenek(args, "-f")
         if ad not in d["oturumlar"]:

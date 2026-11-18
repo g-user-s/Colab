@@ -38,7 +38,7 @@ def main(argv=None):
         raise SystemExit(f"Video yok: {a.video}")
     anahtar = ortak.anahtar_oku(a.anahtar)
     h3_yukle(a.h3)
-    from h3app import review, uzun
+    from h3app import config, review   # h3app.uzun değil: o modül GPU tarafı içindir (cv2 ister)
 
     senaryo = ortak.json_oku(a.senaryo) if a.senaryo else {}
     if a.sureklilik:
@@ -46,7 +46,11 @@ def main(argv=None):
             raise SystemExit("--sureklilik için uzun_senaryo.json ver.")
         bloklar = next(iter(senaryo["kollar"].values()))["bloklar"]
         print("⏳ Gemini sürekliliği izliyor…", flush=True)
-        sonuc = review.continuity_review(a.video, uzun.block_cuts(bloklar), senaryo.get("hikaye") or {}, anahtar,
+        kesmeler, t = [], 0.0
+        for b in bloklar[:-1]:
+            t += config.frames_for(b["sure"]) / 24
+            kesmeler.append(round(t, 2))
+        sonuc = review.continuity_review(a.video, kesmeler, senaryo.get("hikaye") or {}, anahtar,
                                          log=print)
         if not sonuc:
             print("❌ Hiçbir Gemini modeli izleyemedi.")

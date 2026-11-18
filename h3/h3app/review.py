@@ -23,6 +23,9 @@ or hear, with timestamps. Check at least:
 4. Scene and style consistency over time; text or lettering that should not be there.
 5. Speech: are the quoted lines spoken, in the right language, by the right character, with lips in sync?
 6. The first 2 seconds and the last 2 seconds specifically (models often glitch there).
+7. Wardrobe and props against the prompt: extra or different garments (e.g. a vest the prompt does not mention),
+   wrong colours, objects that are already in place before someone brings them, props that change or vanish.
+8. Camera: does the movement match the prompt (e.g. a slow steady push-in, not a zoom that tightens and widens)?
 Severity: "high" = a viewer would clearly notice and the clip should be regenerated; "medium" = noticeable but
 usable; "low" = minor. Do not invent defects: report only what you actually see or hear.
 Answer ONLY with JSON: {"verdict": "pass" | "fail", "defects": [{"start_s": number, "end_s": number,

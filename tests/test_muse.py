@@ -42,7 +42,7 @@ def ortam(tmp_path):
     anahtar.write_text("SAHTE-ANAHTAR-123\n")
     anahtar.chmod(0o600)
     env = dict(os.environ, SAHTE_KOK=str(kok), SAHTE_PYTHON=sys.executable, H3APP_FAKE_VIDEO=str(video),
-               COLAB_BIN=str(colab), H3MUSE_BEKLE_SN="0", H3APP_WORK_DIR=str(tmp_path / "yerel_cache"))
+               COLAB_BIN=str(colab), H3MUSE_BEKLE_SN="0", H3MUSE_TEKRAR_SN="0", H3APP_WORK_DIR=str(tmp_path / "yerel_cache"))
     return {"tmp": tmp_path, "kok": kok, "env": env, "anahtar": str(anahtar), "colab": str(colab)}
 
 
@@ -424,3 +424,13 @@ def test_no_proxy_kosesiz(monkeypatch):
     monkeypatch.setenv("NO_PROXY", "localhost,[::1],127.0.0.1,[fd00::1]")
     ortak.ag_ortamini_duzelt()
     assert os.environ["NO_PROXY"] == "localhost,::1,127.0.0.1,fd00::1"
+
+
+def test_gecici_zaman_asiminda_tekrar_dener(ortam):
+    s = senaryo_yaz(ortam)
+    env = dict(ortam["env"], SAHTE_ZAMAN_ASIMI="2")   # ilk iki exec ReadTimeout verir
+    oturum = ortam["tmp"] / "zaman_asimi"
+    r = calistir(os.path.join(MUSE, "h3_uret.py"), "uret", "--senaryo", s, "--oturum-dizini", str(oturum),
+                 "--anahtar", "", "--aralik", "1", env=env)
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "geçici olarak ulaşılamadı" in r.stdout
