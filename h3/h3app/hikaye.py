@@ -59,6 +59,9 @@ Rules:
 - Turkish fields ("baslik", "ad", "mekan.ad", "metin") keep Turkish letters exactly (ı İ ş Ş ğ Ğ ç Ç ö Ö ü Ü):
   "Rıza", not "Riza"; "Sahaf Dükkânı", not "Sahaf Dukkani".
 - Do not move the story to a specific named place (city, district, landmark) the idea does not name.
+- "mekan.tarif" describes the set as it is BEFORE the first block starts: an object that a character brings, serves
+  or places later in the story (a tea glass, a tray, a letter) must NOT be in it. Props that are already there at
+  the start (used glasses waiting to be cleared, furniture) may be.
 - Visual style of the video: {kind}."""
 
 PORTRE = """A {kind} full-body character reference image of one person: {gorunum}. Wearing: {kiyafet}.
