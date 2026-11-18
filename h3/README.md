@@ -53,7 +53,7 @@ MiniMax-H3 Turbo henüz gerçek GPU'da ölçülmedi.
 
 ## Gemini modelleri
 
-Prompt yazımı sırayla şu modelleri dener: `gemini-4-hydrogen` → `gemini-3.8-flash` → `gemini-3.5-flash-lite` → `gemma-4-31b-it`. Her model ilk metin parçasını en fazla **10 saniye** içinde göndermelidir. Göndermezse ya da yoğunluk/kota hatası (503/429) verirse uygulama beklemeden sıradakine geçer ve bunu arayüzde yazar. Sıra ve süre [`h3app/config.py`](h3app/config.py) içinde değiştirilebilir.
+Prompt yazımı sırayla şu modelleri dener: `gemini-4-hydrogen` → `gemini-3.8-flash` → `gemini-3.5-flash-lite` → `gemma-4-31b-it`. Her model ilk metin parçasını en fazla **60 saniye** içinde göndermelidir (`gemini-4-hydrogen` ilk parçayı ölçümde ~58,6 sn'de gönderdi; 10 sn sınırı onu sürekli yedeğe düşürüyordu). Göndermezse ya da yoğunluk/kota hatası (503/429) verirse uygulama beklemeden sıradakine geçer ve bunu arayüzde yazar. Sıra ve süre [`h3app/config.py`](h3app/config.py) içinde değiştirilebilir.
 
 Ücretsiz Gemini katmanında model başına günlük istek sınırı düşüktür (ör. 20). Hangi modellerin sizin anahtarınızla yanıt verdiğini ve ne kadar sürdüğünü görmek için:
 

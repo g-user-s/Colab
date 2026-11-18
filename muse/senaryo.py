@@ -31,9 +31,6 @@ def h3_yukle(h3_dizin=None):
         raise SystemExit(f"h3app bulunamadı: {h3_dizin}. 'git pull' ile depoyu güncelle.")
     # Kılavuz önbelleği /content yerine yerel bir klasöre yazılsın (config içe aktarılmadan önce)
     os.environ.setdefault("H3APP_WORK_DIR", os.path.expanduser("~/.cache/h3muse"))
-    # Muse ortamında her Gemini isteği onaydan/vekil katmandan geçiyor: 10 sn'lik ilk parça sınırı ana modeli
-    # sistematik olarak yedeğe düşürüyordu. Burada 60 sn.
-    os.environ.setdefault("H3APP_FIRST_CHUNK_SECONDS", "60")
     ortak.ag_ortamini_duzelt()
     if h3_dizin not in sys.path:
         sys.path.insert(0, h3_dizin)
