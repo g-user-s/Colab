@@ -205,6 +205,7 @@ def yukle(c, o, senaryo_yol, anahtar_yol):
             raise Hata(f"GPU belleği yetersiz ({g['mib']} MiB < 40 GB). H3 bu kartta çalışmaz.")
     o.kaydet(gpu_adi=g.get("gpu"), gpu_mib=g.get("mib"))
     yuklenecek = [(os.path.join(BURADA, "runtime_runner.py"), "runtime_runner.py"),
+                  (os.path.join(BURADA, "uzun_runtime.py"), "uzun_runtime.py"),
                   (senaryo_yol, "senaryo.json")]
     for i, r in enumerate(senaryo.get("referanslar") or [], 1):
         uzanti = os.path.splitext(r["dosya"])[1].lower() or ".png"
@@ -260,7 +261,7 @@ def yokla(c, o, azami_dk, aralik):
 
 
 def indir(c, o):
-    """Teslim paketini indirir, sha256 ile doğrular, açar. Başarılıysa True."""
+    """Teslim parçalarını indirir, her birini sha256 ile doğrular ve açar. Başarılıysa True."""
     ad = o.v["ad"]
     s = o.v.get("uzak_durum") or {}
     paket = s.get("teslim")
@@ -273,24 +274,30 @@ def indir(c, o):
             paket = None
     cikti = os.path.join(o.dizin, "cikti")
     os.makedirs(cikti, exist_ok=True)
-    if not paket:
+    if not paket or not paket.get("parcalar"):
         for dosya in ("gunluk.txt", "runner_cikti.txt"):   # en azından günlükler
             c.calistir("download", "-s", ad, f"{UZAK_J}/{dosya}", os.path.join(cikti, dosya), sure=300)
         yaz("Teslim paketi yok; yalnızca günlükler indirilmeye çalışıldı.")
         return False
-    yerel = os.path.join(o.dizin, "teslim.tar")
-    for i in range(1, 4):
-        rc, out = c.calistir("download", "-s", ad, f"{UZAK_J}/teslim.tar", yerel, sure=900)
-        if rc == 0 and os.path.isfile(yerel) and _sha256(yerel) == paket["sha256"]:
-            break
-        yaz(f"İndirme doğrulanamadı (deneme {i}/3): {out.strip()[-200:]}")
-    else:
-        raise Hata("Teslim paketi 3 denemede doğru inmedi (sha256 uyuşmuyor).")
-    with tarfile.open(yerel) as t:
-        t.extractall(cikti, filter="data")
-    yaz(f"Teslim paketi indi ve doğrulandı: {paket['boyut']} bayt, {len(paket['icerik'])} dosya.")
+    toplam = 0
+    for no, parca in enumerate(paket["parcalar"], 1):
+        ad_tar = os.path.basename(parca["yol"])
+        yerel = os.path.join(o.dizin, ad_tar)
+        for i in range(1, 4):
+            rc, out = c.calistir("download", "-s", ad, f"{UZAK_J}/{ad_tar}", yerel, sure=900)
+            if rc == 0 and os.path.isfile(yerel) and _sha256(yerel) == parca["sha256"]:
+                break
+            yaz(f"{ad_tar} doğrulanamadı (deneme {i}/3): {out.strip()[-200:]}")
+        else:
+            raise Hata(f"{ad_tar} 3 denemede doğru inmedi (sha256 uyuşmuyor).")
+        with tarfile.open(yerel) as t:
+            t.extractall(cikti, filter="data")
+        os.remove(yerel)
+        toplam += parca["boyut"]
+        yaz(f"Parça {no}/{len(paket['parcalar'])} indi ve doğrulandı: {len(parca['icerik'])} dosya.")
+    yaz(f"Teslim tamam: {toplam} bayt, {sum(len(p['icerik']) for p in paket['parcalar'])} dosya.")
     if paket.get("pakete_girmeyen"):
-        yaz(f"Pakete sığmayan dosyalar (runtime'da kaldı): {', '.join(map(os.path.basename, paket['pakete_girmeyen']))}")
+        yaz(f"47 MB'tan büyük, runtime'da kalan dosyalar: {', '.join(paket['pakete_girmeyen'])}")
     o.kaydet(asama="indirildi", cikti_dizini=cikti)
     return True
 
@@ -356,7 +363,8 @@ def rapor(o, hata=None):
         "# H3 üretim raporu", "",
         f"- Sonuç: {'✅ teslim edildi' if not hata else '❌ ' + str(hata)}",
         f"- Fikir: {senaryo.get('fikir', '?')}",
-        f"- Yöntem / süre / stil: {senaryo.get('yontem')} / {senaryo.get('sure')} sn / {senaryo.get('stil')}",
+        f"- Tür: {senaryo.get('tur', 'tek')} · yöntem / süre / stil: {senaryo.get('yontem')} / {senaryo.get('sure')} sn / "
+        f"{senaryo.get('stil')}",
         f"- GPU: {o.v.get('gpu', '?')} · {o.v.get('gpu_adi', '?')}",
         f"- Prompt modelleri: {senaryo.get('modeller') or '-'}",
         f"- Video: {(o.v.get('video') or {}).get('yol', '-')}",
@@ -364,6 +372,17 @@ def rapor(o, hata=None):
         f"- CCU: {once} → {sonra} (harcanan {harcanan}); aktif atama: {(o.v.get('ccu_sonra') or {}).get('aktif')}",
         f"- Runtime: {o.v.get('ad', '-')} · aşama: {o.asama}",
     ]
+    uzun = s.get("uzun_ozet") or {}
+    for kol, v in (uzun.get("kollar") or {}).items():
+        sk = v.get("sureklilik") or {}
+        puan = ", ".join(f"{k} {sk.get(k)}" for k in ("kimlik", "kiyafet", "mekan", "ses", "hikaye")) if sk else "izlenmedi"
+        satirlar.append(f"- Kol `{kol}`: {v.get('birlesik')} · süreklilik: {puan} · ortalama {sk.get('ortalama', '-')}")
+        for b in v.get("bloklar") or []:
+            satirlar.append(f"  - blok {b['blok']}: {b['secilen']} · izleme: {b['inceleme']} · {len(b['adaylar'])} aday")
+        if sk.get("sorunlar"):
+            satirlar += [f"  - ⚠️ {x.get('zaman_s')} sn [{x.get('alan')}] {x.get('aciklama')}" for x in sk["sorunlar"][:6]]
+    if uzun.get("karsilastirma"):
+        satirlar.append(f"- ⚖️ Deney (süreklilik ortalaması): {uzun['karsilastirma']}")
     if s.get("hata"):
         satirlar.append(f"- Runtime hatası: {s['hata']}")
     if s.get("uyari"):
@@ -457,7 +476,7 @@ def main(argv=None):
         if os.path.abspath(a.senaryo) != senaryo_kopya:
             shutil.copyfile(a.senaryo, senaryo_kopya)
         o.kaydet(asama="yeni", senaryo=senaryo_kopya, gpular=gpular, anahtar=a.anahtar or None,
-                 azami_dk=a.azami_dakika or ortak.AZAMI_DAKIKA[senaryo["yontem"]], aralik=a.aralik,
+                 azami_dk=a.azami_dakika or ortak.azami_dakika(senaryo), aralik=a.aralik,
                  baslangic=datetime.datetime.now().isoformat(timespec="seconds"))
         return akis(c, o, a)
     if not o.v:

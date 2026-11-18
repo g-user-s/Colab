@@ -19,6 +19,7 @@ Onay kuralların her zamanki gibi geçerli. Bu rehber onlara bir şey eklemez; y
 7. Kopma ve yeniden başlama
 8. Yapılmayacaklar
 9. Bilinen sınırlar
+10. Uzun video (16–60 sn)
 
 ---
 
@@ -30,6 +31,8 @@ Onay kuralların her zamanki gibi geçerli. Bu rehber onlara bir şey eklemez; y
 | `muse/h3_uret.py` | GPU açar, üretir, indirir, doğrular, kapatır, rapor yazar | Senin makinende; Colab'i yönetir |
 | `muse/runtime_runner.py` | Üretimi Colab'de arka planda yürütür | Colab runtime'ında (`h3_uret.py` yükler, sen elle çalıştırmazsın) |
 | `muse/yama_411.py` | Colab CLI'daki 411 hatasını düzeltir | Senin makinende, kurulumda bir kez |
+| `muse/uzun_senaryo.py` | Uzun video: hikâye kartı → karakter/mekân görselleri → blok prompt'ları | Senin makinende (CCU harcamaz) |
+| `muse/uzun_runtime.py` | Uzun videonun bloklarını üretir, izler, birleştirir | Colab runtime'ında (`h3_uret.py` yükler) |
 | `muse/ortak.py` | Sabit ayarlar (h3 commit'i, süre sınırları) | — |
 
 Bu betikler H3 Video Stüdyosu'nun kendi fonksiyonlarını çağırır: `prompt_writer.expand`, `prompt_writer.rewrite`, `ui._generate_job`. Yani notebook'taki "Fikirden videoya" düğmesiyle aynı kalitede iş çıkar: Gemini brief'i ve prompt'u yazar, video üretilir, otomatik kontrol yapılır, Gemini videoyu izler ve kusur bulursa yeni seed ile yeniden üretir.
@@ -394,13 +397,85 @@ Bu komut eldeki çıktıları indirmeye çalışır, sonra runtime'ı kapatır.
 
 ## 9. Bilinen sınırlar
 
-- **Uzun video (15 sn üstü, çok bloklu)** bu akışta yok. Yalnızca tek çekim, 4–15 sn.
+- **Uzun video** bölüm 10'da. Müzikli, konuşmasız kurgu modu henüz yok; yalnızca konuşmalı sahne.
 - **Referanslı üretimde stil çizimi** (anime/3D için görselin önce Gemini ile yeniden çizdirilmesi) bu akışta yok; görseller olduğu gibi kullanılır. `real` stil dışında referans görsel kullanacaksan orhan'a sor.
 - **Çoklu referans** (karakter + arka plan + nesne) H3 tarafında henüz gerçek GPU'da denenmedi. İlk denemede raporda özellikle belirt.
 - **H100** CLI'da var ama bu hesapta hiç denenmedi. İlk alındığında GPU adını, belleğini ve saatlik oranı raporla.
 - **MiniMax-H3 Turbo** gerçek GPU'da hiç ölçülmedi.
 - **Colab Secrets** başsız okunamaz. Anahtar bu yüzden dosyayla gider; bu beklenen bir durum.
-- Teslim paketi en fazla ~45 MB olabilir (Colab dosya aktarım sınırı ~50 MB). Pakete sığmayan dosyalar raporda "runtime'da kaldı" olarak listelenir. Seçilen video, prompt, bilgi, kontrol görseli ve günlük her zaman pakete girer.
+- Çıktılar en fazla ~40 MB'lık parçalar hâlinde iner (Colab dosya aktarım sınırı istek başına ~50 MB); her parça sha256 ile doğrulanır. 47 MB'tan büyük tek bir dosya inemez ve raporda "runtime'da kaldı" olarak listelenir. Seçilen video, prompt'lar, bilgi, kontrol görselleri ve günlük her zaman ilk parçadadır.
+
+## 10. Uzun video (16–60 sn)
+
+### Neden ayrı bir akış
+
+H3 tek seferde en fazla 15 saniye üretir. Uzun video 15 saniyelik bloklardan oluşur ve her blok ayrı üretilir. Eski yöntemde bloklar arasındaki tek bağ birkaç cümlelik bir metindi; model bu metni her blokta biraz farklı yorumladığı için yüz, kıyafet ve mekân bloktan bloğa kayıyordu.
+
+Yeni akışta **kimliği görseller taşır**:
+
+1. **Hikâye kartı:** karakterlerin görünüşü, kıyafeti ve sesi; mekân; ışık; bloklar ve her bloğun replikleri. Kart bir kez yazılır ve bütün bloklarda aynen kullanılır.
+2. **Karakter ve mekân görselleri:** Gemini karttan her karakter için boydan bir referans görsel ve boş bir mekân görseli üretir. Orhan'ın kendi görseli varsa o kullanılır.
+3. **Her blok Ref2VA ile üretilir:** aynı görseller her bloğa verilir.
+4. **Blok başına Gemini izlemesi:** kusurlu blok yeni seed ile yeniden üretilir.
+5. **Süreklilik izlemesi:** birleşik video, blok sınırlarında kimlik, kıyafet, mekân, ses ve hikâye açısından 1–10 arası puanlanır.
+
+İsteğe bağlı **köprü** (`--kopru`, deneysel): her bloğa önceki bloğun son karesi de sahne görseli olarak verilir ve o bloğun prompt'u runtime'da yeniden yazılır.
+
+### Adımlar
+
+`D=~/workspace/h3uretim/$(date +%Y%m%d)_<kisa-ad>` ve `PY=~/workspace/tools/h3muse-venv/bin/python`.
+
+**1. Hikâye kartı**
+```bash
+$PY muse/uzun_senaryo.py kart --h3 ~/workspace/h3-video-studyosu --dizin $D \
+  --fikir '<fikir; replikler çift tırnak içinde>' --sure 30 --stil real
+```
+`$D/hikaye.json` dosyasını oku. Karakterlerin `gorunum`, `kiyafet` ve `ses` alanları net ve ayırt edici mi? Bloklardaki `replikler` fikirdekiyle harfi harfine aynı mı? Bir şey yanlışsa JSON'u elle düzelt; `_meta` alanına dokunma. Kartı orhan'a özetle ve onay al.
+
+**2. Görseller**
+```bash
+$PY muse/uzun_senaryo.py gorsel --h3 ~/workspace/h3-video-studyosu --dizin $D
+```
+`$D/gorseller/` içindeki `K1.png`, `K2.png`… ve `MEKAN.png` dosyalarına bak. Sorular:
+- Görseldeki kişi karttaki tarife uyuyor mu (yaş, saç, kıyafet)?
+- Tam boy mu, tek kişi mi?
+- Mekân görseli boş mu (insan yok)?
+
+Beğenmediğin görseli yeniden ürettir: `--yeniden K1`. Orhan'ın kendi görseli varsa: `--ref K1=/yol/foto.png` (yalnızca PNG). Görselleri orhan'a göster ve onay al: bundan sonra bütün videonun yüzleri bu görsellerden gelecek.
+
+**3. Plan ve prompt'lar**
+```bash
+$PY muse/uzun_senaryo.py plan --h3 ~/workspace/h3-video-studyosu --dizin $D --kol ref
+```
+Çıktı `$D/uzun_senaryo.json`. Kod `2` ise sorunları oku. Kart kaynaklıysa kartı düzeltip 3. adımı tekrarla.
+
+**4. Onay ve üretim:** onay mesajı bölüm 3, Adım 4'teki gibidir; maliyet için aşağıdaki tabloyu kullan.
+```bash
+python3 muse/h3_uret.py uret --senaryo $D/uzun_senaryo.json --oturum-dizini $D/oturum
+```
+Süre sınırı kendiliğinden hesaplanır: `20 + blok × (yeniden üretim + 1) × blok süresi` (pika 14, turbo 8, h3 30 dk).
+
+**5. İnceleme ve teslim:** `$D/oturum/cikti/` içinde `*_ref_*_birlesik.mp4` (asıl video), her bloğun videosu ve kontrol görseli, `*_uzun_sonuc.json` bulunur. Raporda süreklilik puanları ve blok başına izleme sonuçları yer alır. Drive'a birleşik videoyu, `_uzun_sonuc.json`'u, `rapor.md`'yi, `hikaye.json`'u ve `gorseller/` klasörünü yükle.
+
+### Uzun video maliyeti (tahmin)
+
+Ölçüm: A100'de 30 sn / 2 blok = ~6 dk kurulum + blok başına ~11 dk (17 Kasım 2026).
+
+| İş | Süre | A100 | G4 |
+|---|---|---|---|
+| 30 sn, 2 blok, yeniden üretim yok | ~30 dk | ~3,4 CCU | ~5,0 CCU |
+| 30 sn, 2 blok, blok başına 1 yeniden üretim (en kötü) | ~55 dk | ~6,2 CCU | ~9,1 CCU |
+| 60 sn, 4 blok, yeniden üretim yok | ~55 dk | ~6,2 CCU | ~9,1 CCU |
+| **Deney** (30 sn × 2 kol = 4 blok) | ~55 dk | ~6,2 CCU | ~9,1 CCU |
+
+Gemini kotası: bir uzun video yaklaşık 10–18 istek harcar (kart, görseller, plan, blok prompt'ları, blok izlemeleri, süreklilik). Ücretsiz katmanda günlük sınıra dikkat et; deneyi kotası taze bir günde yap.
+
+### Bilinen sınırlar (uzun video)
+
+- Sesi referansla sabitlemek mümkün değil. H3 sesi kendisi üretir; karttaki ses tarifi her blokta aynı verilir ama ton yine de kayabilir. Süreklilik izlemesindeki `ses` puanı bunu ölçer.
+- En fazla 3 karakter; Ref2VA en fazla 9 görsel alır (karakterler + mekân + köprü karesi).
+- Köprü deneyseldir; önce deney sonuçlarını bekle.
+- `gorsel` adımında Gemini görsel modeli bu hesapta henüz denenmedi. Hata verirse tam mesajı orhan'a ilet; çözüm olarak orhan'dan görsel iste (`--ref`).
 
 ---
 
@@ -412,9 +487,10 @@ Bu akışta orhan'ın onayı gereken yerler:
 2. **Denetimde sorun çıkmış bir senaryoyu üretmeden önce** (`--sorunlu-kabul`).
 3. **Varsayılanların dışına çıkarken**: süre sınırı (`--azami-dakika`), GPU sırası, yöntem olarak `h3` (en pahalısı).
 4. **Teslimden sonra**: sonucun kabulü ya da yeniden üretim kararı.
+5. **Uzun videoda**: hikâye kartı ve karakter/mekân görselleri, üretimden önce ayrı ayrı onaylanır.
 
 Kuru deneme (CPU, ~0,01 CCU) ve senaryo yazımı (yerel, CCU harcamaz) da her zamanki onay kurallarına tabidir.
 
 ---
 
-*Bu rehber ve betikler sahte modda test edildi (`tests/test_muse.py`, 10 test). Gerçek Colab ve Gemini ile ilk koşu, 2.6'daki kuru denemedir.*
+*Bu rehber ve betikler sahte modda test edildi (`tests/test_muse.py`, 17 test). Gerçek Colab ve Gemini ile ilk koşu, 2.6'daki kuru denemedir.*

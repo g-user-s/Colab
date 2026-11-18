@@ -22,6 +22,16 @@ ROLLER = ("karakter", "arka_plan", "nesne")
 
 # Yöntem başına üretimin süreceği en uzun süre (dakika). Aşılırsa çıktılar indirilir ve runtime kapatılır.
 AZAMI_DAKIKA = {"pika": 45, "turbo": 30, "h3": 90}
+BLOK_DAKIKA = {"pika": 14, "turbo": 8, "h3": 30}   # bir 15 sn'lik bloğun render + izleme payı
+
+
+def azami_dakika(senaryo):
+    """Senaryoya göre üretimin en uzun süresi (dk): tek videoda sabit, uzun videoda blok ve kol sayısına göre."""
+    if senaryo.get("tur") != "uzun":
+        return AZAMI_DAKIKA[senaryo["yontem"]]
+    kollar = senaryo["kollar"]
+    blok = sum(len(k["bloklar"]) for k in kollar.values())
+    return 20 + blok * (int(senaryo.get("yeniden_uretim", 0)) + 1) * BLOK_DAKIKA[senaryo["yontem"]]
 
 
 def anahtar_oku(yol):

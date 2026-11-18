@@ -185,3 +185,150 @@ def test_yama_411_idempotent(tmp_path):
     assert r2.returncode == 0 and "zaten" in r2.stdout
     assert hedef.read_text().count('kwargs["json"] = {}') == 1
     assert calistir(os.path.join(MUSE, "yama_411.py"), "--dosya", str(hedef), "--kontrol").returncode == 0
+
+
+# ---------------- uzun video ----------------
+
+def uzun_senaryo_hazirla(ortam, kol="ikisi", ek=()):
+    d = ortam["tmp"] / "uzun"
+    us = os.path.join(MUSE, "uzun_senaryo.py")
+    fikir = 'Çay bahçesi. Çaycı: "Çaylar taze, buyurun." Sonra: "Afiyet olsun."'
+    r1 = calistir(us, "kart", "--h3", H3, "--dizin", str(d), "--fikir", fikir, "--sure", "24", "--sahte",
+                  env=ortam["env"])
+    assert r1.returncode == 0, r1.stdout + r1.stderr
+    r2 = calistir(us, "gorsel", "--h3", H3, "--dizin", str(d), env=ortam["env"])
+    assert r2.returncode == 0, r2.stdout + r2.stderr
+    r3 = calistir(us, "plan", "--h3", H3, "--dizin", str(d), "--kol", kol, *ek, env=ortam["env"])
+    assert r3.returncode == 0, r3.stdout + r3.stderr
+    return d, json.loads((d / "uzun_senaryo.json").read_text())
+
+
+def test_uzun_senaryo_sahte(ortam):
+    d, s = uzun_senaryo_hazirla(ortam)
+    assert s["tur"] == "uzun" and s["deney"] and s["yeniden_uretim"] == 0
+    assert set(s["kollar"]) == {"metin", "ref"}
+    assert [b["sure"] for b in s["kollar"]["ref"]["bloklar"]] == [12, 12]
+    assert [r["rol"] for r in s["referanslar"]] == ["karakter", "arka_plan"]
+    assert all(os.path.isfile(r["dosya"]) for r in s["referanslar"])
+    # dünya çapası iki kolda ve her blokta aynı
+    istekler = [b["istek"] for k in s["kollar"].values() for b in k["bloklar"]]
+    assert all(s["dunya_capasi"] in i for i in istekler)
+    assert "warm deep voice" in s["dunya_capasi"]   # ses tarifi çapada
+
+
+def test_kart_denetimi_eksik_repligi_yakalar():
+    sys.path.insert(0, H3)
+    from h3app import prompt_writer as pw
+    import uzun_senaryo
+    kart = uzun_senaryo.sahte_kart('"Birinci."', 24)
+    assert uzun_senaryo.kart_denetle(kart, 24, 'A "Birinci." B "İkinci."', pw) == \
+        ['Fikirdeki şu metin kartta yok: "İkinci."']
+    kart["bloklar"][0]["sure"] = 20
+    assert any("4–15" in x for x in uzun_senaryo.kart_denetle(kart, 24, "", pw))
+
+
+def test_uzun_deney_uctan_uca(ortam):
+    d, _ = uzun_senaryo_hazirla(ortam)
+    oturum = ortam["tmp"] / "uzun_oturum"
+    r = calistir(os.path.join(MUSE, "h3_uret.py"), "uret", "--senaryo", str(d / "uzun_senaryo.json"),
+                 "--oturum-dizini", str(oturum), "--anahtar", "", "--aralik", "1", env=ortam["env"])
+    cikti = r.stdout + r.stderr
+    assert r.returncode == 0, cikti
+    dosyalar = os.listdir(oturum / "cikti")
+    assert sum(f.endswith("_birlesik.mp4") for f in dosyalar) == 2
+    assert any(f.endswith("_uzun_sonuc.json") for f in dosyalar)
+    o = json.loads((oturum / "oturum.json").read_text())
+    assert o["video"]["sure"] > 9 and o["video"]["yol"].endswith("ref_pika_h3_flex_birlesik.mp4")
+    rapor = (oturum / "rapor.md").read_text()
+    assert "Kol `metin`" in rapor and "Kol `ref`" in rapor
+    yuklenen = [c[-1] for c in cagrilar(ortam) if c[0] == "upload"]
+    assert "content/h3muse/ref_1.png" in yuklenen and "content/h3muse/ref_2.png" in yuklenen
+
+
+def test_uzun_kopru(ortam):
+    d, _ = uzun_senaryo_hazirla(ortam, kol="ref", ek=("--kopru",))
+    oturum = ortam["tmp"] / "kopru_oturum"
+    r = calistir(os.path.join(MUSE, "h3_uret.py"), "uret", "--senaryo", str(d / "uzun_senaryo.json"),
+                 "--oturum-dizini", str(oturum), "--anahtar", "", "--aralik", "1", env=ortam["env"])
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "son karesi" in (oturum / "cikti" / "gunluk.txt").read_text()
+    assert any(f.endswith("_kopru.png") for f in os.listdir(oturum / "cikti"))
+
+
+def test_teslim_parcalara_bolunur(tmp_path, monkeypatch):
+    import runtime_runner
+    monkeypatch.setattr(runtime_runner, "PARCA_SINIRI", 2500)
+    monkeypatch.setattr(runtime_runner, "TEK_DOSYA_SINIRI", 4000)
+    dosyalar = []
+    for i, boyut in enumerate([1000, 1000, 1000, 5000]):
+        p = tmp_path / f"d{i}.bin"
+        p.write_bytes(os.urandom(boyut))
+        dosyalar.append(str(p))
+    (tmp_path / "gunluk.txt").write_text("x")
+    paket = runtime_runner.teslim_paketi(str(tmp_path), dosyalar[1:], [dosyalar[0]])
+    assert [p["icerik"][0] for p in paket["parcalar"]][0] == "d0.bin"   # temel dosya ilk parçada
+    assert len(paket["parcalar"]) == 2 and paket["pakete_girmeyen"] == ["d3.bin"]
+
+
+def test_uzun_gemini_yollari_taklitle(ortam, monkeypatch):
+    """Gemini çağrıları taklit edilir: kart JSON'u, çekim planı ve blok prompt'ları doğru girdilerle istenir mi?"""
+    sys.path.insert(0, H3)
+    monkeypatch.setenv("H3APP_WORK_DIR", ortam["env"]["H3APP_WORK_DIR"])
+    from h3app import prompt_writer as pw
+    import uzun_senaryo
+    fikir = 'Çaycı: "Çaylar taze." Kadın: "Teşekkürler."'
+    kart = uzun_senaryo.sahte_kart(fikir, 20)
+    istekler = {"generate": [], "plan": [], "rewrite": []}
+
+    def gen(api_key, model, system, contents, temperature, log=None, step=None):
+        istekler["generate"].append((model, system, contents))
+        return json.dumps(kart, ensure_ascii=False)
+
+    def plan(idea, total, api_key, model, images=(), style="real", log=print, roles=None, **_):
+        istekler["plan"].append((idea, total, list(images), roles))
+        return uzun_senaryo.sahte_plan(kart), []
+
+    def rewrite(request, seconds, api_key, model, images=(), log=print, style="real", roles=None, **_):
+        istekler["rewrite"].append((seconds, list(images), roles))
+        return pw.EXAMPLE_OUTPUT, []
+
+    monkeypatch.setattr(pw, "_generate", gen)
+    monkeypatch.setattr(pw, "plan_shots", plan)
+    monkeypatch.setattr(pw, "rewrite", rewrite)
+    d = ortam["tmp"] / "taklit"
+    ortak_arg = ["--h3", H3, "--dizin", str(d), "--anahtar", ortam["anahtar"]]
+    assert uzun_senaryo.main(["kart", *ortak_arg, "--fikir", fikir, "--sure", "20"]) == 0
+    assert "20-second video made of 2 block(s)" in istekler["generate"][0][1]
+    assert "SAHTE-ANAHTAR" not in json.dumps(istekler["generate"], ensure_ascii=False)
+    os.makedirs(d / "gorseller")
+    for ad in ("K1", "MEKAN"):
+        uzun_senaryo.sahte_png(str(d / "gorseller" / f"{ad}.png"))
+    assert uzun_senaryo.main(["plan", *ortak_arg, "--kol", "ikisi"]) == 0
+    idea, total, imgs, roles = istekler["plan"][0]
+    assert total == 20 and '"Çaylar taze."' in idea and len(imgs) == 2
+    assert [r["role"] for r in roles] == ["karakter", "arka_plan"]
+    # metin kolu görselsiz, ref kolu iki görselle yazıldı (blok başına bir çağrı)
+    assert [len(x[1]) for x in istekler["rewrite"]] == [0, 0, 2, 2]
+
+
+def test_sureklilik_izleme_puanlari(monkeypatch, tmp_path):
+    sys.path.insert(0, H3)
+    from h3app import prompt_writer as pw, review
+    import uzun_runtime
+
+    class Yanit:
+        text = '{"kimlik": 8, "kiyafet": 12, "mekan": 7, "ses": 5, "hikaye": 9, "sorunlar": [], "ozet": "ok"}'
+
+    class Istemci:
+        class models:
+            @staticmethod
+            def generate_content(model, contents, config):
+                assert "joined at" in config.system_instruction and "12.71" in config.system_instruction
+                return Yanit()
+
+    monkeypatch.setattr(pw, "_client", lambda *a, **k: Istemci())
+    monkeypatch.setattr(review, "_proxy", lambda path, d: path)
+    video = tmp_path / "v.mp4"
+    video.write_bytes(b"0")
+    s = uzun_runtime.sureklilik_izle(str(video), [12.71], {"baslik": "x"}, "anahtar", print)
+    assert s["kiyafet"] == 10 and s["ortalama"] == 7.8 and s["model"]

@@ -19,7 +19,8 @@ import tarfile
 import traceback
 
 H3_REPO = "https://github.com/orha9n/h3-video-studyosu"
-TESLIM_SINIRI = 45 * 1024 * 1024   # Colab dosya aktarımı istek başına ~50 MB
+PARCA_SINIRI = 40 * 1024 * 1024      # Colab dosya aktarımı istek başına ~50 MB
+TEK_DOSYA_SINIRI = 47 * 1024 * 1024
 
 
 def simdi():
@@ -70,22 +71,90 @@ def repo_hazirla(repo_dizin, commit, durum):
         raise RuntimeError(f"h3 deposu yanlış commit'te: {head}")
 
 
-def teslim_paketi(dizin, dosyalar, secilen):
-    """Çıktıları tek bir tar dosyasında toplar (sha256 ile doğrulanabilir tek indirme).
-    Sınırı aşarsa yalnızca temel dosyalar konur, diğerleri listede kalır."""
+def teslim_paketi(dizin, dosyalar, temel):
+    """Çıktıları en fazla ~40 MB'lık tar parçalarına koyar (Colab dosya aktarımı istek başına ~50 MB).
+    Önce temel dosyalar (seçilen video, prompt'lar, bilgi, kontrol görselleri, günlük) girer; her parça sha256
+    ile doğrulanır. 47 MB'tan büyük tek dosyalar pakete girmez, listede kalır."""
     gunluk = os.path.join(dizin, "gunluk.txt")
-    tum = [d for d in dosyalar if os.path.isfile(d)] + [gunluk]
-    temel_uzanti = ("_prompt.txt", "_bilgi.json")
-    temel = [d for d in tum if d == secilen or d.endswith(temel_uzanti) or d == gunluk
-             or (secilen and d.startswith(secilen[:-4]) and d.endswith(".jpg"))]
-    secim = tum if sum(os.path.getsize(d) for d in tum) <= TESLIM_SINIRI else temel
-    tar_yol = os.path.join(dizin, "teslim.tar")
-    with tarfile.open(tar_yol, "w") as t:
-        for d in secim:
-            t.add(d, arcname=os.path.basename(d))
-    disarida = [d for d in tum if d not in secim]
-    return {"yol": tar_yol, "boyut": os.path.getsize(tar_yol), "sha256": sha256(tar_yol),
-            "icerik": [os.path.basename(d) for d in secim], "pakete_girmeyen": disarida}
+    sira, gorulen = [], set()
+    for d in list(temel or []) + [gunluk] + list(dosyalar or []):
+        if d and d not in gorulen and os.path.isfile(d):
+            gorulen.add(d)
+            sira.append(d)
+    for eski in os.listdir(dizin):
+        if eski.startswith("teslim_") and eski.endswith(".tar"):
+            os.remove(os.path.join(dizin, eski))
+    gruplar, disarida, grup, boyut = [], [], [], 0
+    for d in sira:
+        s = os.path.getsize(d)
+        if s > TEK_DOSYA_SINIRI:
+            disarida.append(os.path.basename(d))
+            continue
+        if grup and boyut + s > PARCA_SINIRI:
+            gruplar.append(grup)
+            grup, boyut = [], 0
+        grup.append(d)
+        boyut += s
+    if grup:
+        gruplar.append(grup)
+    parcalar = []
+    for i, g in enumerate(gruplar, 1):
+        yol = os.path.join(dizin, f"teslim_{i}.tar")
+        with tarfile.open(yol, "w") as t:
+            for d in g:
+                t.add(d, arcname=os.path.basename(d))
+        parcalar.append({"yol": yol, "boyut": os.path.getsize(yol), "sha256": sha256(yol),
+                         "icerik": [os.path.basename(d) for d in g]})
+    return {"parcalar": parcalar, "pakete_girmeyen": disarida}
+
+
+class Gunluk:
+    """Uzun video için günlük: her satır dosyaya ve durum.json'a yazılır."""
+
+    def __init__(self, yol, durum):
+        self.yol, self.durum, self.satirlar = yol, durum, []
+
+    def __call__(self, mesaj):
+        satir = self.durum.temizle(f"[{datetime.datetime.now():%H:%M:%S}] {mesaj}")
+        self.satirlar.append(satir)
+        with open(self.yol, "a", encoding="utf-8") as f:
+            f.write(satir + "\n")
+        self.durum.yaz(son_satir=satir, satir_sayisi=len(self.satirlar))
+
+
+def tek_video(senaryo, dizin, anahtar, durum, gunluk_yol):
+    """15 sn'ye kadar tek çekim: h3app'in kendi üretim akışı (_generate_job)."""
+    from h3app import config, prompt_writer, ui
+    refs = []
+    for i, r in enumerate(senaryo.get("referanslar") or [], 1):
+        refs.append(os.path.join(dizin, f"ref_{i}{os.path.splitext(r['dosya'])[1].lower() or '.png'}"))
+    roller = [{"role": r["rol"], "name": r.get("ad", "")} for r in senaryo.get("referanslar") or []]
+    prompt_writer.used_models.clear()
+    prompt_writer.used_models.update(senaryo.get("modeller") or {})
+    son, son_gunluk = (None, None, None, None, None), ""
+    for son in ui._generate_job(senaryo["prompt"], [senaryo["yontem"]], senaryo["cozunurluk"], senaryo["sure"],
+                                senaryo["seed"], senaryo["fikir"], senaryo["brief"], refs, senaryo["stil"],
+                                None, None, roller or None, True, config.REVIEW_RETRIES, anahtar):
+        gunluk = durum.temizle(son[0] or "")
+        if gunluk != son_gunluk:
+            with open(gunluk_yol, "w", encoding="utf-8") as f:
+                f.write(gunluk + "\n")
+            son_gunluk = gunluk
+            satirlar = [s for s in gunluk.splitlines() if s.strip()]
+            durum.yaz(son_satir=satirlar[-1] if satirlar else "", satir_sayisi=len(satirlar))
+        else:
+            durum.yaz()
+    gunluk, v_sol, v_sag, dosyalar, _ = son
+    secilen = v_sol or v_sag
+    hatalar = [s.split("] ", 1)[-1] for s in (gunluk or "").splitlines() if "❌" in s]
+    secim_satiri = [s.split("] ", 1)[-1] for s in (gunluk or "").splitlines() if "⭐ Seçilen:" in s]
+    dosyalar = [d if isinstance(d, str) else getattr(d, "name", str(d)) for d in (dosyalar or [])]
+    if not (secilen and os.path.isfile(secilen)):
+        raise RuntimeError(hatalar[-1] if hatalar else "video üretilemedi")
+    temel = [secilen] + [d for d in dosyalar if d.endswith(("_prompt.txt", "_bilgi.json"))
+                         or (d.startswith(secilen[:-4]) and d.endswith(".jpg"))]
+    return {"secilen": secilen, "dosyalar": dosyalar, "temel": temel,
+            "ozet": {"secim": secim_satiri[-1] if secim_satiri else None}}
 
 
 def main(argv=None):
@@ -104,17 +173,21 @@ def main(argv=None):
     durum = Durum(dizin, anahtar)
     durum.yaz()
     gunluk_yol = os.path.join(dizin, "gunluk.txt")
-    son_gunluk = ""
+    open(gunluk_yol, "w", encoding="utf-8").close()
 
     try:
-        senaryo = json.load(open(os.path.join(dizin, "senaryo.json"), encoding="utf-8"))
+        senaryo_yol = os.path.join(dizin, "senaryo.json")
+        senaryo = json.load(open(senaryo_yol, encoding="utf-8"))
+        senaryo["_yol"] = senaryo_yol
         if senaryo.get("sahte"):
             os.environ["H3APP_FAKE"] = "1"
             if not os.environ.get("H3APP_FAKE_VIDEO"):   # Colab'de kuru deneme: örnek videoyu kendimiz üretiriz
+                sure = max(b["sure"] for k in (senaryo.get("kollar") or {}).values() for b in k["bloklar"]) \
+                    if senaryo.get("tur") == "uzun" else senaryo["sure"]
                 ornek = os.path.join(dizin, "sahte_ornek.mp4")
                 subprocess.run(["ffmpeg", "-y", "-v", "error", "-f", "lavfi", "-i",
-                                f"testsrc=size=640x368:rate=24:duration={senaryo['sure']}", "-f", "lavfi", "-i",
-                                f"sine=frequency=440:duration={senaryo['sure']}", "-shortest", "-c:v", "libx264",
+                                f"testsrc=size=640x368:rate=24:duration={sure}", "-f", "lavfi", "-i",
+                                f"sine=frequency=440:duration={sure}", "-shortest", "-c:v", "libx264",
                                 "-pix_fmt", "yuv420p", "-c:a", "aac", ornek], check=True)
                 os.environ["H3APP_FAKE_VIDEO"] = ornek
         repo = a.repo or os.path.join(dizin, "repo")
@@ -122,44 +195,21 @@ def main(argv=None):
             repo_hazirla(repo, senaryo["h3_commit"], durum)
         sys.path.insert(0, repo)
         durum.yaz(asama="kurulum", son_satir="h3app yükleniyor")
-        from h3app import config, prompt_writer, ui
-
-        refs = []
-        for i, r in enumerate(senaryo.get("referanslar") or [], 1):
-            uzanti = os.path.splitext(r["dosya"])[1].lower() or ".png"
-            refs.append(os.path.join(dizin, f"ref_{i}{uzanti}"))
-        roller = [{"role": r["rol"], "name": r.get("ad", "")} for r in senaryo.get("referanslar") or []]
-        prompt_writer.used_models.clear()
-        prompt_writer.used_models.update(senaryo.get("modeller") or {})
         if not anahtar and not senaryo.get("sahte"):
             durum.yaz(uyari="Gemini anahtarı yok: otomatik izleme yapılmayacak")
-
         durum.yaz(asama="uretim", son_satir="üretim başladı")
-        son = (None, None, None, None, None)
-        for son in ui._generate_job(senaryo["prompt"], [senaryo["yontem"]], senaryo["cozunurluk"], senaryo["sure"],
-                                    senaryo["seed"], senaryo["fikir"], senaryo["brief"], refs, senaryo["stil"],
-                                    None, None, roller or None, True, config.REVIEW_RETRIES, anahtar):
-            gunluk = durum.temizle(son[0] or "")
-            if gunluk != son_gunluk:
-                with open(gunluk_yol, "w", encoding="utf-8") as f:
-                    f.write(gunluk + "\n")
-                son_gunluk = gunluk
-                satirlar = [s for s in gunluk.splitlines() if s.strip()]
-                durum.yaz(son_satir=satirlar[-1] if satirlar else "", satir_sayisi=len(satirlar))
-            else:
-                durum.yaz()
-
-        gunluk, v_sol, v_sag, dosyalar, _ = son
-        secilen = v_sol or v_sag
-        hatalar = [s.split("] ", 1)[-1] for s in (gunluk or "").splitlines() if "❌" in s]
-        secim_satiri = [s.split("] ", 1)[-1] for s in (gunluk or "").splitlines() if "⭐ Seçilen:" in s]
-        dosyalar = [d if isinstance(d, str) else getattr(d, "name", str(d)) for d in (dosyalar or [])]
-        if not (secilen and os.path.isfile(secilen)):
-            raise RuntimeError(hatalar[-1] if hatalar else "video üretilemedi")
+        if senaryo.get("tur") == "uzun":
+            sys.path.insert(0, dizin)
+            import uzun_runtime
+            sonuc = uzun_runtime.calistir(senaryo, anahtar, Gunluk(gunluk_yol, durum))
+        else:
+            sonuc = tek_video(senaryo, dizin, anahtar, durum, gunluk_yol)
+        secilen = sonuc["secilen"]
         durum.yaz(asama="paketleniyor", son_satir="teslim paketi hazırlanıyor")
-        paket = teslim_paketi(dizin, dosyalar, secilen)
+        paket = teslim_paketi(dizin, sonuc["dosyalar"], sonuc["temel"])
         durum.yaz(asama="bitti", video=os.path.basename(secilen), video_sha256=sha256(secilen),
-                  video_boyut=os.path.getsize(secilen), secim=secim_satiri[-1] if secim_satiri else None,
+                  video_boyut=os.path.getsize(secilen), secim=sonuc["ozet"].get("secim"),
+                  uzun_ozet=sonuc["ozet"] if senaryo.get("tur") == "uzun" else None,
                   teslim=paket, son_satir="bitti")
         return 0
     except Exception as e:  # noqa: BLE001
@@ -169,9 +219,7 @@ def main(argv=None):
             eldeki = []
             if os.path.isdir(cikti_dizin):
                 eldeki = [os.path.join(cikti_dizin, d) for d in sorted(os.listdir(cikti_dizin))]
-            if not os.path.isfile(gunluk_yol):
-                open(gunluk_yol, "w", encoding="utf-8").write(son_gunluk + "\n")
-            durum.yaz(teslim=teslim_paketi(dizin, eldeki, None))
+            durum.yaz(teslim=teslim_paketi(dizin, eldeki, []))
         except Exception as e2:  # noqa: BLE001
             durum.yaz(teslim_hatasi=str(e2))
         return 1
