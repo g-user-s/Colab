@@ -1,0 +1,20 @@
+{
+  "surum": 1,
+  "not": "TEST DOSYASI: üretimde kullanma.",
+  "fikir": "Kapadokya'da bir çay evinde akşamüstü yaşlı bir dede ile genç bir kadın Türkçe sohbet ediyor. Dede: \"Kızım, dünya çok hızlı dönüyor, bazen durup bakmak lazım.\" Kadın gülümseyip: \"Haklısın dede, ama durunca da hep bir şey kaçırıyormuşum gibi hissediyorum.\" Dede: \"Kaçıran sensin, bakan değil.\"",
+  "sure": 6,
+  "stil": "real",
+  "yontem": "pika",
+  "cozunurluk": "16:9 yatay · 1344×768",
+  "seed": 22,
+  "referanslar": [],
+  "brief": "Kapadokya'da bir çay evinde akşamüstü yaşlı bir dede ile genç bir kadın Türkçe sohbet ediyor. Dede: \"Kızım, dünya çok hızlı dönüyor, bazen durup bakmak lazım.\" Kadın gülümseyip: \"Haklısın dede, ama durunca da hep bir şey kaçırıyormuşum gibi hissediyorum.\" Dede: \"Kaçıran sensin, bakan değil.\"",
+  "prompt": "integrated_multimodal_description: [Shot 1] Live-action, photoreal cinematic drama shot on a 50mm lens with shallow depth of field: a two-person medium shot inside a small traditional Turkish tea house in Cappadocia at dusk. On the left an old Turkish man in his seventies with a thick white moustache, weathered tanned skin and a dark wool flat cap sits at a low wooden table; on the right, facing him, a young Turkish woman in her mid-twenties with dark hair tied back and a mustard knitted cardigan. Between them on the table stand two tulip-shaped tea glasses of deep red tea on small saucers, thin steam rising from both. Golden light falls through a deep-teal window frame behind them, a hanging copper lantern adds warm fill, a young waiter in a black vest stands behind them holding a tray, and a soft rim light outlines both faces against terracotta plaster walls and amber kilim cushions. The camera pushes in with small amplitude at slow speed during the first seconds, then settles. The old man with a warm, deep, gravelly voice and a slow speaking rate (S1) looks at her, both hands resting around his tea glass, and says: <d>[Turkish] Kizim, dünya çok hızlı dönüyor, bazen durup bakmak lazım.</d> While he speaks she watches his face. At about 4.5 seconds the focus gently shifts from his face to hers. The young woman with a soft, clear, gentle voice (S2) smiles, nods once, and answers: <d>[Turkish] Haklısın dede, ama durunca da hep bir şey kaçırıyormuşum gibi hissediyorum.</d> While she speaks his eyes stay on her. At about 10.5 seconds the focus gently shifts back to the old man, who chuckles softly, his moustache lifting, and the old man (S1) replies: <d>[Turkish] Kaçıran sensin, bakan değil.</d> She lowers her eyes to her tea glass and smiles. Each speaker's lips move in exact sync with every syllable, with natural micro-expressions and blinks; their eyes follow whoever is speaking; both pairs of hands stay steady around the tea glasses throughout.\n\noverall_soundscape: Quiet room tone of a small stone tea house with a faint hiss from the lantern, the soft clink of a tea glass touching its saucer, a short warm chuckle, and distant street ambience of footsteps and a faraway car through the window.\n\nnon_diegetic_music: Soft traditional oud melody playing throughout, gentle and nostalgic.",
+  "sorunlar": [],
+  "modeller": {
+    "brief": "gemini-4-hydrogen",
+    "H3 prompt'u": "gemini-3.8-flash (yedek)"
+  },
+  "yedek_model": [],
+  "durum": "hazir"
+}
