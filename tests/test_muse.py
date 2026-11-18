@@ -347,3 +347,33 @@ def test_anahtar_ortam_degiskeninden(ortam):
     assert "ORTAM-ANAHTARI" not in r.stdout + r.stderr
     assert not any(p.name.startswith(".gemini") for p in oturum.iterdir())   # geçici dosya silindi
     assert "ORTAM-ANAHTARI" not in json.dumps(cagrilar(ortam))
+
+
+def test_izle_yerel_gemini_taklitle(ortam, monkeypatch, tmp_path):
+    sys.path.insert(0, H3)
+    monkeypatch.setenv("H3APP_WORK_DIR", ortam["env"]["H3APP_WORK_DIR"])
+    from h3app import prompt_writer as pw, review
+    import izle
+    istek = {}
+
+    class Yanit:
+        text = ('{"verdict": "fail", "defects": [{"start_s": 1, "end_s": 2, "severity": "high", '
+                '"category": "anatomy", "description": "extra hand"}], "summary": "x"}')
+
+    class Istemci:
+        class models:
+            @staticmethod
+            def generate_content(model, contents, config):
+                istek["metin"] = " ".join(c for c in contents if isinstance(c, str))
+                return Yanit()
+
+    monkeypatch.setattr(pw, "_client", lambda *a, **k: Istemci())
+    monkeypatch.setattr(review, "_proxy", lambda path, d: path)
+    video = tmp_path / "v.mp4"
+    video.write_bytes(b"0")
+    s = senaryo_yaz(ortam)
+    cikti = tmp_path / "inceleme.json"
+    assert izle.main(["--video", str(video), "--senaryo", s, "--anahtar", ortam["anahtar"],
+                      "--cikti", str(cikti)]) == 0
+    sonuc = json.loads(cikti.read_text())
+    assert sonuc["defects"][0]["severity"] == "high" and "Generation prompt" in istek["metin"]
