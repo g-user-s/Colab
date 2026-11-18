@@ -3,6 +3,7 @@
 Kişisel ajan Muse'un, [H3 Video Stüdyosu](https://github.com/orha9n/h3-video-studyosu)'nu Google Colab API/CLI üzerinden tarayıcısız çalıştırması için rehber ve betikler.
 
 - **[MUSE_REHBERI.md](MUSE_REHBERI.md)**: adım adım rehber. Buradan başla.
+- **[GOREV_UZUN_VIDEO_URETIM.md](GOREV_UZUN_VIDEO_URETIM.md)**: ilk gerçek uzun video (45 sn, ref, yeniden üretim açık).
 - **[DENEY_SONUCLARI.md](DENEY_SONUCLARI.md)**: uzun video deneyinin sonucu (görsel referans açık ara daha iyi).
 - **[muse_testleri/MUSE_TEST_GOREVLERI.md](muse_testleri/MUSE_TEST_GOREVLERI.md)**: Muse'un ortamını ve araçları ölçen test görevleri (önce bunlar).
 - **[muse_testleri/MUSE_TEST_TUR2.md](muse_testleri/MUSE_TEST_TUR2.md)**: 2. tur (anahtar gerektiren testler, düzeltmelerin doğrulanması).
