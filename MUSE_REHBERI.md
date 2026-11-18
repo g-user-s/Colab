@@ -391,7 +391,7 @@ Makinen yeniden başlarsa ya da `h3_uret.py` yarıda kesilirse, runtime'daki ür
 
 1. Bitmemiş oturumları bul:
    ```bash
-   grep -L '"asama": "kapatildi"' ~/workspace/h3uretim/*/oturum/oturum.json
+   grep -L '"asama": "kapatildi"' ~/workspace/h3uretim/*/oturum*/oturum.json
    ```
 2. Her biri için durumu gör, sonra devam ettir:
    ```bash
@@ -406,7 +406,7 @@ Makinen yeniden başlarsa ya da `h3_uret.py` yarıda kesilirse, runtime'daki ür
 ```
 Bu komut eldeki çıktıları indirmeye çalışır, sonra runtime'ı kapatır.
 
-**Her çalışma oturumunun başında** 1. adımdaki kontrolü yap. Unutulan bir runtime saatte 7–10 CCU yakar.
+**Makinen her yeniden başladığında ve her çalışma oturumunun başında**, başka bir işe geçmeden önce 1. adımdaki kontrolü yap. 18 Kasım'da B2 deneyinde böyle bir kesintide `durum` + `devam` işi kaybetmeden sürdürdü. Unutulan bir runtime saatte 7–10 CCU yakar.
 
 ---
 
