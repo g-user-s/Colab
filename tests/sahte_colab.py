@@ -63,6 +63,10 @@ def main():
         kaydet(d)
         print("[colab] Session READY.")
         return 0
+    if komut == "exec" and int(os.environ.get("SAHTE_ASILMA", "0")) > d.get("asilma", 0) and "is_no" in open(secenek(args, "-f")).read() and "Popen" in open(secenek(args, "-f")).read():
+        d["asilma"] = d.get("asilma", 0) + 1     # iş başlatma komutu takılır (rc 124, çıktı yok)
+        kaydet(d)
+        return 124
     if komut == "exec" and int(os.environ.get("SAHTE_ZAMAN_ASIMI", "0")) > d.get("zaman_asimi", 0):
         d["zaman_asimi"] = d.get("zaman_asimi", 0) + 1
         kaydet(d)

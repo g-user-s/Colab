@@ -373,6 +373,8 @@ Betik, bir üretim yöntemine göre belirlenen süreyi aşarsa çıktıları ind
 | `senaryo.py` kodu `1`, `429` / `RESOURCE_EXHAUSTED` | Gemini kotası doldu | Betik yedek modelleri zaten denedi. Yarın ya da birkaç saat sonra dene; orhan'a bildir |
 | `senaryo.py` kodu `1`, `API key not valid` / `403` | Anahtar geçersiz | Orhan'dan yeni anahtar iste |
 | `senaryo.py` kodu `2` | Prompt denetimi sorun buldu | Sorun satırlarına göre fikri düzelt (çoğu zaman: replik eksik, ya da tırnak işaretleri farklı) |
+| `Runtime'a geçici olarak ulaşılamadı (1/3)` | Colab bağlantısı anlık takıldı | Betik kendisi 15 sn arayla 3 kez dener. Bir şey yapma |
+| `Runtime'dan yanıt alınamadı` (3 denemeden sonra), runtime kapandı, `isler: {}` ya da iş yarım | Colab bağlantısı uzun süre takıldı | Aynı senaryoyla **yeni bir oturum klasörüyle bir kez** tekrar başlat. İkinci kez de olursa dur ve orhan'a bildir |
 | `Runner süreci durmuş` | Runtime'daki üretim çöktü | `cikti/gunluk.txt` ve `rapor.md`'yi orhan'a gönder. Aynı senaryoyu körlemesine tekrar başlatma |
 | `Üretim N dakikayı aştı` | Takıldı ya da çok yavaş | Günlüğü orhan'a gönder |
 | `RUNTIME_KAYIP` | Colab runtime'ı kendisi kapattı | `colab usage` ile aktif atamaya bak; günlükleri ve durumu orhan'a bildir |

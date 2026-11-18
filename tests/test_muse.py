@@ -434,3 +434,14 @@ def test_gecici_zaman_asiminda_tekrar_dener(ortam):
                  "--anahtar", "", "--aralik", "1", env=env)
     assert r.returncode == 0, r.stdout + r.stderr
     assert "geçici olarak ulaşılamadı" in r.stdout
+
+
+def test_is_baslatma_takilirsa_tekrar_dener(ortam):
+    s = senaryo_yaz(ortam)
+    env = dict(ortam["env"], SAHTE_ASILMA="1")   # Deney B: iş başlatma komutu 240 sn yanıt vermedi
+    oturum = ortam["tmp"] / "asilma"
+    r = calistir(os.path.join(MUSE, "h3_uret.py"), "uret", "--senaryo", s, "--oturum-dizini", str(oturum),
+                 "--anahtar", "", "--aralik", "1", env=env)
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "geçici olarak ulaşılamadı" in r.stdout
+    assert len(json.loads((oturum / "oturum.json").read_text())["isler"]) == 1

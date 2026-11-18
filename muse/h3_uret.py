@@ -90,7 +90,7 @@ class Colab:
                 for satir in out.splitlines():
                     if satir.startswith(ISARET):
                         return json.loads(satir[len(ISARET):])
-                if i < deneme and any(x in out for x in GECICI_HATALAR):
+                if i < deneme and (rc == 124 or any(x in out for x in GECICI_HATALAR)):
                     yaz(f"Runtime'a geçici olarak ulaşılamadı ({i}/{deneme}); {TEKRAR_SN} sn sonra tekrar.")
                     time.sleep(TEKRAR_SN)
                     continue
