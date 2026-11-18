@@ -122,6 +122,18 @@ def main():
         for ad, gpu in d["oturumlar"].items():
             print(f"{ad}  {gpu.upper()}  GPU")
         return 0
+    if komut == "whoami":
+        jeton = os.path.join(KOK, "giris_tamam")
+        if os.environ.get("SAHTE_GIRIS") == "yok" and not os.path.isfile(jeton):
+            print("\nTo authorize colab-cli, visit this URL in any browser:\n", file=sys.stderr)
+            print("  https://accounts.google.com/o/oauth2/auth?client_id=sahte&state=x\n", file=sys.stderr, flush=True)
+            kod = input("Enter the authorization code: ").strip()
+            if kod != "dogru-kod":
+                print("invalid_grant: Bad Request", file=sys.stderr)
+                return 1
+            open(jeton, "w").close()
+        print("Auth provider: oauth2\nEmail:         test@example.com\nScopes:\n  - colaboratory")
+        return 0
     if komut == "usage":
         print(f"Current balance: {d['bakiye']:.2f} compute units\nUsage rate: 0.00/hr\n"
               f"Active assignments: {len(d['oturumlar'])}")

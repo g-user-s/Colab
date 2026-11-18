@@ -1,3 +1,5 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+masaustu/tests/__pycache__/
+masaustu/h3studyo/__pycache__/

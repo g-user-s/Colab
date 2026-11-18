@@ -60,6 +60,34 @@ ORANLAR = {"g4": 9.92, "a100": 6.73, "cpu": 0.08}
 BLOK_DAKIKA = {"pika": 14, "turbo": 8, "h3": 30}   # bir 15 sn'lik bloğun render + izleme payı
 
 
+# Render süresi tahmini (dk / video saniyesi), Pika H3 Flex, ölçümlerden (17–18.11.2026): A100 8 sn ≈ 4,5 dk,
+# 15 sn'lik blok ≈ 9–11 dk; G4 15 sn ≈ 5–6 dk. MiniMax-H3 ~3 kat, Turbo ~0,4 kat (Turbo ölçülmedi).
+RENDER_DK_SN = {"a100": 0.6, "g4": 0.38, "h100": 0.38, "cpu": 0.05}
+YONTEM_KAT = {"pika": 1.0, "h3": 3.0, "turbo": 0.4}
+
+
+def tahmini_maliyet(senaryo, gpu="a100", tekrar=None):
+    """Üretimin tahmini süresi ve CCU'su: ({'dk': (en_az, en_cok), 'ccu': (en_az, en_cok) | None, 'oran'}).
+    En az: hiçbir aday yeniden üretilmez; en çok: her aday en fazla `tekrar` kez yeniden üretilir.
+    Kurulum ~7 dk, her aday için render + ~2 dk (yükleme, izleme, indirme), birleştirme ~1 dk."""
+    gpu = (gpu or "a100").lower()
+    k = RENDER_DK_SN.get(gpu, 0.6) * YONTEM_KAT.get(senaryo.get("yontem", "pika"), 1.0)
+    if senaryo.get("tur") == "uzun":
+        tekrar = int(senaryo.get("yeniden_uretim", 1)) if tekrar is None else tekrar
+        parcalar = [int(b["sure"]) for kol in senaryo["kollar"].values() for b in kol["bloklar"]]
+        birlestirme = len(senaryo["kollar"])
+    else:
+        tekrar = 2 if tekrar is None else tekrar
+        parcalar = [int(senaryo.get("sure", 10))]
+        birlestirme = 0
+    bir_tur = sum(2 + s * k for s in parcalar)
+    en_az = 7 + bir_tur + birlestirme
+    en_cok = 7 + bir_tur * (1 + tekrar) + birlestirme
+    oran = ORANLAR.get(gpu)
+    ccu = (round(en_az / 60 * oran, 1), round(en_cok / 60 * oran, 1)) if oran else None
+    return {"dk": (round(en_az), round(en_cok)), "ccu": ccu, "oran": oran}
+
+
 def azami_dakika(senaryo):
     """Senaryoya göre üretimin en uzun süresi (dk): tek videoda sabit, uzun videoda blok ve kol sayısına göre."""
     if senaryo.get("tur") != "uzun":

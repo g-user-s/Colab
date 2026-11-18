@@ -97,7 +97,7 @@ def kmt_gorsel(a, config, pw, hk):
         kayit[g["id"]] = model
         print(f"✅ {g['id']}: {g['dosya']} ({model})")
     ortak.json_yaz(yol, kart)
-    print("Görselleri aç ve kontrol et: yüz, kıyafet ve mekân karttaki tarife uyuyor mu? Sonra orhan'a onaylat.")
+    print("Görselleri aç ve kontrol et: yüz, kıyafet ve mekân karttaki tarife uyuyor mu? (Muse: sonra orhan'a onaylat.)")
     return 0
 
 

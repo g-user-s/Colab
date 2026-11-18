@@ -2,6 +2,7 @@
 
 Kişisel ajan Muse'un, [H3 Video Stüdyosu](https://github.com/orha9n/h3-video-studyosu)'nu Google Colab API/CLI üzerinden tarayıcısız çalıştırması için rehber ve betikler.
 
+- **[masaustu/BENIOKU.md](masaustu/BENIOKU.md)**: **H3 Stüdyo** — Linux masaüstü uygulaması (PySide6). Kurulum: `bash masaustu/kur.sh`.
 - **[MUSE_REHBERI.md](MUSE_REHBERI.md)**: adım adım rehber. Buradan başla.
 - **[GOREV_UZUN_VIDEO_URETIM.md](GOREV_UZUN_VIDEO_URETIM.md)**: ilk gerçek uzun video (45 sn, ref, yeniden üretim açık).
 - **[DENEY_SONUCLARI.md](DENEY_SONUCLARI.md)**: uzun video deneyinin sonucu (görsel referans açık ara daha iyi).
