@@ -82,7 +82,7 @@ CLI güncellenir ya da yeniden kurulursa yama silinir; bu komutu tekrar çalış
 ### 2.3 Bu depo
 
 ```bash
-cd ~/workspace && ([ -d Colab ] || git clone https://github.com/g-user-s/Colab) && cd Colab
+cd ~/workspace && ([ -d Colab ] || git clone -b claude/trusting-johnson-c5d0tf https://github.com/g-user-s/Colab) && cd Colab
 git checkout claude/trusting-johnson-c5d0tf && git pull
 ls h3/h3app/hikaye.py
 ```

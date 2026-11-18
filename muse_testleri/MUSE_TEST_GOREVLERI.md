@@ -1,5 +1,13 @@
 # Muse için test görevleri
 
+**Depo:** https://github.com/g-user-s/Colab (herkese açık), dal `claude/trusting-johnson-c5d0tf`
+```bash
+cd ~/workspace
+git clone -b claude/trusting-johnson-c5d0tf https://github.com/g-user-s/Colab   # zaten varsa: cd Colab && git pull
+cd ~/workspace/Colab
+```
+Bütün komutlar `~/workspace/Colab` içinden çalıştırılır.
+
 **Amaç:** Bu testler senin bir sınavın değil, bizim araçlarımızın sınavı. Rehberin ve betiklerin senin ortamında gerçekte nasıl çalıştığını öğrenmek istiyoruz:
 - hangi adımlar sorunsuz yürüyor;
 - hangilerinde zorlanıyorsun;
