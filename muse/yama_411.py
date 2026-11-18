@@ -16,6 +16,7 @@ Paket güncellenir ya da yeniden kurulursa yama silinir: bu betiği yeniden çal
 import argparse
 import importlib.util
 import os
+import re
 import sys
 
 ISARET = "# h3muse-411-yamasi"
@@ -25,6 +26,15 @@ HEDEF = """        response = self.session.request(
 YAMA = f"""        if method.upper() == "POST" and "json" not in kwargs and "data" not in kwargs:  {ISARET}
             kwargs["json"] = {{}}  {ISARET}
 """ + HEDEF
+
+
+def islevsel_yama_var(metin):
+    """Elle yapılmış eşdeğer yamayı tanır: _issue_request içinde, istekten önce kwargs["json"] = {} ataması."""
+    bas = metin.find("def _issue_request(")
+    if bas < 0:
+        return False
+    govde = metin[bas:metin.find("self.session.request(", bas)]
+    return bool(re.search(r"""kwargs\[\s*["']json["']\s*\]\s*=\s*\{\s*\}""", govde)) and "POST" in govde
 
 
 def client_yolu():
@@ -43,6 +53,10 @@ def main(argv=None):
     metin = open(yol, encoding="utf-8").read()
     if ISARET in metin:
         print(f"✅ Yama zaten uygulanmış: {yol}")
+        return 0
+    if islevsel_yama_var(metin):
+        print(f"✅ Yama işlevsel olarak var (elle uygulanmış, işaretsiz): {yol}\n"
+              "   _issue_request gövdesiz POST'lara json={} ekliyor; yeniden uygulamaya gerek yok.")
         return 0
     if a.kontrol:
         print(f"❌ Yama yok: {yol}")

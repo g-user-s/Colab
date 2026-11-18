@@ -6,6 +6,15 @@ Rehberi baştan sona sırayla uygula. Bir adım burada yazdığından farklı so
 
 Onay kuralların her zamanki gibi geçerli. Bu rehber onlara bir şey eklemez; yalnızca bu akışta onayın hangi noktalarda gerektiğini gösterir (bkz. Onay noktaları).
 
+### Senin ortamında bilinmesi gerekenler (18 Kasım test turundan)
+
+- **Uzun komutlar:** exec aracın ~10 sn'den uzun süren komutu kendiliğinden arka plana alır ve bitince sonucu sana teslim eder. `h3_uret.py` kendi yoklamasını yapar; senin ayrıca yoklama döngüsü yazmana gerek yok, komutun bitmesini bekle.
+- **Kabuk değişkenleri:** bir komutta tanımladığın `D=...` gibi değişkenler sonraki komutta, arka plana alınan işte ya da `nohup … &` içinde kaybolabilir. Değişkeni kullandığın komutun içinde tanımla ya da tam yol yaz.
+- **`pkill -f`:** kalıbın ilk harfini köşeli paranteze al (`pkill -f "[h]3_uret.py"`); yoksa komutu çalıştıran kendi kabuğunu da öldürür.
+- **Drive:** `H3_Video_Studyosu` klasörü yoksa oluştur. Yükleme komutu: `drive +upload <dosya> --parent <klasör>`.
+- **Colab içinden Drive bağlama (`colab drivemount`):** her seferinde tarayıcıda onay ister ve onay gelmezse sonsuza kadar bekler. Bu akışta kullanılmaz; teslim her zaman indirme + Drive bağlayıcısıyla yapılır.
+- **CCU:** `colab usage` bakiyeyi 2 ondalıkla verir; kısa işlerde fark 0,00 görünür. Rapor bu yüzden ayrıca "açık kalma süresi × saatlik oran" tahminini yazar.
+
 ---
 
 ## İçindekiler
@@ -99,7 +108,7 @@ python3 -m venv ~/workspace/tools/h3muse-venv
 
 ### 2.5 Gemini anahtarı
 
-Anahtarı orhan verir. Bir dosyaya yaz: dosya yazma aracını kullan, anahtarı komut satırına yazma ve ekrana basma.
+Anahtarı orhan **güvenli giriş kartıyla** verir; sohbete yazılmasını isteme. Anahtar elinde değilse Gemini gerektiren adımlar (senaryo, hikâye kartı, görseller, izleme) çalışmaz. Betikler bunu açık bir mesajla söyler; anahtarı başka yerden (ör. Colab Secrets) arama. Anahtar gelince bir dosyaya yaz: dosya yazma aracını kullan, anahtarı komut satırına yazma ve ekrana basma.
 ```bash
 mkdir -p ~/.config/h3muse && chmod 700 ~/.config/h3muse
 # anahtarı ~/.config/h3muse/gemini.key dosyasına yaz (tek satır), sonra:

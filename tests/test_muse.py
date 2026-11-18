@@ -99,7 +99,8 @@ def test_uretim_uctan_uca_ve_gpu_yedegi(ortam):
     assert "SAHTE-ANAHTAR" not in json.dumps(kaynak) and "SAHTE-ANAHTAR" not in cikti
     assert not (ortam["kok"] / "content" / "h3muse" / "gemini.key").exists()
     assert "SAHTE-ANAHTAR" not in (oturum / "cikti" / "gunluk.txt").read_text()
-    assert "teslim edildi" in (oturum / "rapor.md").read_text()
+    rapor = (oturum / "rapor.md").read_text()
+    assert "teslim edildi" in rapor and "CCU/saat ≈" in rapor
 
 
 def test_cpu_kuru_deneme_ornek_videoyu_kendi_uretir(ortam):
@@ -308,3 +309,29 @@ def test_eski_h3app_ile_yazilmis_senaryo_reddedilir(ortam):
     r = calistir(os.path.join(MUSE, "h3_uret.py"), "uret", "--senaryo", s, "--oturum-dizini",
                  str(ortam["tmp"] / "o7"), "--anahtar", "", env=ortam["env"])
     assert r.returncode != 0 and "h3app sürümü" in r.stderr
+
+
+def test_yama_411_elle_uygulanmis_yamayi_tanir(tmp_path):
+    kaynak = os.environ.get("COLAB_CLI_CLIENT")
+    if not kaynak:
+        pytest.skip("COLAB_CLI_CLIENT verilmedi")
+    metin = open(kaynak, encoding="utf-8").read().replace(
+        "        response = self.session.request(",
+        '        if method.upper() == "POST" and "data" not in kwargs and "json" not in kwargs:\n'
+        '            kwargs["json"] = {}\n        response = self.session.request(', 1)
+    hedef = tmp_path / "client.py"
+    hedef.write_text(metin, encoding="utf-8")
+    r = calistir(os.path.join(MUSE, "yama_411.py"), "--dosya", str(hedef), "--kontrol")
+    assert r.returncode == 0 and "işlevsel" in r.stdout
+    calistir(os.path.join(MUSE, "yama_411.py"), "--dosya", str(hedef))
+    assert hedef.read_text(encoding="utf-8").count('kwargs["json"] = {}') == 1   # ikinci kez eklenmedi
+
+
+def test_anahtar_yoksa_gemini_oncesi_acik_mesaj(ortam):
+    r = calistir(os.path.join(MUSE, "uzun_senaryo.py"), "kart", "--dizin", str(ortam["tmp"] / "k"), "--sure", "20",
+                 "--fikir", "x", "--anahtar", str(ortam["tmp"] / "yok.key"), env=ortam["env"])
+    cikti = r.stdout + r.stderr
+    assert r.returncode != 0 and "orhan verir" in cikti and "hikâye kartını yazıyor" not in cikti
+    r2 = calistir(os.path.join(MUSE, "uzun_senaryo.py"), "gorsel", "--dizin", str(ortam["tmp"] / "k"),
+                  env=ortam["env"])
+    assert r2.returncode == 1 and "Önce 'kart'" in r2.stdout

@@ -176,7 +176,7 @@ def runtime_ac(c, o, gpular, deneme=3, bekle=None):
             gpu_arg = [] if gpu == "cpu" else ["--gpu", gpu]
             rc, out = c.calistir("new", "-s", ad, *gpu_arg, sure=900)
             if rc == 0 and "READY" in out:
-                o.kaydet(asama="runtime_acik", ad=ad, gpu=gpu)
+                o.kaydet(asama="runtime_acik", ad=ad, gpu=gpu, acilis=time.time())
                 yaz(f"Runtime açıldı: {ad} ({gpu.upper()})")
                 return ad
             kisa = out.strip()[-300:]
@@ -348,7 +348,8 @@ def kapat(c, o):
     rc, out = c.calistir("sessions", sure=120)
     acik = ad in out
     son = c.bakiye()
-    o.kaydet(asama="kapatildi" if not acik else o.asama, ccu_sonra=son, sunucudaki_oturumlar=out.strip()[-400:])
+    o.kaydet(asama="kapatildi" if not acik else o.asama, ccu_sonra=son, sunucudaki_oturumlar=out.strip()[-400:],
+             kapanis=time.time() if not acik else None)
     if acik:
         raise Hata(f"Runtime {ad} hâlâ sunucuda görünüyor. Elle kapat: colab stop -s {ad}")
     yaz(f"Runtime kapatıldı. Aktif atama: {son.get('aktif')} · bakiye: {son.get('bakiye')} CCU")
@@ -358,6 +359,11 @@ def rapor(o, hata=None):
     s = o.v.get("uzak_durum") or {}
     once, sonra = (o.v.get("ccu_once") or {}).get("bakiye"), (o.v.get("ccu_sonra") or {}).get("bakiye")
     harcanan = f"{once - sonra:.2f}" if once is not None and sonra is not None else "?"
+    dk = (o.v["kapanis"] - o.v["acilis"]) / 60 if o.v.get("kapanis") and o.v.get("acilis") else None
+    oran = ortak.ORANLAR.get(o.v.get("gpu"))
+    tahmin = (f"{dk:.1f} dk açık kaldı × {oran} CCU/saat ≈ {dk / 60 * oran:.3f} CCU" if dk is not None and oran
+              else f"{dk:.1f} dk açık kaldı (bu GPU'nun oranı bilinmiyor; 'colab usage' Usage rate ile ölç)"
+              if dk is not None else "süre bilinmiyor")
     senaryo = ortak.json_oku(o.v["senaryo"]) if o.v.get("senaryo") and os.path.isfile(o.v["senaryo"]) else {}
     satirlar = [
         "# H3 üretim raporu", "",
@@ -365,11 +371,12 @@ def rapor(o, hata=None):
         f"- Fikir: {senaryo.get('fikir', '?')}",
         f"- Tür: {senaryo.get('tur', 'tek')} · yöntem / süre / stil: {senaryo.get('yontem')} / {senaryo.get('sure')} sn / "
         f"{senaryo.get('stil')}",
-        f"- GPU: {o.v.get('gpu', '?')} · {o.v.get('gpu_adi', '?')}",
+        f"- GPU: {o.v.get('gpu', '?')} · {o.v.get('gpu_adi') or '—'}",
         f"- Prompt modelleri: {senaryo.get('modeller') or '-'}",
         f"- Video: {(o.v.get('video') or {}).get('yol', '-')}",
         f"- Seçim ve Gemini izlemesi: {s.get('secim') or '-'}",
-        f"- CCU: {once} → {sonra} (harcanan {harcanan}); aktif atama: {(o.v.get('ccu_sonra') or {}).get('aktif')}",
+        f"- CCU: {once} → {sonra} (bakiye farkı {harcanan}; tahmin: {tahmin}); "
+        f"aktif atama: {(o.v.get('ccu_sonra') or {}).get('aktif')}",
         f"- Runtime: {o.v.get('ad', '-')} · aşama: {o.asama}",
     ]
     uzun = s.get("uzun_ozet") or {}

@@ -72,8 +72,8 @@ def main(argv=None):
     refs = [ref_coz(r) for r in a.ref]
     if len(refs) > 9:
         raise SystemExit("En fazla 9 referans görsel verilebilir.")
+    anahtar = None if a.sahte else ortak.anahtar_oku(a.anahtar)   # Gemini'den önce: eksikse hemen ve açıkça dur
     config, pw = h3_yukle(a.h3)
-    anahtar = None if a.sahte else ortak.anahtar_oku(a.anahtar)
     gorseller = [r["dosya"] for r in refs]
     roller = [{"role": r["rol"], "name": r["ad"]} for r in refs] or None
     notlar = []

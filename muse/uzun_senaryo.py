@@ -42,8 +42,9 @@ def kmt_kart(a, config, pw, hk):
     if a.sahte:
         kart = hk.ornek_kart(a.fikir, a.sure)
     else:
+        anahtar = ortak.anahtar_oku(a.anahtar)
         print("⏳ Gemini hikâye kartını yazıyor…", flush=True)
-        kart, _ = hk.kart_yaz(a.fikir, a.sure, ortak.anahtar_oku(a.anahtar), style=a.stil, log=print)
+        kart, _ = hk.kart_yaz(a.fikir, a.sure, anahtar, style=a.stil, log=print)
         if not isinstance(kart, dict):
             print("❌ Gemini geçerli bir kart yazamadı.")
             return 1
@@ -59,6 +60,9 @@ def kmt_kart(a, config, pw, hk):
 
 def kmt_gorsel(a, config, pw, hk):
     yol = os.path.join(a.dizin, "hikaye.json")
+    if not os.path.isfile(yol):
+        print(f"❌ Hikâye kartı yok: {yol}. Önce 'kart' adımını çalıştır (ve başarılı olduğunu gör).")
+        return 1
     kart = ortak.json_oku(yol)
     meta = kart["_meta"]
     gdizin = os.path.join(a.dizin, "gorseller")
@@ -98,6 +102,9 @@ def kmt_gorsel(a, config, pw, hk):
 
 
 def kmt_plan(a, config, pw, hk):
+    if not os.path.isfile(os.path.join(a.dizin, "hikaye.json")):
+        print(f"❌ Hikâye kartı yok: {a.dizin}/hikaye.json. Önce 'kart' ve 'gorsel' adımlarını çalıştır.")
+        return 1
     kart = ortak.json_oku(os.path.join(a.dizin, "hikaye.json"))
     meta = kart["_meta"]
     sorunlar = hk.kart_denetle(kart, meta["sure"], meta["fikir"])

@@ -54,6 +54,9 @@ ROLLER = ("karakter", "arka_plan", "nesne")
 
 # Yöntem başına üretimin süreceği en uzun süre (dakika). Aşılırsa çıktılar indirilir ve runtime kapatılır.
 AZAMI_DAKIKA = {"pika": 45, "turbo": 30, "h3": 90}
+# Ölçülmüş saatlik CCU oranları (17 Kasım 2026). `colab usage` bakiyeyi 2 ondalıkla verdiği için kısa işlerin
+# maliyeti farktan görünmez; rapor ayrıca süre × oran tahminini yazar. H100 henüz ölçülmedi.
+ORANLAR = {"g4": 9.92, "a100": 6.73, "cpu": 0.08}
 BLOK_DAKIKA = {"pika": 14, "turbo": 8, "h3": 30}   # bir 15 sn'lik bloğun render + izleme payı
 
 
@@ -70,7 +73,9 @@ def anahtar_oku(yol):
     """Gemini anahtarını dosyadan okur. Anahtar hiçbir zaman ekrana yazılmaz."""
     yol = os.path.expanduser(yol)
     if not os.path.isfile(yol):
-        raise SystemExit(f"Anahtar dosyası yok: {yol}")
+        raise SystemExit(f"❌ Gemini anahtarı yok: {yol}\n"
+                         "   Bu adım Gemini ister. Anahtarı orhan verir (güvenli giriş kartıyla); sen onu bu dosyaya "
+                         "tek satır olarak yazar ve 'chmod 600' yaparsın (rehber 2.5). Anahtarı başka yerden arama.")
     mod = stat.S_IMODE(os.stat(yol).st_mode)
     if mod & 0o077:
         raise SystemExit(f"Anahtar dosyasının izinleri çok açık ({oct(mod)}). Çalıştır: chmod 600 {yol}")
