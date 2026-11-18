@@ -445,3 +445,17 @@ def test_is_baslatma_takilirsa_tekrar_dener(ortam):
     assert r.returncode == 0, r.stdout + r.stderr
     assert "geçici olarak ulaşılamadı" in r.stdout
     assert len(json.loads((oturum / "oturum.json").read_text())["isler"]) == 1
+
+
+def test_yeniden_esik_orta(ortam):
+    s = senaryo_yaz(ortam)
+    orta = {"verdict": "pass", "defects": [{"start_s": 1, "end_s": 2, "severity": "medium", "category": "el",
+                                            "description": "parmak"}], "summary": "x"}
+    temiz = {"verdict": "pass", "defects": [], "summary": "ok"}
+    for esik, beklenen in (("yuksek", 1), ("orta", 2)):
+        env = dict(ortam["env"], H3MUSE_TEST_INCELEME=json.dumps([orta, temiz]))
+        oturum = ortam["tmp"] / f"esik_{esik}"
+        r = calistir(os.path.join(MUSE, "h3_uret.py"), "uret", "--senaryo", s, "--oturum-dizini", str(oturum),
+                     "--anahtar", ortam["anahtar"], "--aralik", "1", "--yeniden-esik", esik, env=env)
+        assert r.returncode == 0, r.stdout + r.stderr
+        assert len(json.loads((oturum / "oturum.json").read_text())["isler"]) == beklenen

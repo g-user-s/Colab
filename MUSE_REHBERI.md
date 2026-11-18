@@ -232,6 +232,8 @@ Betik sırasıyla şunları yapar:
 6. Videoyu **senin makinenden** Gemini'ye izletir. Yüksek önemde kusur varsa **aynı runtime'da** yeni seed ile tekrar üretir (en fazla 2 kez) ve en az kusurlu adayı seçer.
 7. Runtime'ı kapatır, sunucuda açık oturum kalmadığını kontrol eder, `$D/oturum/rapor.md`'yi yazar.
 
+**Yeniden üretim eşiği:** varsayılan `--yeniden-esik yuksek`: yalnızca yüksek önemde kusur yeni seed'i tetikler. `--yeniden-esik orta` orta kusurları da (el-nesne kaynaşması, parmak bozulması gibi) tetikler. Bu daha temiz sonuç verir, ama neredeyse her blok bir kez daha üretilir: GPU süresi ve CCU yaklaşık iki katına çıkar. Hangisinin kullanılacağına orhan karar verir; onay mesajında tahmini CCU'yu buna göre yaz. 18 Kasım'daki 45 sn'lik videoda (eşik yüksek) hiçbir blok yeniden üretilmedi ve orta önemli el kusurları videoda kaldı.
+
 Her iş biter bitmez indirildiği için bir hata olursa elde o ana kadarki çıktılar vardır. Runtime **her durumda kapatılır**. İzlemede her Gemini isteği orhan'ın onay kartına düşebilir; kartlar zamanında onaylanmazsa izleme yapılamaz ve rapor bunu "izlenemedi" olarak gösterir.
 
 Çıkış kodları:

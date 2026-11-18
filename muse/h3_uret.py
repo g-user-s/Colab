@@ -379,6 +379,13 @@ class Gemini:
             except ImportError:
                 raise Hata("google-genai yok. Bu betiği ~/workspace/tools/h3muse-venv/bin/python ile çalıştır.")
 
+    def engel(self, inceleme):
+        """Yeniden üretim gerekir mi? Eşik 'yuksek' (varsayılan): yalnızca yüksek önemde kusur; 'orta': orta da."""
+        if not inceleme:
+            return False
+        onemler = ("high", "medium") if self.o.v.get("yeniden_esik") == "orta" else ("high",)
+        return any(d.get("severity") in onemler for d in inceleme.get("defects") or [])
+
     def _onbellek(self, ad):
         return self.o.v.setdefault(ad, {})
 
@@ -455,7 +462,7 @@ def akis_tek(c, o, senaryo, gm):
         r = is_calistir(c, o, {"no": k + 1, "tur": "tek", "seed": seed})
         inc = gm.izle(r["video"], senaryo["prompt"], refs, roller)
         adaylar.append({"video": r["video"], "seed": seed, "inceleme": inc})
-        if not rv.blocking(inc):
+        if not gm.engel(inc):
             break
         if k < tekrar:
             yaz(f"🔁 Yüksek önemde kusur; aynı runtime'da yeni seed ({int(senaryo['seed']) + 1000 * (k + 1)}) ile "
@@ -463,7 +470,7 @@ def akis_tek(c, o, senaryo, gm):
     en_iyi = min(adaylar, key=lambda a: rv.score(a["inceleme"])) if gm.aktif else adaylar[-1]
     secim = (f"⭐ Seçilen: {os.path.basename(en_iyi['video'])} (seed {en_iyi['seed']}, {len(adaylar)} aday) — izleme: "
              f"{rv.short(en_iyi['inceleme']) if gm.aktif else 'yapılmadı (anahtar verilmedi ya da kuru deneme)'}")
-    if gm.aktif and rv.blocking(en_iyi["inceleme"]):
+    if gm.aktif and gm.engel(en_iyi["inceleme"]):
         secim += " · ⚠️ bütün adaylarda yüksek önemde kusur kaldı"
     yaz(secim)
     o.kaydet(sonuc={"secilen": en_iyi["video"], "secim": secim,
@@ -518,7 +525,7 @@ def akis_uzun(c, o, senaryo, gm):
                                        "prompt": prompt, "seed": seed, "refs": b_rt})
                 inc = gm.izle(r["video"], prompt, b_yerel, b_rol)
                 adaylar.append({"video": r["video"], "ad": r["video_ad"], "seed": seed, "inceleme": inc})
-                if not rv.blocking(inc):
+                if not gm.engel(inc):
                     break
                 if d < tekrar:
                     yaz(f"🔁 [{kol}] Blok {n}: yüksek önemde kusur; aynı runtime'da yeni seed ile yeniden üretiliyor")
@@ -679,6 +686,8 @@ def main(argv=None):
                            help="Gemini anahtarı (bu makinedeki izleme için). İzlemesiz: --anahtar ''")
             q.add_argument("--azami-dakika", type=int, help="Varsayılan: senaryoya göre hesaplanır")
             q.add_argument("--aralik", type=int, default=30, help="Yoklama aralığı (sn)")
+            q.add_argument("--yeniden-esik", choices=("yuksek", "orta"), default="yuksek",
+                           help="Hangi önemdeki kusur yeniden üretimi tetikler (orta: daha temiz, ~2 kat GPU süresi)")
             q.add_argument("--sorunlu-kabul", action="store_true",
                            help="Denetim sorunlu senaryoyu yine de üret (yalnızca orhan onay verdiyse)")
     a = p.parse_args(argv)
@@ -708,6 +717,7 @@ def main(argv=None):
         if os.path.abspath(a.senaryo) != senaryo_kopya:
             shutil.copyfile(a.senaryo, senaryo_kopya)
         o.kaydet(asama="yeni", senaryo=senaryo_kopya, gpular=gpular, anahtar=a.anahtar or None,
+                 yeniden_esik=a.yeniden_esik,
                  azami_dk=a.azami_dakika or ortak.azami_dakika(senaryo), aralik=a.aralik,
                  baslangic=datetime.datetime.now().isoformat(timespec="seconds"))
         return akis(c, o, a)
