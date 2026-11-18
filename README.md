@@ -5,7 +5,6 @@ Kişisel ajan Muse'un, [H3 Video Stüdyosu](https://github.com/orha9n/h3-video-s
 - **[MUSE_REHBERI.md](MUSE_REHBERI.md)**: adım adım rehber. Buradan başla.
 - **[GOREV_UZUN_VIDEO_DENEYI.md](GOREV_UZUN_VIDEO_DENEYI.md)**: Muse'un yapacağı uzun video deneyi (metin çapası vs. görsel referans).
 - `muse/`: betikler (`senaryo.py`, `uzun_senaryo.py`, `h3_uret.py`, `runtime_runner.py`, `uzun_runtime.py`, `yama_411.py`).
-
 - `tests/`: sahte `colab` ve sahte modla uçtan uca testler.
 
 Uzun video geliştirmesi şimdilik H3 deposunu değiştirmeden, onun fonksiyonlarını (`plan_shots`, `block_request`, `rewrite`, `graphs.build`, `review`, `assemble`) kullanan bir katman olarak burada duruyor. H3 deposuna yazma izni gelince `h3app`'e taşınacak.
