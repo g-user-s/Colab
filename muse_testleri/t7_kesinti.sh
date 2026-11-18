@@ -11,10 +11,10 @@ echo "Klasör: $D"
 nohup python3 muse/h3_uret.py uret --senaryo "$SENARYO" --oturum-dizini "$D/oturum" \
   --gpu cpu --anahtar '' --aralik 15 --sorunlu-kabul > "$D/cikti.log" 2>&1 &
 for i in $(seq 1 120); do
-  if grep -q "arka planda başlatıldı" "$D/cikti.log" 2>/dev/null; then break; fi
+  if grep -q "runtime'da başlatıldı" "$D/cikti.log" 2>/dev/null; then break; fi
   sleep 2
 done
-if ! grep -q "arka planda başlatıldı" "$D/cikti.log"; then
+if ! grep -q "runtime'da başlatıldı" "$D/cikti.log"; then
   echo "HATA: 4 dk içinde başlatma satırı görülmedi. Log:"; cat "$D/cikti.log"; exit 1
 fi
 pkill -f "[h]3_uret.py uret --senaryo $SENARYO" && echo "Yerel süreç durduruldu (kesinti taklidi)."

@@ -132,7 +132,7 @@ Bu test, makinen yeniden başladığında ne olacağını taklit eder.
 
 1. T6'daki komutu yeni bir klasörle (`D=~/workspace/h3uretim/test_t7`) **arka planda** başlat ve çıktısını bir dosyaya yönlendir:
    ```bash
-   nohup python3 muse/h3_uret.py uret --senaryo <T6'daki senaryo.json> --oturum-dizini $D/oturum \
+   nohup ~/workspace/tools/h3muse-venv/bin/python muse/h3_uret.py uret --senaryo <T6'daki senaryo.json> --oturum-dizini $D/oturum \
      --gpu cpu --anahtar '' --aralik 15 --sorunlu-kabul > $D/cikti.log 2>&1 &
    ```
 2. `cikti.log`'da `Üretim arka planda başlatıldı` satırı görünür görünmez süreci durdur: `pkill -f "h3_uret.py uret"`.
@@ -189,7 +189,7 @@ Yalnızca T0–T11 bittikten ve orhan onay verdikten sonra yap.
 T5'teki senaryo (`test_t5/senaryo.json`) `hazir` ise, rehber bölüm 3'ün Adım 4–6'sını uygula:
 
 ```bash
-python3 muse/h3_uret.py uret --senaryo ~/workspace/h3uretim/test_t5/senaryo.json \
+~/workspace/tools/h3muse-venv/bin/python muse/h3_uret.py uret --senaryo ~/workspace/h3uretim/test_t5/senaryo.json \
   --oturum-dizini ~/workspace/h3uretim/test_t5/oturum --gpu a100,g4
 ```
 

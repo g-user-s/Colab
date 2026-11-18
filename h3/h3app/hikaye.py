@@ -56,6 +56,9 @@ Rules:
 - About 2.5 words per second of speech at most; leave the first and last second of every block without speech.
 - Each block ends on a calm moment (no fast motion across the block boundary).
 - The place, outfits and props never change between blocks unless the idea says so.
+- Turkish fields ("baslik", "ad", "mekan.ad", "metin") keep Turkish letters exactly (ı İ ş Ş ğ Ğ ç Ç ö Ö ü Ü):
+  "Rıza", not "Riza"; "Sahaf Dükkânı", not "Sahaf Dukkani".
+- Do not move the story to a specific named place (city, district, landmark) the idea does not name.
 - Visual style of the video: {kind}."""
 
 PORTRE = """A {kind} full-body character reference image of one person: {gorunum}. Wearing: {kiyafet}.

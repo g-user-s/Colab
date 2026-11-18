@@ -218,6 +218,8 @@ do not add story elements that contradict it; the video lasts {seconds} seconds;
 For a real, named place, describe it as it really looks (its architecture, the shops and goods that really
 fill it, its light, people and sounds) from your own knowledge. Props the idea mentions (a spice cart, a tea
 tray) are added as single moving elements, not as the shops around the subject.
+Do not move the scene to a specific named place (a city, district, landmark, strait, coast) the idea does not name;
+a generic place ("a seaside tea garden") stays generic.
 
 {direction}
 

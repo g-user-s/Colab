@@ -115,7 +115,9 @@ TARGET_LUFS = -16.0
 GEMINI_MODEL = "gemini-4-hydrogen"
 GEMINI_FALLBACK_MODELS = ("gemini-3.8-flash", "gemini-3.5-flash-lite", "gemma-4-31b-it")
 # Her model ilk metin parçasını bu kadar saniyede göndermezse ya da yoğunsa (503/429) sıradakine geçilir
-FIRST_CHUNK_SECONDS = 10
+# Ajan ortamlarında (her Gemini isteği bir onaydan/vekil katmandan geçiyorsa) H3APP_FIRST_CHUNK_SECONDS ile büyütülür;
+# 10 sn orada ana modeli sistematik olarak yedeğe düşürüyordu (18.11.2026 Muse testi).
+FIRST_CHUNK_SECONDS = int(os.environ.get("H3APP_FIRST_CHUNK_SECONDS", "10"))
 # Üretilen videoyu izleyen Gemini modelleri (sırayla). 16.11.2026 kör testinde fazladan eli 2.5-flash ve
 # 3-flash-preview buldu, 3.5-flash-lite kaçırdı: izlemede lite model kullanılmaz. 17.11.2026: gemini-2.5-flash
 # yeni kullanıcılara kapatıldı (404 NOT_FOUND), zincirden çıkarıldı; yedek olarak lite olmayan 3.8-flash.

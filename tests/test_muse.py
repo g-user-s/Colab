@@ -89,7 +89,7 @@ def test_uretim_uctan_uca_ve_gpu_yedegi(ortam):
     assert r.returncode == 0, cikti
     o = json.loads((oturum / "oturum.json").read_text())
     assert o["asama"] == "kapatildi" and o["gpu"] == "a100"
-    assert o["uzak_durum"]["asama"] == "bitti"
+    assert o["isler"]["1"]["asama"] == "indirildi" and o["asama"] == "kapatildi"
     assert os.path.isfile(o["video"]["yol"]) and o["video"]["sure"] > 4
     kaynak = cagrilar(ortam)
     assert sum(1 for c in kaynak if c[:1] == ["new"] and "g4" in c) == 3      # G4 üç kez denendi
@@ -164,12 +164,17 @@ def test_kopmadan_sonra_devam(ortam, monkeypatch):
     c = h3_uret.Colab(ortam["colab"], oturum.dizin)
     oturum.kaydet(ccu_once=c.bakiye())
     h3_uret.runtime_ac(c, oturum, ["g4"])
-    h3_uret.yukle(c, oturum, s, None)
-    h3_uret.baslat(c, oturum)
-    # Burada Muse'un makinesi yeniden başlamış gibi: süreç biter, sonra 'devam' çağrılır
+    h3_uret.yukle(c, oturum, s)
+    # İş 1'i başlat; sonra Muse'un makinesi yeniden başlamış gibi süreç biter ve 'devam' çağrılır
+    yerel = os.path.join(oturum.dizin, "_kod", "is_1.json")
+    ortak.json_yaz(yerel, {"no": 1, "tur": "tek", "seed": 22})
+    c.calistir("upload", "-s", oturum.v["ad"], yerel, "content/h3muse/is.json")
+    c.kod(oturum.v["ad"], h3_uret.KOD_BASLAT.replace("@NO@", "1"))
+    oturum.kaydet(asama="uretim", isler={"1": {"tanim": {"no": 1, "tur": "tek", "seed": 22}, "asama": "baslatildi"}})
     r = calistir(os.path.join(MUSE, "h3_uret.py"), "devam", "--oturum-dizini", oturum.dizin, env=ortam["env"])
     assert r.returncode == 0, r.stdout + r.stderr
     assert json.loads(open(oturum.yol).read())["asama"] == "kapatildi"
+    assert sum(1 for x in cagrilar(ortam) if x[-1] == "content/h3muse/is.json") == 1   # iş yeniden başlatılmadı
 
 
 def test_yama_411_idempotent(tmp_path):
@@ -224,7 +229,7 @@ def test_uzun_deney_uctan_uca(ortam):
     assert r.returncode == 0, cikti
     dosyalar = os.listdir(oturum / "cikti")
     assert sum(f.endswith("_birlesik.mp4") for f in dosyalar) == 2
-    assert any(f.endswith("_uzun_sonuc.json") for f in dosyalar)
+    assert "uzun_sonuc.json" in dosyalar
     o = json.loads((oturum / "oturum.json").read_text())
     assert o["video"]["sure"] > 9 and o["video"]["yol"].endswith("ref_pika_h3_flex_birlesik.mp4")
     rapor = (oturum / "rapor.md").read_text()
@@ -240,8 +245,8 @@ def test_uzun_kopru(ortam):
     r = calistir(os.path.join(MUSE, "h3_uret.py"), "uret", "--senaryo", str(d / "uzun_senaryo.json"),
                  "--oturum-dizini", str(oturum), "--anahtar", "", "--aralik", "1", env=ortam["env"])
     assert r.returncode == 0, r.stdout + r.stderr
-    assert "son karesi" in (oturum / "cikti" / "gunluk.txt").read_text()
-    assert any(f.endswith("_kopru.png") for f in os.listdir(oturum / "cikti"))
+    assert "köprü karesi eklendi" in r.stdout
+    assert "kopru_ref_2.png" in os.listdir(oturum / "cikti")
 
 
 def test_teslim_parcalara_bolunur(tmp_path, monkeypatch):
@@ -345,7 +350,7 @@ def test_anahtar_ortam_degiskeninden(ortam):
                  "--anahtar", str(ortam["tmp"] / "olmayan.key"), "--aralik", "1", env=env)
     assert r.returncode == 0, r.stdout + r.stderr
     assert "ORTAM-ANAHTARI" not in r.stdout + r.stderr
-    assert not any(p.name.startswith(".gemini") for p in oturum.iterdir())   # geçici dosya silindi
+    assert not any("gemini.key" in str(x) for x in cagrilar(ortam))   # anahtar runtime'a hiç gitmez
     assert "ORTAM-ANAHTARI" not in json.dumps(cagrilar(ortam))
 
 
@@ -377,3 +382,45 @@ def test_izle_yerel_gemini_taklitle(ortam, monkeypatch, tmp_path):
                       "--cikti", str(cikti)]) == 0
     sonuc = json.loads(cikti.read_text())
     assert sonuc["defects"][0]["severity"] == "high" and "Generation prompt" in istek["metin"]
+
+
+def test_yerel_izleme_kusurda_ayni_runtimeda_yeniden_uretir(ortam):
+    s = senaryo_yaz(ortam)
+    kusur = {"verdict": "fail", "defects": [{"start_s": 1, "end_s": 2, "severity": "high", "category": "anatomi",
+                                             "description": "fazladan el"}], "summary": "x", "model": "taklit"}
+    temiz = {"verdict": "pass", "defects": [], "summary": "ok", "model": "taklit"}
+    env = dict(ortam["env"], H3MUSE_TEST_INCELEME=json.dumps([kusur, temiz]))
+    oturum = ortam["tmp"] / "izleme"
+    r = calistir(os.path.join(MUSE, "h3_uret.py"), "uret", "--senaryo", s, "--oturum-dizini", str(oturum),
+                 "--anahtar", ortam["anahtar"], "--aralik", "1", env=env)
+    assert r.returncode == 0, r.stdout + r.stderr
+    o = json.loads((oturum / "oturum.json").read_text())
+    assert len(o["isler"]) == 2 and o["sonuc"]["secilen"].endswith("seed1022.mp4")
+    assert sum(1 for x in cagrilar(ortam) if x[0] == "new") == 1          # aynı runtime
+    assert not any("gemini.key" in str(x) for x in cagrilar(ortam))
+    rapor = (oturum / "rapor.md").read_text()
+    assert "aday" in rapor and "kusur yok" in rapor and "1 yüksek" in rapor
+
+
+def test_uzun_yerel_izleme_ve_sureklilik(ortam):
+    d, s = uzun_senaryo_hazirla(ortam, kol="ref", ek=("--kopru",))
+    temiz = {"verdict": "pass", "defects": [], "summary": "ok", "model": "taklit"}
+    surek = {"kimlik": 9, "kiyafet": 8, "mekan": 9, "ses": 6, "hikaye": 8, "ortalama": 8.0, "sorunlar": [],
+             "model": "taklit"}
+    env = dict(ortam["env"], H3MUSE_TEST_INCELEME=json.dumps([temiz, temiz]),
+               H3MUSE_TEST_SUREKLILIK=json.dumps([surek]))
+    oturum = ortam["tmp"] / "uzun_izleme"
+    r = calistir(os.path.join(MUSE, "h3_uret.py"), "uret", "--senaryo", str(d / "uzun_senaryo.json"),
+                 "--oturum-dizini", str(oturum), "--anahtar", ortam["anahtar"], "--aralik", "1", env=env)
+    assert r.returncode == 0, r.stdout + r.stderr
+    rapor = (oturum / "rapor.md").read_text()
+    assert "ses 6" in rapor and "ortalama 8.0" in rapor
+    yuklenen = [x[-1] for x in cagrilar(ortam) if x[0] == "upload"]
+    assert "content/h3muse/kopru_ref_2.png" in yuklenen
+    assert (oturum / "cikti" / "uzun_sonuc.json").is_file()
+
+
+def test_no_proxy_kosesiz(monkeypatch):
+    monkeypatch.setenv("NO_PROXY", "localhost,[::1],127.0.0.1,[fd00::1]")
+    ortak.ag_ortamini_duzelt()
+    assert os.environ["NO_PROXY"] == "localhost,::1,127.0.0.1,fd00::1"

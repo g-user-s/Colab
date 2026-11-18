@@ -95,18 +95,13 @@ def anahtar_oku(yol):
                      "rehber 2.5'teki yola yaz. Anahtarı başka yerden arama.")
 
 
-def anahtar_dosyasi_hazirla(yol, gecici_dizin):
-    """Runtime'a yüklenecek anahtar dosyasının yolu. Anahtar ortam değişkenindeyse geçici bir 600 dosyası yazılır;
-    (yol, gecici_mi) döner. Çağıran, gecici dosyayı yüklemeden hemen sonra siler."""
-    yol = os.path.expanduser(yol or "")
-    anahtar = anahtar_oku(yol)
-    if yol and os.path.isfile(yol):
-        return yol, False
-    hedef = os.path.join(gecici_dizin, ".gemini.key.gecici")
-    fd = os.open(hedef, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-    with os.fdopen(fd, "w", encoding="utf-8") as f:
-        f.write(anahtar + "\n")
-    return hedef, True
+def ag_ortamini_duzelt():
+    """NO_PROXY/no_proxy içindeki köşeli IPv6 kayıtlarını ([::1]) köşesiz yazar. httpx (google-genai) köşeli kaydı
+    ayrıştıramıyor ve 'Invalid port' hatası veriyor; bu hata anahtar hatası gibi görünür (18.11.2026 Muse testi)."""
+    for ad in ("NO_PROXY", "no_proxy"):
+        deger = os.environ.get(ad)
+        if deger and "[" in deger:
+            os.environ[ad] = ",".join(x.strip().strip("[]") for x in deger.split(",") if x.strip())
 
 
 def json_yaz(yol, veri):

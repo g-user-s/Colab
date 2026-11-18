@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
-"""Adım 3–5: üretim, teslim, kapatma. Onaylanmış senaryo.json'u Colab GPU'sunda videoya çevirir.
+"""Adım 3–5: üretim, izleme, teslim, kapatma. Onaylanmış senaryoyu Colab GPU'sunda videoya çevirir.
+
+Mimari: Colab yalnızca GPU işi yapar (render, birleştirme, otomatik kontrol). Gemini'ye giden her şey — videonun
+izlenmesi, yeniden üretim kararı, süreklilik puanı, köprü prompt'u — BU makineden yapılır. Gemini anahtarı runtime'a
+hiç gitmez (Muse'un kasası anahtarı yalnızca bu makineden çıkan isteklerde gerçek anahtarla değiştirir).
+Gemini anahtarı verilirse bu betik google-genai ister: ~/workspace/tools/h3muse-venv/bin/python ile çalıştır.
 
 Komutlar:
   uret   --senaryo S --oturum-dizini D [--gpu g4,h100,a100] [--anahtar K]
-         GPU açar, dosyaları yükler, üretimi arka planda başlatır, bitene kadar yoklar,
-         çıktıyı indirip doğrular, runtime'ı kapatır, CCU raporu yazar.
+         GPU açar, dosyaları yükler; her GPU işini başlatır, yoklar, indirir, burada izletir; kusur varsa aynı
+         runtime'da yeni seed ile tekrar üretir; sonunda runtime'ı kapatır, rapor yazar.
   devam  --oturum-dizini D   Muse'un makinesi yeniden başladıysa kaldığı yerden sürdürür.
   durum  --oturum-dizini D   Uzaktaki üretimin durumunu bir kez gösterir (hiçbir şeyi değiştirmez).
   kapat  --oturum-dizini D   Eldeki çıktıları indirmeyi dener ve runtime'ı kapatır.
@@ -12,8 +17,7 @@ Komutlar:
 Kurallar (kodda zorunlu):
   - Runtime, betik içinde bir hata olursa önce çıktılar indirilmeye çalışılarak kapatılır.
   - Başarılı yolda runtime ancak teslim paketi indirilip sha256 ile doğrulandıktan sonra kapatılır.
-  - Gemini anahtarı (dosyadan ya da GEMINI_API_KEY ortam değişkeninden) runtime'a yalnızca dosya olarak yüklenir;
-    komut satırına ya da günlüklere girmez. Ortam değişkeninden geldiyse geçici dosya yüklemeden sonra silinir.
+  - Gemini anahtarı runtime'a hiç yüklenmez; komut satırına ya da günlüklere girmez.
 Çıkış kodları: 0 = video teslim edildi, 1 = hata (rapor.md'ye bak), 3 = GPU alınamadı (hiçbir şey açılmadı).
 """
 
@@ -35,7 +39,7 @@ BURADA = os.path.dirname(os.path.abspath(__file__))
 ISARET = "@@H3@@"
 UZAK = ortak.UZAK_DIZIN
 UZAK_J = UZAK.lstrip("/")          # Jupyter dosya yolu: content/h3muse
-ASAMALAR = ("yeni", "runtime_acik", "yuklendi", "baslatildi", "uzakta_bitti", "indirildi", "kapatildi")
+ASAMALAR = ("yeni", "runtime_acik", "yuklendi", "uretim", "bitti", "kapatildi")
 
 
 class Hata(Exception):
@@ -106,22 +110,35 @@ import os; os.makedirs("{UZAK}", exist_ok=True)
 print("{ISARET}" + json.dumps(r))
 """
 
-KOD_BASLAT = f"""
+KOD_BASLAT = """
 import json, os, subprocess, sys
-d = "{UZAK}"
-eski = None
+d = "@UZAK@"
+no = @NO@
+s = {}
 try:
-    eski = json.load(open(d + "/durum.json")).get("pid")
+    s = json.load(open(d + "/durum.json"))
 except Exception:
     pass
-if eski and os.path.exists(f"/proc/{{eski}}"):
-    print("{ISARET}" + json.dumps({{"pid": eski, "zaten": True}}))
+pid = s.get("pid")
+canli = False
+if pid:
+    try:
+        canli = open(f"/proc/{pid}/stat").read().split(") ")[1][0] not in "ZX"
+    except Exception:
+        canli = False
+if s.get("is_no") == no and (canli or s.get("asama") in ("bitti", "hata")):
+    print("@ISARET@" + json.dumps({"pid": pid, "zaten": True}))
+elif canli:
+    print("@ISARET@" + json.dumps({"hata": f"başka bir iş çalışıyor (iş {s.get('is_no')}, pid {pid})"}))
 else:
+    if os.path.exists(d + "/durum.json"):
+        os.remove(d + "/durum.json")
     p = subprocess.Popen([sys.executable, d + "/runtime_runner.py", "--dizin", d], cwd=d,
                          stdout=open(d + "/runner_cikti.txt", "ab"), stderr=subprocess.STDOUT,
                          start_new_session=True)
-    print("{ISARET}" + json.dumps({{"pid": p.pid, "zaten": False}}))
-"""
+    print("@ISARET@" + json.dumps({"pid": p.pid, "zaten": False}))
+""".replace("@UZAK@", UZAK).replace("@ISARET@", ISARET)
+
 
 KOD_DURUM = f"""
 import json, os
@@ -167,6 +184,21 @@ class Oturum:
     def gecti(self, asama):
         return ASAMALAR.index(self.asama) >= ASAMALAR.index(asama)
 
+    @property
+    def cikti(self):
+        d = os.path.join(self.dizin, "cikti")
+        os.makedirs(d, exist_ok=True)
+        return d
+
+
+def _sha256(yol):
+    import hashlib
+    h = hashlib.sha256()
+    with open(yol, "rb") as f:
+        for parca in iter(lambda: f.read(1 << 20), b""):
+            h.update(parca)
+    return h.hexdigest()
+
 
 def runtime_ac(c, o, gpular, deneme=3, bekle=None):
     bekle = int(os.environ.get("H3MUSE_BEKLE_SN", 30)) if bekle is None else bekle
@@ -192,7 +224,14 @@ def runtime_ac(c, o, gpular, deneme=3, bekle=None):
     raise GpuYok("İstenen GPU'ların hiçbiri alınamadı: " + ", ".join(g.upper() for g in gpular))
 
 
-def yukle(c, o, senaryo_yol, anahtar_yol):
+def dosya_yukle(c, o, yerel, uzak):
+    rc, out = c.calistir("upload", "-s", o.v["ad"], yerel, f"{UZAK_J}/{uzak}", sure=600)
+    if rc != 0:
+        raise Hata(f"Yükleme başarısız ({uzak}): {out.strip()[-300:]}")
+    yaz(f"Yüklendi: {uzak}")
+
+
+def yukle(c, o, senaryo_yol):
     ad = o.v["ad"]
     senaryo = ortak.json_oku(senaryo_yol)
     g = c.kod(ad, KOD_GPU)
@@ -205,38 +244,19 @@ def yukle(c, o, senaryo_yol, anahtar_yol):
         if g["mib"] < 40000:
             raise Hata(f"GPU belleği yetersiz ({g['mib']} MiB < 40 GB). H3 bu kartta çalışmaz.")
     o.kaydet(gpu_adi=g.get("gpu"), gpu_mib=g.get("mib"))
-    yuklenecek = [(os.path.join(BURADA, "runtime_runner.py"), "runtime_runner.py"),
-                  (ortak.h3app_paketle(os.path.join(o.dizin, "h3app.tar")), "h3app.tar"),
-                  (senaryo_yol, "senaryo.json")]
+    dosya_yukle(c, o, os.path.join(BURADA, "runtime_runner.py"), "runtime_runner.py")
+    dosya_yukle(c, o, ortak.h3app_paketle(os.path.join(o.dizin, "h3app.tar")), "h3app.tar")
+    dosya_yukle(c, o, senaryo_yol, "senaryo.json")
     for i, r in enumerate(senaryo.get("referanslar") or [], 1):
-        uzanti = os.path.splitext(r["dosya"])[1].lower() or ".png"
-        yuklenecek.append((r["dosya"], f"ref_{i}{uzanti}"))
-    gecici = None
-    if anahtar_yol:
-        dosya, gecici_mi = ortak.anahtar_dosyasi_hazirla(anahtar_yol, o.dizin)
-        gecici = dosya if gecici_mi else None
-        yuklenecek.append((dosya, "gemini.key"))
-    try:
-        for yerel, uzak in yuklenecek:
-            rc, out = c.calistir("upload", "-s", ad, yerel, f"{UZAK_J}/{uzak}", sure=600)
-            if rc != 0:
-                raise Hata(f"Yükleme başarısız ({uzak}): {out.strip()[-300:]}")
-            yaz(f"Yüklendi: {uzak}")
-    finally:
-        if gecici and os.path.exists(gecici):
-            os.remove(gecici)
-    o.kaydet(asama="yuklendi")
+        dosya_yukle(c, o, r["dosya"], f"ref_{i}{os.path.splitext(r['dosya'])[1].lower() or '.png'}")
+    o.kaydet(asama="yuklendi", uretim_baslangic=o.v.get("uretim_baslangic") or time.time())
 
 
-def baslat(c, o):
-    r = c.kod(o.v["ad"], KOD_BASLAT)
-    o.kaydet(asama="baslatildi", pid=r["pid"], uretim_baslangic=o.v.get("uretim_baslangic") or time.time())
-    yaz(f"Üretim arka planda {'zaten çalışıyor' if r.get('zaten') else 'başlatıldı'} (pid {r['pid']}).")
+# ---------- GPU işleri ----------
 
-
-def yokla(c, o, azami_dk, aralik):
+def yokla(c, o, no):
     ad = o.v["ad"]
-    bitis = o.v["uretim_baslangic"] + azami_dk * 60
+    bitis = o.v["uretim_baslangic"] + o.v["azami_dk"] * 60
     son, hata_sayisi = None, 0
     while True:
         try:
@@ -249,84 +269,269 @@ def yokla(c, o, azami_dk, aralik):
             yaz(f"Durum okunamadı ({hata_sayisi}/10): {str(e)[:200]}")
             if hata_sayisi >= 10:
                 raise Hata("Runtime'a art arda 10 kez ulaşılamadı.")
-            time.sleep(aralik)
+            time.sleep(o.v["aralik"])
             continue
-        satir = f"{s.get('asama')} · {s.get('son_satir', '')}"
-        if satir != son:
-            yaz(satir)
-            son = satir
-        if s.get("asama") in ("bitti", "hata"):
-            o.kaydet(asama="uzakta_bitti", uzak_durum=s)
-            return s
-        if not s.get("canli") and s.get("asama") != "okunamadi":
-            o.kaydet(uzak_durum=s)
-            raise Hata(f"Runner süreci durmuş ama 'bitti' yazmamış. Son çıktı: {s.get('runner_son', '')[-400:]}")
+        if s.get("is_no") == no:
+            satir = f"iş {no} · {s.get('asama')} · {s.get('son_satir', '')}"
+            if satir != son:
+                yaz(satir)
+                son = satir
+            if s.get("asama") in ("bitti", "hata"):
+                return s
+            if not s.get("canli"):
+                raise Hata(f"Runner süreci durmuş ama 'bitti' yazmamış. Son çıktı: {s.get('runner_son', '')[-400:]}")
         if time.time() > bitis:
-            o.kaydet(uzak_durum=s)
-            raise Hata(f"Üretim {azami_dk} dakikayı aştı.")
-        time.sleep(aralik)
+            raise Hata(f"Üretim {o.v['azami_dk']} dakikayı aştı.")
+        time.sleep(o.v["aralik"])
 
 
-def indir(c, o):
-    """Teslim parçalarını indirir, her birini sha256 ile doğrular ve açar. Başarılıysa True."""
-    ad = o.v["ad"]
-    s = o.v.get("uzak_durum") or {}
-    paket = s.get("teslim")
-    if not paket:
-        try:
-            s = c.kod(ad, KOD_DURUM, sure=90)
-            paket = s.get("teslim")
-            o.kaydet(uzak_durum=s)
-        except Hata:
-            paket = None
-    cikti = os.path.join(o.dizin, "cikti")
-    os.makedirs(cikti, exist_ok=True)
-    if not paket or not paket.get("parcalar"):
-        for dosya in ("gunluk.txt", "runner_cikti.txt"):   # en azından günlükler
-            c.calistir("download", "-s", ad, f"{UZAK_J}/{dosya}", os.path.join(cikti, dosya), sure=300)
-        yaz("Teslim paketi yok; yalnızca günlükler indirilmeye çalışıldı.")
-        return False
+def parcalari_indir(c, o, paket):
     toplam = 0
-    for no, parca in enumerate(paket["parcalar"], 1):
+    for i, parca in enumerate(paket.get("parcalar") or [], 1):
         ad_tar = os.path.basename(parca["yol"])
         yerel = os.path.join(o.dizin, ad_tar)
-        for i in range(1, 4):
-            rc, out = c.calistir("download", "-s", ad, f"{UZAK_J}/{ad_tar}", yerel, sure=900)
+        for deneme in range(1, 4):
+            rc, out = c.calistir("download", "-s", o.v["ad"], f"{UZAK_J}/{ad_tar}", yerel, sure=900)
             if rc == 0 and os.path.isfile(yerel) and _sha256(yerel) == parca["sha256"]:
                 break
-            yaz(f"{ad_tar} doğrulanamadı (deneme {i}/3): {out.strip()[-200:]}")
+            yaz(f"{ad_tar} doğrulanamadı (deneme {deneme}/3): {out.strip()[-200:]}")
         else:
             raise Hata(f"{ad_tar} 3 denemede doğru inmedi (sha256 uyuşmuyor).")
         with tarfile.open(yerel) as t:
-            t.extractall(cikti, filter="data")
+            t.extractall(o.cikti, filter="data")
         os.remove(yerel)
         toplam += parca["boyut"]
-        yaz(f"Parça {no}/{len(paket['parcalar'])} indi ve doğrulandı: {len(parca['icerik'])} dosya.")
-    yaz(f"Teslim tamam: {toplam} bayt, {sum(len(p['icerik']) for p in paket['parcalar'])} dosya.")
     if paket.get("pakete_girmeyen"):
         yaz(f"47 MB'tan büyük, runtime'da kalan dosyalar: {', '.join(paket['pakete_girmeyen'])}")
-    o.kaydet(asama="indirildi", cikti_dizini=cikti)
-    return True
+    return toplam
 
 
-def _sha256(yol):
-    import hashlib
-    h = hashlib.sha256()
-    with open(yol, "rb") as f:
-        for parca in iter(lambda: f.read(1 << 20), b""):
-            h.update(parca)
-    return h.hexdigest()
+def is_calistir(c, o, tanim):
+    """Bir GPU işini runtime'da yürütür (daha önce indirildiyse önbellekten döner). {'video','video_ad','ek'}"""
+    no = int(tanim["no"])
+    isler = o.v.setdefault("isler", {})
+    kayit = isler.get(str(no))
+    if kayit and kayit["asama"] == "indirildi":
+        return kayit["sonuc"]
+    if not kayit:
+        yerel = os.path.join(o.dizin, "_kod", f"is_{no}.json")
+        ortak.json_yaz(yerel, tanim)
+        rc, out = c.calistir("upload", "-s", o.v["ad"], yerel, f"{UZAK_J}/is.json", sure=300)
+        if rc != 0:
+            raise Hata(f"İş tanımı yüklenemedi: {out.strip()[-300:]}")
+        r = c.kod(o.v["ad"], KOD_BASLAT.replace("@NO@", str(no)))
+        if r.get("hata"):
+            raise Hata(f"İş {no} başlatılamadı: {r['hata']}")
+        kayit = isler[str(no)] = {"tanim": {k: v for k, v in tanim.items() if k != "prompt"}, "asama": "baslatildi"}
+        o.kaydet(asama="uretim", isler=isler)
+        yaz(f"İş {no} ({tanim['tur']}) runtime'da {'zaten çalışıyor' if r.get('zaten') else 'başlatıldı'}.")
+    s = yokla(c, o, no)
+    if s.get("teslim"):
+        parcalari_indir(c, o, s["teslim"])
+    if s.get("asama") != "bitti":
+        o.kaydet(son_hata_durumu=s)
+        raise Hata(f"İş {no} ({tanim['tur']}) başarısız: {s.get('hata', 'bilinmeyen hata')}")
+    video = os.path.join(o.cikti, s["video"])
+    if not os.path.isfile(video) or _sha256(video) != s.get("video_sha256"):
+        raise Hata(f"İş {no}: video inmedi ya da sha256 uyuşmuyor ({s['video']}).")
+    kayit.update(asama="indirildi", sonuc={"video": video, "video_ad": s["video"], "ek": s.get("ek") or {}})
+    o.kaydet(isler=isler)
+    yaz(f"İş {no} indi ve doğrulandı: {s['video']}")
+    return kayit["sonuc"]
+
+
+# ---------- Gemini (bu makinede) ----------
+
+class Gemini:
+    """İzleme ve köprü prompt'u: istekler bu makineden çıkar. Sonuçlar oturuma yazılır; 'devam' tekrar sormaz."""
+
+    def __init__(self, o, senaryo):
+        self.o, self.senaryo = o, senaryo
+        self.anahtar = ortak.anahtar_oku(o.v["anahtar"]) if o.v.get("anahtar") else None
+        from senaryo import h3_yukle
+        self.config, self.pw = h3_yukle()
+        from h3app import review
+        self.review = review
+        self.test = json.loads(os.environ.get("H3MUSE_TEST_INCELEME", "null"))   # yalnızca testler
+        self.test_s = json.loads(os.environ.get("H3MUSE_TEST_SUREKLILIK", "null"))
+        self.aktif = bool(self.anahtar) and (not senaryo.get("sahte") or self.test is not None)
+        if self.anahtar and self.test is None:
+            try:
+                import google.genai  # noqa: F401
+            except ImportError:
+                raise Hata("google-genai yok. Bu betiği ~/workspace/tools/h3muse-venv/bin/python ile çalıştır.")
+
+    def _onbellek(self, ad):
+        return self.o.v.setdefault(ad, {})
+
+    def izle(self, video, prompt, refs, roles):
+        if not self.aktif:
+            return None
+        c = self._onbellek("incelemeler")
+        k = os.path.basename(video)
+        if k not in c:
+            yaz(f"🔍 Gemini {k} videosunu izliyor (bu makineden)…")
+            if self.test is not None:
+                r = self.test[len(c)] if len(c) < len(self.test) else None
+            else:
+                r = self.review.review_video(video, prompt, self.anahtar, refs, roles, log=yaz)
+            c[k] = r
+            self.o.kaydet()
+            yaz("   " + self.review.summary(r))
+        return c[k]
+
+    def sureklilik(self, video, kesmeler):
+        if not self.aktif:
+            return None
+        c = self._onbellek("sureklilik")
+        k = os.path.basename(video)
+        if k not in c:
+            yaz(f"🎞️ Gemini {k} sürekliliğini izliyor (bu makineden)…")
+            if self.test_s is not None:
+                r = self.test_s[len(c)] if len(c) < len(self.test_s) else None
+            else:
+                r = self.review.continuity_review(video, kesmeler, self.senaryo.get("hikaye") or {}, self.anahtar,
+                                                  log=yaz)
+            c[k] = r
+            self.o.kaydet()
+        return c[k]
+
+    def kopru_prompt(self, k, istek, sure, gorseller, roller):
+        c = self._onbellek("kopru_promptlari")
+        if k not in c:
+            if not self.anahtar or self.senaryo.get("sahte"):
+                return None
+            yaz(f"🔗 {k}: köprü prompt'u yazılıyor (bu makineden)…")
+            prompt, sorun = self.pw.rewrite(istek, sure, self.anahtar, self.config.GEMINI_MODEL, gorseller, log=yaz,
+                                            style=self.senaryo["stil"], roles=roller)
+            if sorun:
+                yaz(f"   ⚠️ Köprü prompt'unda uyarı: {' | '.join(sorun)}")
+            c[k] = prompt
+            self.o.kaydet()
+        return c[k]
+
+
+def son_kare(video, hedef):
+    subprocess.run(["ffmpeg", "-y", "-v", "error", "-sseof", "-0.2", "-i", video, "-frames:v", "1", hedef], check=True)
+    return hedef
+
+
+def blok_kesmeleri(config, bloklar):
+    kesmeler, t = [], 0.0
+    for b in bloklar[:-1]:
+        t += config.frames_for(b["sure"]) / 24
+        kesmeler.append(round(t, 2))
+    return kesmeler
+
+
+# ---------- Akışlar ----------
+
+def akis_tek(c, o, senaryo, gm):
+    rv = gm.review
+    refs = [r["dosya"] for r in senaryo.get("referanslar") or []]
+    roller = [{"role": r["rol"], "name": r.get("ad", "")} for r in senaryo.get("referanslar") or []] or None
+    tekrar = int(senaryo.get("yeniden_uretim", gm.config.REVIEW_RETRIES)) if gm.aktif else 0
+    adaylar = []
+    for k in range(tekrar + 1):
+        seed = int(senaryo["seed"]) + 1000 * k
+        r = is_calistir(c, o, {"no": k + 1, "tur": "tek", "seed": seed})
+        inc = gm.izle(r["video"], senaryo["prompt"], refs, roller)
+        adaylar.append({"video": r["video"], "seed": seed, "inceleme": inc})
+        if not rv.blocking(inc):
+            break
+        if k < tekrar:
+            yaz(f"🔁 Yüksek önemde kusur; aynı runtime'da yeni seed ({int(senaryo['seed']) + 1000 * (k + 1)}) ile "
+                f"yeniden üretiliyor ({k + 1}/{tekrar}).")
+    en_iyi = min(adaylar, key=lambda a: rv.score(a["inceleme"])) if gm.aktif else adaylar[-1]
+    secim = (f"⭐ Seçilen: {os.path.basename(en_iyi['video'])} (seed {en_iyi['seed']}, {len(adaylar)} aday) — izleme: "
+             f"{rv.short(en_iyi['inceleme']) if gm.aktif else 'yapılmadı (anahtar verilmedi ya da kuru deneme)'}")
+    if gm.aktif and rv.blocking(en_iyi["inceleme"]):
+        secim += " · ⚠️ bütün adaylarda yüksek önemde kusur kaldı"
+    yaz(secim)
+    o.kaydet(sonuc={"secilen": en_iyi["video"], "secim": secim,
+                    "adaylar": [{"video": os.path.basename(a["video"]), "seed": a["seed"],
+                                 "izleme": rv.short(a["inceleme"]) if gm.aktif else "-"} for a in adaylar]})
+
+
+def akis_uzun(c, o, senaryo, gm):
+    rv, config = gm.review, gm.config
+    tekrar = int(senaryo.get("yeniden_uretim", 0)) if gm.aktif else 0
+    mfile = config.METHODS[senaryo["yontem"]]["file"]
+    no = [0]
+
+    def sonraki():
+        no[0] += 1
+        return no[0]
+
+    referanslar = senaryo.get("referanslar") or []
+    ref_rt = [f"ref_{i}{os.path.splitext(r['dosya'])[1].lower() or '.png'}" for i, r in enumerate(referanslar, 1)]
+    ref_yerel = [r["dosya"] for r in referanslar]
+    ref_rol = [{"role": r["rol"], "name": r.get("ad", "")} for r in referanslar]
+    ozet = {"deney": bool(senaryo.get("deney")), "kollar": {}}
+    kopru_kayit = o.v.setdefault("kopru_yuklenen", {})
+    for kol, k in senaryo["kollar"].items():
+        yaz(f"━━ Kol: {kol} ({'görsel referanslı, Ref2VA' if k['ref'] else 'yalnızca metin çapası'}) ━━")
+        secilen_ad, secilen_yerel, kol_ozet = [], [], []
+        for b in k["bloklar"]:
+            n = b["blok"]
+            prompt = b["prompt"]
+            b_rt = list(ref_rt) if k["ref"] else []
+            b_yerel = list(ref_yerel) if k["ref"] else []
+            b_rol = list(ref_rol) if k["ref"] else None
+            if senaryo.get("kopru") and k["ref"] and secilen_yerel and len(b_rt) < config.MAX_REF_IMAGES:
+                ad = f"kopru_{kol}_{n}.png"
+                kare = son_kare(secilen_yerel[-1], os.path.join(o.cikti, ad))
+                if not kopru_kayit.get(ad):
+                    dosya_yukle(c, o, kare, ad)
+                    kopru_kayit[ad] = True
+                    o.kaydet(kopru_yuklenen=kopru_kayit)
+                b_rt.append(ad)
+                b_yerel.append(kare)
+                b_rol = (b_rol or []) + [{"role": "arka_plan", "name": "final frame of the previous block"}]
+                yeni = gm.kopru_prompt(ad, b["istek"], b["sure"], b_yerel, b_rol)
+                if yeni:
+                    prompt = yeni
+                else:
+                    yaz(f"🔗 {ad}: köprü karesi eklendi; prompt yeniden yazılmadı (kuru deneme ya da anahtar yok).")
+            adaylar = []
+            for d in range(tekrar + 1):
+                seed = int(senaryo["seed"]) + (n - 1) + 1000 * d
+                r = is_calistir(c, o, {"no": sonraki(), "tur": "blok", "kol": kol, "blok": n, "sure": b["sure"],
+                                       "prompt": prompt, "seed": seed, "refs": b_rt})
+                inc = gm.izle(r["video"], prompt, b_yerel, b_rol)
+                adaylar.append({"video": r["video"], "ad": r["video_ad"], "seed": seed, "inceleme": inc})
+                if not rv.blocking(inc):
+                    break
+                if d < tekrar:
+                    yaz(f"🔁 [{kol}] Blok {n}: yüksek önemde kusur; aynı runtime'da yeni seed ile yeniden üretiliyor")
+            en_iyi = min(adaylar, key=lambda a: rv.score(a["inceleme"])) if gm.aktif else adaylar[-1]
+            secilen_ad.append(en_iyi["ad"])
+            secilen_yerel.append(en_iyi["video"])
+            kol_ozet.append({"blok": n, "secilen": en_iyi["ad"], "seed": en_iyi["seed"],
+                             "inceleme": rv.short(en_iyi["inceleme"]) if gm.aktif else "atlandı",
+                             "adaylar": [{"dosya": a["ad"], "seed": a["seed"], "inceleme": a["inceleme"]}
+                                         for a in adaylar]})
+        m = is_calistir(c, o, {"no": sonraki(), "tur": "birlestir", "kol": kol, "dosyalar": secilen_ad})
+        kesmeler = blok_kesmeleri(config, k["bloklar"])
+        surek = gm.sureklilik(m["video"], kesmeler)
+        if surek:
+            yaz(f"   Süreklilik [{kol}]: " + ", ".join(f"{x} {surek.get(x)}" for x in rv.SURECLILIK_PUANLARI)
+                + f" · ortalama {surek.get('ortalama')}")
+        ozet["kollar"][kol] = {"birlesik": m["video_ad"], "saniye": (m.get("ek") or {}).get("saniye"),
+                               "bloklar": kol_ozet, "sureklilik": surek, "blok_kesmeleri": kesmeler}
+    if ozet["deney"]:
+        ozet["karsilastirma"] = {kk: (v["sureklilik"] or {}).get("ortalama") for kk, v in ozet["kollar"].items()}
+        yaz(f"⚖️ Deney sonucu (süreklilik ortalaması): {ozet['karsilastirma']}")
+    ortak.json_yaz(os.path.join(o.cikti, "uzun_sonuc.json"), ozet)
+    ana = "ref" if "ref" in ozet["kollar"] else next(iter(ozet["kollar"]))
+    o.kaydet(sonuc={"secilen": os.path.join(o.cikti, ozet["kollar"][ana]["birlesik"]), "uzun_ozet": ozet,
+                    "secim": f"Kol {ana}: {ozet['kollar'][ana]['birlesik']}"})
 
 
 def video_dogrula(o):
-    s = o.v.get("uzak_durum") or {}
-    if s.get("asama") != "bitti" or not s.get("video"):
-        return None
-    yol = os.path.join(o.dizin, "cikti", s["video"])
-    if not os.path.isfile(yol):
-        raise Hata(f"Video pakette yok: {s['video']}")
-    if _sha256(yol) != s.get("video_sha256"):
-        raise Hata("Videonun sha256'sı runtime'daki ile uyuşmuyor.")
+    yol = (o.v.get("sonuc") or {}).get("secilen")
+    if not yol or not os.path.isfile(yol):
+        raise Hata(f"Seçilen video yok: {yol}")
     sonuc = {"yol": yol, "boyut": os.path.getsize(yol)}
     if shutil.which("ffprobe"):
         r = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration:stream=codec_type,width,height",
@@ -363,7 +568,7 @@ def kapat(c, o):
 
 
 def rapor(o, hata=None):
-    s = o.v.get("uzak_durum") or {}
+    s = o.v.get("sonuc") or {}
     once, sonra = (o.v.get("ccu_once") or {}).get("bakiye"), (o.v.get("ccu_sonra") or {}).get("bakiye")
     harcanan = f"{once - sonra:.2f}" if once is not None and sonra is not None else "?"
     dk = (o.v["kapanis"] - o.v["acilis"]) / 60 if o.v.get("kapanis") and o.v.get("acilis") else None
@@ -381,11 +586,14 @@ def rapor(o, hata=None):
         f"- GPU: {o.v.get('gpu', '?')} · {o.v.get('gpu_adi') or '—'}",
         f"- Prompt modelleri: {senaryo.get('modeller') or '-'}",
         f"- Video: {(o.v.get('video') or {}).get('yol', '-')}",
-        f"- Seçim ve Gemini izlemesi: {s.get('secim') or '-'}",
+        f"- Seçim ve Gemini izlemesi (bu makineden): {s.get('secim') or '-'}",
+        f"- GPU işleri: {len(o.v.get('isler') or {})} · Gemini izlemesi: {len(o.v.get('incelemeler') or {})} video",
         f"- CCU: {once} → {sonra} (bakiye farkı {harcanan}; tahmin: {tahmin}); "
         f"aktif atama: {(o.v.get('ccu_sonra') or {}).get('aktif')}",
         f"- Runtime: {o.v.get('ad', '-')} · aşama: {o.asama}",
     ]
+    for a in s.get("adaylar") or []:
+        satirlar.append(f"  - aday {a['video']} · seed {a['seed']} · izleme: {a['izleme']}")
     uzun = s.get("uzun_ozet") or {}
     for kol, v in (uzun.get("kollar") or {}).items():
         sk = v.get("sureklilik") or {}
@@ -397,10 +605,9 @@ def rapor(o, hata=None):
             satirlar += [f"  - ⚠️ {x.get('zaman_s')} sn [{x.get('alan')}] {x.get('aciklama')}" for x in sk["sorunlar"][:6]]
     if uzun.get("karsilastirma"):
         satirlar.append(f"- ⚖️ Deney (süreklilik ortalaması): {uzun['karsilastirma']}")
-    if s.get("hata"):
-        satirlar.append(f"- Runtime hatası: {s['hata']}")
-    if s.get("uyari"):
-        satirlar.append(f"- Uyarı: {s['uyari']}")
+    hd = o.v.get("son_hata_durumu") or {}
+    if hd.get("hata"):
+        satirlar.append(f"- Runtime hatası: {hd['hata']}")
     yol = os.path.join(o.dizin, "rapor.md")
     with open(yol, "w", encoding="utf-8") as f:
         f.write("\n".join(satirlar) + "\n")
@@ -409,23 +616,18 @@ def rapor(o, hata=None):
 
 
 def akis(c, o, a):
-    """Kaldığı aşamadan sonuna kadar yürütür. Hata olursa çıktıları indirip runtime'ı kapatır."""
+    """Kaldığı yerden sonuna kadar yürütür. Hata olursa runtime'ı kapatır (her iş zaten indirilmiş olur)."""
     try:
+        senaryo = ortak.json_oku(o.v["senaryo"])
+        gm = Gemini(o, senaryo)
         if not o.gecti("runtime_acik"):
             o.kaydet(ccu_once=c.bakiye())
             runtime_ac(c, o, o.v["gpular"])
         if not o.gecti("yuklendi"):
-            yukle(c, o, o.v["senaryo"], o.v.get("anahtar"))
-        if not o.gecti("baslatildi"):
-            baslat(c, o)
-        if not o.gecti("uzakta_bitti"):
-            yokla(c, o, o.v["azami_dk"], o.v["aralik"])
-        if not o.gecti("indirildi"):
-            if not indir(c, o):
-                raise Hata("Teslim paketi oluşmadı.")
-        s = o.v.get("uzak_durum") or {}
-        if s.get("asama") != "bitti":
-            raise Hata(f"Üretim başarısız: {s.get('hata', 'bilinmeyen hata')}")
+            yukle(c, o, o.v["senaryo"])
+        if not o.gecti("bitti"):
+            (akis_uzun if senaryo.get("tur") == "uzun" else akis_tek)(c, o, senaryo, gm)
+            o.kaydet(asama="bitti")
         video_dogrula(o)
         kapat(c, o)
         rapor(o)
@@ -437,11 +639,6 @@ def akis(c, o, a):
     except Hata as e:
         yaz(f"❌ {e}")
         if o.v.get("ad") and o.asama != "kapatildi" and not str(e).startswith("RUNTIME_KAYIP"):
-            if not o.gecti("indirildi"):
-                try:
-                    indir(c, o)
-                except Exception as e2:  # noqa: BLE001
-                    yaz(f"Kısmi indirme de başarısız: {e2}")
             try:
                 kapat(c, o)
             except Exception as e3:  # noqa: BLE001
@@ -461,8 +658,8 @@ def main(argv=None):
             q.add_argument("--senaryo", required=True)
             q.add_argument("--gpu", default="g4,h100,a100", help="Denenecek GPU sırası (virgülle)")
             q.add_argument("--anahtar", default="~/.config/h3muse/gemini.key",
-                           help="Gemini anahtar dosyası; izleme için gerekli. Boş bırakmak için --anahtar ''")
-            q.add_argument("--azami-dakika", type=int, help="Varsayılan yönteme göre: pika 45, turbo 30, h3 90")
+                           help="Gemini anahtarı (bu makinedeki izleme için). İzlemesiz: --anahtar ''")
+            q.add_argument("--azami-dakika", type=int, help="Varsayılan: senaryoya göre hesaplanır")
             q.add_argument("--aralik", type=int, default=30, help="Yoklama aralığı (sn)")
             q.add_argument("--sorunlu-kabul", action="store_true",
                            help="Denetim sorunlu senaryoyu yine de üret (yalnızca orhan onay verdiyse)")
@@ -486,6 +683,8 @@ def main(argv=None):
         gpular = [g.strip().lower() for g in a.gpu.split(",") if g.strip()]
         if "cpu" in gpular and not senaryo.get("sahte"):
             raise SystemExit("CPU runtime yalnızca kuru deneme (--sahte senaryo) içindir; gerçek üretim GPU ister.")
+        if a.anahtar:
+            ortak.anahtar_oku(a.anahtar)   # GPU açmadan önce: anahtar yoksa hemen dur
         os.makedirs(o.dizin, exist_ok=True)
         senaryo_kopya = os.path.join(o.dizin, "senaryo.json")
         if os.path.abspath(a.senaryo) != senaryo_kopya:
@@ -505,17 +704,12 @@ def main(argv=None):
         return akis(c, o, a)
     if a.komut == "durum":
         if not o.v.get("ad") or o.asama == "kapatildi":
-            print(json.dumps(o.v, ensure_ascii=False, indent=2))
+            print(json.dumps({k: o.v.get(k) for k in ("asama", "ad", "gpu", "isler")}, ensure_ascii=False, indent=2))
             return 0
         print(json.dumps(c.kod(o.v["ad"], KOD_DURUM, sure=90), ensure_ascii=False, indent=2))
         return 0
     if a.komut == "kapat":
         if o.v.get("ad") and o.asama != "kapatildi":
-            if not o.gecti("indirildi"):
-                try:
-                    indir(c, o)
-                except Exception as e:  # noqa: BLE001
-                    yaz(f"İndirme başarısız: {e}")
             kapat(c, o)
         rapor(o, None if o.v.get("video") else "elle kapatıldı")
         return 0

@@ -13,6 +13,9 @@ Onay kuralların her zamanki gibi geçerli. Bu rehber onlara bir şey eklemez; y
 - **`pkill -f`:** kalıbın ilk harfini köşeli paranteze al (`pkill -f "[h]3_uret.py"`); yoksa komutu çalıştıran kendi kabuğunu da öldürür.
 - **Drive:** `H3_Video_Studyosu` klasörü yoksa oluştur. Yükleme komutu: `drive +upload <dosya> --parent <klasör>`.
 - **Colab içinden Drive bağlama (`colab drivemount`):** her seferinde tarayıcıda onay ister ve onay gelmezse sonsuza kadar bekler. Bu akışta kullanılmaz; teslim her zaman indirme + Drive bağlayıcısıyla yapılır.
+- **Gemini anahtarı:** kasan anahtarı bir bağlayıcıda saklar ve dosyaya gerçek anahtar yerine **vekil değer** (`hsurr:…`) yazar. İstek senin makinenden çıkarken gerçek anahtarla değiştirilir. Bu yüzden Gemini'ye giden her şey senin makinende yapılır; Colab runtime'ı Gemini'ye gitmez.
+- **`NO_PROXY`:** içindeki köşeli IPv6 kayıtları (`[::1]`) Gemini kütüphanesini bozuyordu (`Invalid port: ':1]'`). Betikler bunu artık kendileri düzeltiyor; elle ayarlamana gerek yok.
+- **Gemini'nin ilk yanıtı:** her istek onay kartından geçtiği için ana model 10 sn içinde yanıt vermeye başlamıyor ve iş yedek modele düşüyordu. Betikler bu sınırı senin ortamında 60 sn yapıyor. Yedek model yine de kullanılırsa rapor bunu gösterir.
 - **CCU:** `colab usage` bakiyeyi 2 ondalıkla verir; kısa işlerde fark 0,00 görünür. Rapor bu yüzden ayrıca "açık kalma süresi × saatlik oran" tahminini yazar.
 
 ---
@@ -114,7 +117,7 @@ mkdir -p ~/.config/h3muse && chmod 700 ~/.config/h3muse
 # anahtarı ~/.config/h3muse/gemini.key dosyasına yaz (tek satır), sonra:
 chmod 600 ~/.config/h3muse/gemini.key
 ```
-Dosya yoksa betikler anahtarı `GEMINI_API_KEY` (ya da `GEMINI`, `GOOGLE_API_KEY`) ortam değişkeninden okur; güvenli kasan anahtarı böyle veriyorsa dosya yazmana gerek yok. Betikler izinleri 600'den geniş bir anahtar dosyasını reddeder. Anahtar runtime'a dosya olarak gider; runner onu okur okumaz siler. Komut satırına, günlüğe ya da rapora hiçbir zaman girmez.
+Senin ortamında anahtar bir bağlayıcıda durur ve dosyaya vekil değer yazılır (18 Kasım'da böyle kuruldu); bu doğru yoldur. Dosya yoksa betikler anahtarı `GEMINI_API_KEY` (ya da `GEMINI`, `GOOGLE_API_KEY`) ortam değişkeninden okur; güvenli kasan anahtarı böyle veriyorsa dosya yazmana gerek yok. Betikler izinleri 600'den geniş bir anahtar dosyasını reddeder. Anahtar runtime'a dosya olarak gider; runner onu okur okumaz siler. Komut satırına, günlüğe ya da rapora hiçbir zaman girmez.
 
 ### 2.6 Kuru deneme (bir kez, yaklaşık 0,01 CCU)
 
@@ -125,7 +128,7 @@ cd ~/workspace/Colab
 D=~/workspace/h3uretim/kuru_deneme
 ~/workspace/tools/h3muse-venv/bin/python muse/senaryo.py \
   --fikir 'Kuru deneme' --sure 5 --sahte --cikti $D/senaryo.json
-python3 muse/h3_uret.py uret --senaryo $D/senaryo.json --oturum-dizini $D/oturum \
+~/workspace/tools/h3muse-venv/bin/python muse/h3_uret.py uret --senaryo $D/senaryo.json --oturum-dizini $D/oturum \
   --gpu cpu --anahtar '' --aralik 15
 ```
 `senaryo.py` sahte modda `2` dönebilir (örnek metin fikirle eşleşmez). Bu durumda `h3_uret.py`'ye `--sorunlu-kabul` ekle; kuru deneme için sorun değil.
@@ -215,19 +218,21 @@ Güncel bakiyeyi öğrenmek için: `~/workspace/tools/colab usage`.
 
 ```bash
 cd ~/workspace/Colab
-python3 muse/h3_uret.py uret --senaryo $D/senaryo.json --oturum-dizini $D/oturum
+~/workspace/tools/h3muse-venv/bin/python muse/h3_uret.py uret --senaryo $D/senaryo.json --oturum-dizini $D/oturum
 ```
+
+İş bölümü: **Colab yalnızca GPU işi yapar** (render, birleştirme, otomatik kontrol). **Gemini'ye giden her şey senin makinende yapılır:** videonun izlenmesi, yeniden üretim kararı, süreklilik puanı, köprü prompt'u. Gemini anahtarı runtime'a hiç gitmez; kasanın vekil anahtarı zaten yalnızca senin makinenden çıkan isteklerde çalışır. Bu yüzden betik `h3muse-venv` python'ıyla çalıştırılır.
 
 Betik sırasıyla şunları yapar:
 1. G4'ü 3 kez dener. 503 hatasında 30 sn bekler. Hesapta yoksa hemen H100'e, sonra A100'e geçer.
 2. GPU'yu `nvidia-smi` ile doğrular; 40 GB altındaysa durur.
-3. Runner'ı, senaryoyu, anahtarı ve referansları yükler.
-4. Üretimi runtime'da arka planda başlatır. Kurulum ve model indirmesi yaklaşık 6 dk sürer.
-5. 30 saniyede bir durumu yoklar ve ilerlemeyi yazar.
-6. Bitince teslim paketini indirir, sha256 ile doğrular, ffprobe ile videoyu kontrol eder.
-7. Runtime'ı kapatır, sunucuda açık oturum kalmadığını kontrol eder, CCU raporunu `$D/oturum/rapor.md`'ye yazar.
+3. Runner'ı, H3 kodunu, senaryoyu ve referansları yükler. Anahtar yüklenmez.
+4. İlk GPU işini başlatır. İlk işte kurulum ve model indirmesi yaklaşık 6 dk sürer; sonraki işlerde bu tekrar edilmez.
+5. 30 saniyede bir durumu yoklar. İş bitince videoyu indirir ve sha256 ile doğrular.
+6. Videoyu **senin makinenden** Gemini'ye izletir. Yüksek önemde kusur varsa **aynı runtime'da** yeni seed ile tekrar üretir (en fazla 2 kez) ve en az kusurlu adayı seçer.
+7. Runtime'ı kapatır, sunucuda açık oturum kalmadığını kontrol eder, `$D/oturum/rapor.md`'yi yazar.
 
-Bir hata olursa betik önce eldeki çıktıları ve günlüğü indirmeye çalışır, sonra runtime'ı **her durumda kapatır**.
+Her iş biter bitmez indirildiği için bir hata olursa elde o ana kadarki çıktılar vardır. Runtime **her durumda kapatılır**. İzlemede her Gemini isteği orhan'ın onay kartına düşebilir; kartlar zamanında onaylanmazsa izleme yapılamaz ve rapor bunu "izlenemedi" olarak gösterir.
 
 Çıkış kodları:
 
@@ -308,7 +313,7 @@ Işık: altın saat, sıcak tonlar. Ses: dalga sesi, uzaktan martılar, bardak �
 
 Gemini (`gemini-4-hydrogen`) fikri yönetmen brief'ine, brief'i de H3'ün resmi prompt yapısına çevirir. `check()` denetimi biçimi ve replik doğruluğunu kontrol eder. Senin işin **niyeti korumak**: brief'i okuyup orhan'ın istediği sahne bu mu diye bakmak. Gemini bazen sahneye kendi fikrini ekler; bunu yakalamak sana düşer.
 
-Gemini kotası: ücretsiz katmanda model başına günde yaklaşık 20 istek vardır. Bir üretim yaklaşık 2–3 senaryo isteği ve 1–3 izleme isteği harcar. Gereksiz yere tekrar çalıştırma.
+Gemini kotası: ücretsiz katmanda model başına günde yaklaşık 20 istek vardır. Bir üretim yaklaşık 2–3 senaryo isteği ve 1–3 izleme isteği harcar. Ana model yanıt vermezse yedek zincirin her halkası ayrı istek sayılır; bütçeye bunun için %50 pay ekle. Gereksiz yere tekrar çalıştırma.
 
 ---
 
@@ -373,14 +378,14 @@ Makinen yeniden başlarsa ya da `h3_uret.py` yarıda kesilirse, runtime'daki ür
    ```
 2. Her biri için durumu gör, sonra devam ettir:
    ```bash
-   python3 muse/h3_uret.py durum --oturum-dizini <klasör>/oturum
-   python3 muse/h3_uret.py devam --oturum-dizini <klasör>/oturum
+   ~/workspace/tools/h3muse-venv/bin/python muse/h3_uret.py durum --oturum-dizini <klasör>/oturum
+   ~/workspace/tools/h3muse-venv/bin/python muse/h3_uret.py devam --oturum-dizini <klasör>/oturum
    ```
 3. `durum` komutu runtime'ın kaybolduğunu söylerse (`RUNTIME_KAYIP`), `colab sessions` ve `colab usage` ile açık atamaya bak ve durumu orhan'a bildir.
 
 İşi bitirmek istemiyorsan ama runtime'ı kapatman gerekiyorsa:
 ```bash
-python3 muse/h3_uret.py kapat --oturum-dizini <klasör>/oturum
+~/workspace/tools/h3muse-venv/bin/python muse/h3_uret.py kapat --oturum-dizini <klasör>/oturum
 ```
 Bu komut eldeki çıktıları indirmeye çalışır, sonra runtime'ı kapatır.
 
@@ -402,6 +407,7 @@ Bu komut eldeki çıktıları indirmeye çalışır, sonra runtime'ı kapatır.
 
 ## 9. Bilinen sınırlar
 
+- **Yazı yasağı tam tutmuyor:** prompt'ta yasak olsa da model tente, tabela ya da cam gibi yüzeylerde okunmayan sözde yazı çizebiliyor (18 Kasım T12'de tentede görüldü). İzleme bunu çoğunlukla "orta" önemde bildirir.
 - **Uzun video** bölüm 10'da. Müzikli, konuşmasız kurgu modu henüz yok; yalnızca konuşmalı sahne.
 - **Referanslı üretimde stil çizimi** (anime/3D için görselin önce Gemini ile yeniden çizdirilmesi) bu akışta yok; görseller olduğu gibi kullanılır. `real` stil dışında referans görsel kullanacaksan orhan'a sor.
 - **Çoklu referans** (karakter + arka plan + nesne) H3 tarafında henüz gerçek GPU'da denenmedi. İlk denemede raporda özellikle belirt.
@@ -456,7 +462,7 @@ $PY muse/uzun_senaryo.py plan --dizin $D --kol ref
 
 **4. Onay ve üretim:** onay mesajı bölüm 3, Adım 4'teki gibidir; maliyet için aşağıdaki tabloyu kullan.
 ```bash
-python3 muse/h3_uret.py uret --senaryo $D/uzun_senaryo.json --oturum-dizini $D/oturum
+~/workspace/tools/h3muse-venv/bin/python muse/h3_uret.py uret --senaryo $D/uzun_senaryo.json --oturum-dizini $D/oturum
 ```
 Süre sınırı kendiliğinden hesaplanır: `20 + blok × (yeniden üretim + 1) × blok süresi` (pika 14, turbo 8, h3 30 dk).
 

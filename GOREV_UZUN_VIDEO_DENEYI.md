@@ -7,6 +7,8 @@
 
 İki kol aynı runtime'da, aynı plan ve aynı seed'lerle üretilir. Fark yalnızca yöntemdir.
 
+**Gemini onay kartları:** deney sırasında Gemini'ye yaklaşık 15–18 istek gider: kart, görseller, plan, 4 blok izlemesi, 2 süreklilik izlemesi. Her biri orhan'ın onay kartına düşebilir. Onaylar gecikirse istekler zaman aşımına uğrar ve izleme "izlenemedi" olur. Deneyi orhan'ın kartları hızlıca onaylayabileceği bir zamanda başlat; GPU açıkken beklenen her dakika CCU yakar.
+
 **Tahmini maliyet:** A100'de ~55 dk, **~6–7 CCU**. Gemini kotasından 15–18 istek harcar; deneyi kotası taze bir günde yap.
 
 Her adımda `MUSE_REHBERI.md`'deki kurallar geçerlidir; bu belge yalnızca deneye özel adımları verir. Bir adım beklenenden farklı sonuç verirse dur, tam çıktıyı orhan'a ilet.
@@ -29,7 +31,7 @@ K=~/workspace/h3uretim/uzun_kuru_deneme
 $PY muse/uzun_senaryo.py kart   --dizin $K --fikir 'Kuru deneme: "Merhaba."' --sure 24 --sahte
 $PY muse/uzun_senaryo.py gorsel --dizin $K
 $PY muse/uzun_senaryo.py plan   --dizin $K --kol ikisi
-python3 muse/h3_uret.py uret --senaryo $K/uzun_senaryo.json --oturum-dizini $K/oturum --gpu cpu --anahtar '' --aralik 15
+~/workspace/tools/h3muse-venv/bin/python muse/h3_uret.py uret --senaryo $K/uzun_senaryo.json --oturum-dizini $K/oturum --gpu cpu --anahtar '' --aralik 15
 ```
 
 **Beklenen:**
@@ -92,10 +94,10 @@ Kart ve görseller onaylandı. Başlayayım mı?
 
 Onay gelince:
 ```bash
-python3 muse/h3_uret.py uret --senaryo $D/uzun_senaryo.json --oturum-dizini $D/oturum --gpu a100,g4
+~/workspace/tools/h3muse-venv/bin/python muse/h3_uret.py uret --senaryo $D/uzun_senaryo.json --oturum-dizini $D/oturum --gpu a100,g4
 ```
 
-Kopma olursa: `python3 muse/h3_uret.py devam --oturum-dizini $D/oturum`.
+Kopma olursa: `~/workspace/tools/h3muse-venv/bin/python muse/h3_uret.py devam --oturum-dizini $D/oturum`.
 
 ## 6. Kör karşılaştırma
 

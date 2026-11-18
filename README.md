@@ -5,6 +5,7 @@ Kişisel ajan Muse'un, [H3 Video Stüdyosu](https://github.com/orha9n/h3-video-s
 - **[MUSE_REHBERI.md](MUSE_REHBERI.md)**: adım adım rehber. Buradan başla.
 - **[muse_testleri/MUSE_TEST_GOREVLERI.md](muse_testleri/MUSE_TEST_GOREVLERI.md)**: Muse'un ortamını ve araçları ölçen test görevleri (önce bunlar).
 - **[muse_testleri/MUSE_TEST_TUR2.md](muse_testleri/MUSE_TEST_TUR2.md)**: 2. tur (anahtar gerektiren testler, düzeltmelerin doğrulanması).
+- **[muse_testleri/MUSE_TEST_TUR3.md](muse_testleri/MUSE_TEST_TUR3.md)**: 3. tur (video izleme karşılaştırması, aynı runtime'da yeniden üretim, köprü).
 - **[GOREV_UZUN_VIDEO_DENEYI.md](GOREV_UZUN_VIDEO_DENEYI.md)**: Muse'un yapacağı uzun video deneyi (metin çapası vs. görsel referans).
 - `muse/`: betikler (`senaryo.py`, `uzun_senaryo.py`, `h3_uret.py`, `runtime_runner.py`, `yama_411.py`).
 - `h3/`: H3 Video Stüdyosu, [orha9n/h3-video-studyosu](https://github.com/orha9n/h3-video-studyosu)'dan `git subtree` ile alındı (geçmişiyle). Uzun video geliştirmesi burada: `h3app/hikaye.py` (hikâye kartı, referans görseller, blok planı), `h3app/uzun.py` (blok üretimi, izleme, birleştirme), `review.continuity_review` (süreklilik puanı).
