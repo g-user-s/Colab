@@ -205,7 +205,7 @@ def yukle(c, o, senaryo_yol, anahtar_yol):
             raise Hata(f"GPU belleği yetersiz ({g['mib']} MiB < 40 GB). H3 bu kartta çalışmaz.")
     o.kaydet(gpu_adi=g.get("gpu"), gpu_mib=g.get("mib"))
     yuklenecek = [(os.path.join(BURADA, "runtime_runner.py"), "runtime_runner.py"),
-                  (os.path.join(BURADA, "uzun_runtime.py"), "uzun_runtime.py"),
+                  (ortak.h3app_paketle(os.path.join(o.dizin, "h3app.tar")), "h3app.tar"),
                   (senaryo_yol, "senaryo.json")]
     for i, r in enumerate(senaryo.get("referanslar") or [], 1):
         uzanti = os.path.splitext(r["dosya"])[1].lower() or ".png"
@@ -466,8 +466,9 @@ def main(argv=None):
         if senaryo.get("durum") != "hazir" and not a.sorunlu_kabul:
             raise SystemExit("Senaryo 'hazir' değil (denetim sorunları var). Önce senaryoyu düzelt; "
                              "orhan sorunlara rağmen onay verdiyse --sorunlu-kabul ekle.")
-        if senaryo.get("h3_commit") != ortak.H3_COMMIT:
-            raise SystemExit("Senaryo farklı bir h3 commit'iyle yazılmış; senaryo.py ile yeniden yaz.")
+        if senaryo.get("h3app_surum") != ortak.h3app_surum():
+            raise SystemExit(f"Senaryo farklı bir h3app sürümüyle yazılmış ({senaryo.get('h3app_surum')} ≠ "
+                             f"{ortak.h3app_surum()}); senaryoyu yeniden yazdır.")
         gpular = [g.strip().lower() for g in a.gpu.split(",") if g.strip()]
         if "cpu" in gpular and not senaryo.get("sahte"):
             raise SystemExit("CPU runtime yalnızca kuru deneme (--sahte senaryo) içindir; gerçek üretim GPU ister.")

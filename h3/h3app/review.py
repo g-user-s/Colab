@@ -126,3 +126,56 @@ def summary(result):
              for d in result["defects"][:4]]
     more = f" (+{len(result['defects']) - 4} kusur daha)" if len(result["defects"]) > 4 else ""
     return f"🔍 İzleme ({model}): {len(result['defects'])} kusur — " + " · ".join(items) + more
+
+
+# ---------------- uzun video: süreklilik izlemesi ----------------
+
+SURECLILIK = """You are a film continuity supervisor. The clip was generated in {n} separate blocks and joined at
+these times (seconds): {cuts}. Watch the whole clip and LISTEN to it. Judge ONLY whether things that should stay the
+same really stay the same across the block boundaries and through the clip, compared with the story bible below.
+Score each from 1 (badly broken) to 10 (perfectly consistent):
+- kimlik: each character is clearly the same person (face, age, hair, build)
+- kiyafet: outfits, colours and accessories stay the same
+- mekan: the place, its layout, props and light stay the same
+- ses: each speaker keeps the same voice (timbre, pitch, accent); lines are spoken by the right person
+- hikaye: the events and lines follow the story bible in order, and the joins feel like intended cuts
+List concrete problems with timestamps. Do not invent problems. Answer ONLY with JSON:
+{{"kimlik": int, "kiyafet": int, "mekan": int, "ses": int, "hikaye": int,
+  "sorunlar": [{{"zaman_s": number, "alan": string, "aciklama": string}}], "ozet": string}}
+
+Story bible:
+{bible}"""
+SURECLILIK_PUANLARI = ("kimlik", "kiyafet", "mekan", "ses", "hikaye")
+
+
+def continuity_review(path, cuts, bible, api_key, models=None, log=None):
+    """Birleşik uzun videoyu blok sınırlarındaki tutarlılık açısından 1–10 puanlar (+ 'ortalama', 'model').
+    Görsel referans verilmez: metin ve görsel kolları adil karşılaştırılsın diye yalnızca iç tutarlılık ölçülür.
+    Hiçbir model yanıt vermezse None."""
+    from google.genai import types
+    import json
+    system = SURECLILIK.format(n=len(cuts) + 1, cuts=", ".join(f"{c:.2f}" for c in cuts) or "none",
+                               bible=json.dumps(bible, ensure_ascii=False, indent=1))
+    with tempfile.TemporaryDirectory(prefix="h3app_sureklilik_") as tmp:
+        data = open(_proxy(path, tmp), "rb").read()
+    parts = [types.Part.from_bytes(data=data, mime_type="video/mp4"), "Judge the continuity of this clip."]
+    cfg = types.GenerateContentConfig(system_instruction=system, temperature=0.1,
+                                      response_mime_type="application/json")
+    for m in prompt_writer.available(models or config.REVIEW_MODELS):
+        try:
+            client = prompt_writer._client(api_key, TIMEOUT_MS)
+            res = prompt_writer._parse_json(client.models.generate_content(model=m, contents=parts, config=cfg).text or "")
+            for k in SURECLILIK_PUANLARI:
+                res[k] = max(1, min(10, int(res[k]))) if res.get(k) is not None else None
+            scores = [res[k] for k in SURECLILIK_PUANLARI if res.get(k)]
+            res["ortalama"] = round(sum(scores) / len(scores), 2) if scores else None
+            res.setdefault("sorunlar", [])
+            res["model"] = m
+            return res
+        except Exception as e:  # noqa: BLE001
+            if prompt_writer.gone(e):
+                prompt_writer.mark_gone(m, log)
+                continue
+            if log:
+                log(f"   🎞️ {m} sürekliliği izleyemedi ({str(e)[:120]})")
+    return None

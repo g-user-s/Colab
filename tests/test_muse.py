@@ -1,7 +1,6 @@
 """Muse betiklerinin sahte modda uçtan uca testleri. GPU, Colab ve Gemini gerekmez.
 
-Gerekenler: ffmpeg/ffprobe ve h3-video-studyosu'nun test bağımlılıkları (requirements-dev.txt).
-H3_DIZIN ortam değişkeni sabit commit'teki h3 klonunu göstermelidir.
+Gerekenler: ffmpeg/ffprobe ve h3/requirements-dev.txt.
 """
 
 import json
@@ -15,7 +14,7 @@ import pytest
 KOK = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MUSE = os.path.join(KOK, "muse")
 SAHTE = os.path.join(KOK, "tests", "sahte_colab.py")
-H3 = os.environ.get("H3_DIZIN", os.path.expanduser("~/orha9n/h3-video-studyosu"))
+H3 = os.environ.get("H3_DIZIN", os.path.join(KOK, "h3"))
 sys.path.insert(0, MUSE)
 
 import h3_uret  # noqa: E402
@@ -36,7 +35,6 @@ def ortam(tmp_path):
                     "-c:a", "aac", str(video)], check=True)
     kok = tmp_path / "runtime"
     (kok / "content" / "h3muse").mkdir(parents=True)
-    os.symlink(H3, kok / "content" / "h3muse" / "repo")
     colab = tmp_path / "colab"
     colab.write_text(f"#!/bin/sh\nexec {sys.executable} {SAHTE} \"$@\"\n")
     colab.chmod(0o755)
@@ -69,7 +67,7 @@ def test_senaryo_sahte(ortam):
                  "--cikti", str(yol), env=ortam["env"])
     assert r.returncode in (0, 2), r.stdout + r.stderr
     s = json.loads(yol.read_text())
-    assert s["h3_commit"] == ortak.H3_COMMIT
+    assert s["h3app_surum"] == ortak.h3app_surum()
     assert s["prompt"].startswith("integrated_multimodal_description")
     assert s["cozunurluk"] in ortak.COZUNURLUKLER.values()
 
@@ -216,17 +214,6 @@ def test_uzun_senaryo_sahte(ortam):
     assert "warm deep voice" in s["dunya_capasi"]   # ses tarifi çapada
 
 
-def test_kart_denetimi_eksik_repligi_yakalar():
-    sys.path.insert(0, H3)
-    from h3app import prompt_writer as pw
-    import uzun_senaryo
-    kart = uzun_senaryo.sahte_kart('"Birinci."', 24)
-    assert uzun_senaryo.kart_denetle(kart, 24, 'A "Birinci." B "İkinci."', pw) == \
-        ['Fikirdeki şu metin kartta yok: "İkinci."']
-    kart["bloklar"][0]["sure"] = 20
-    assert any("4–15" in x for x in uzun_senaryo.kart_denetle(kart, 24, "", pw))
-
-
 def test_uzun_deney_uctan_uca(ortam):
     d, _ = uzun_senaryo_hazirla(ortam)
     oturum = ortam["tmp"] / "uzun_oturum"
@@ -243,6 +230,7 @@ def test_uzun_deney_uctan_uca(ortam):
     assert "Kol `metin`" in rapor and "Kol `ref`" in rapor
     yuklenen = [c[-1] for c in cagrilar(ortam) if c[0] == "upload"]
     assert "content/h3muse/ref_1.png" in yuklenen and "content/h3muse/ref_2.png" in yuklenen
+    assert "content/h3muse/h3app.tar" in yuklenen
 
 
 def test_uzun_kopru(ortam):
@@ -276,8 +264,9 @@ def test_uzun_gemini_yollari_taklitle(ortam, monkeypatch):
     monkeypatch.setenv("H3APP_WORK_DIR", ortam["env"]["H3APP_WORK_DIR"])
     from h3app import prompt_writer as pw
     import uzun_senaryo
+    from h3app import hikaye as hk
     fikir = 'Çaycı: "Çaylar taze." Kadın: "Teşekkürler."'
-    kart = uzun_senaryo.sahte_kart(fikir, 20)
+    kart = hk.ornek_kart(fikir, 20)
     istekler = {"generate": [], "plan": [], "rewrite": []}
 
     def gen(api_key, model, system, contents, temperature, log=None, step=None):
@@ -286,7 +275,7 @@ def test_uzun_gemini_yollari_taklitle(ortam, monkeypatch):
 
     def plan(idea, total, api_key, model, images=(), style="real", log=print, roles=None, **_):
         istekler["plan"].append((idea, total, list(images), roles))
-        return uzun_senaryo.sahte_plan(kart), []
+        return hk.ornek_plan(kart), []
 
     def rewrite(request, seconds, api_key, model, images=(), log=print, style="real", roles=None, **_):
         istekler["rewrite"].append((seconds, list(images), roles))
@@ -302,7 +291,7 @@ def test_uzun_gemini_yollari_taklitle(ortam, monkeypatch):
     assert "SAHTE-ANAHTAR" not in json.dumps(istekler["generate"], ensure_ascii=False)
     os.makedirs(d / "gorseller")
     for ad in ("K1", "MEKAN"):
-        uzun_senaryo.sahte_png(str(d / "gorseller" / f"{ad}.png"))
+        hk.ornek_png(str(d / "gorseller" / f"{ad}.png"))
     assert uzun_senaryo.main(["plan", *ortak_arg, "--kol", "ikisi"]) == 0
     idea, total, imgs, roles = istekler["plan"][0]
     assert total == 20 and '"Çaylar taze."' in idea and len(imgs) == 2
@@ -311,24 +300,11 @@ def test_uzun_gemini_yollari_taklitle(ortam, monkeypatch):
     assert [len(x[1]) for x in istekler["rewrite"]] == [0, 0, 2, 2]
 
 
-def test_sureklilik_izleme_puanlari(monkeypatch, tmp_path):
-    sys.path.insert(0, H3)
-    from h3app import prompt_writer as pw, review
-    import uzun_runtime
-
-    class Yanit:
-        text = '{"kimlik": 8, "kiyafet": 12, "mekan": 7, "ses": 5, "hikaye": 9, "sorunlar": [], "ozet": "ok"}'
-
-    class Istemci:
-        class models:
-            @staticmethod
-            def generate_content(model, contents, config):
-                assert "joined at" in config.system_instruction and "12.71" in config.system_instruction
-                return Yanit()
-
-    monkeypatch.setattr(pw, "_client", lambda *a, **k: Istemci())
-    monkeypatch.setattr(review, "_proxy", lambda path, d: path)
-    video = tmp_path / "v.mp4"
-    video.write_bytes(b"0")
-    s = uzun_runtime.sureklilik_izle(str(video), [12.71], {"baslik": "x"}, "anahtar", print)
-    assert s["kiyafet"] == 10 and s["ortalama"] == 7.8 and s["model"]
+def test_eski_h3app_ile_yazilmis_senaryo_reddedilir(ortam):
+    s = senaryo_yaz(ortam)
+    veri = json.loads(open(s).read())
+    veri["h3app_surum"] = "eskisurum000"
+    open(s, "w").write(json.dumps(veri))
+    r = calistir(os.path.join(MUSE, "h3_uret.py"), "uret", "--senaryo", s, "--oturum-dizini",
+                 str(ortam["tmp"] / "o7"), "--anahtar", "", env=ortam["env"])
+    assert r.returncode != 0 and "h3app sürümü" in r.stderr

@@ -89,6 +89,8 @@ Arayüzü GPU'suz denemek için: `H3APP_FAKE=1 H3APP_FAKE_VIDEO=ornek.mp4 H3APP_
 | `h3app/comfy_client.py` | Arka plandaki ComfyUI sunucusu ve iş kuyruğu |
 | `h3app/qa.py` | Otomatik kalite kontrolü ve ses dengeleme |
 | `h3app/assemble.py` | Uzun video bloklarının birleştirilmesi ve ses miksajı |
+| `h3app/hikaye.py` | Uzun video: hikâye kartı (karakter görünüş/kıyafet/ses, bloklar, replikler), karakter/mekân referans görselleri, karta göre blok planı |
+| `h3app/uzun.py` | Uzun video (başsız): blokları Ref2VA ile üretir, blok başına izler ve yeniden üretir, birleştirir, sürekliliği puanlar |
 | `h3app/ui.py` | Gradio arayüzü, arka plan işleri, Drive'a kayıt |
 | `build_notebook.py` | Paketi tek bir Colab notebook'una çevirir |
 

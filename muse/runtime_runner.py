@@ -4,7 +4,7 @@
 Girdi (DIZIN içinde): senaryo.json, gemini.key (isteğe bağlı), ref_1.png ... (isteğe bağlı)
 Çıktı (DIZIN içinde): durum.json (sürekli güncellenir), gunluk.txt, teslim.tar (bitince)
 
-Tek başına çalışır: yalnızca standart kütüphane + h3app (sabit commit'ten klonlanır).
+Tek başına çalışır: yalnızca standart kütüphane + h3app (h3_uret.py'nin yüklediği h3app.tar'dan açılır).
 Gemini anahtarı dosyadan okunur, okunduktan hemen sonra dosya silinir ve hiçbir yere yazılmaz.
 """
 
@@ -18,7 +18,6 @@ import sys
 import tarfile
 import traceback
 
-H3_REPO = "https://github.com/orha9n/h3-video-studyosu"
 PARCA_SINIRI = 40 * 1024 * 1024      # Colab dosya aktarımı istek başına ~50 MB
 TEK_DOSYA_SINIRI = 47 * 1024 * 1024
 
@@ -55,20 +54,21 @@ def sha256(yol):
     return h.hexdigest()
 
 
-def repo_hazirla(repo_dizin, commit, durum):
-    """h3 deposunu sabit commit'e getirir (varsa yeniden kullanır)."""
-    if not os.path.isdir(os.path.join(repo_dizin, ".git")):
-        durum.yaz(asama="kurulum", son_satir="h3 deposu klonlanıyor")
-        os.makedirs(repo_dizin, exist_ok=True)
-        for komut in (["git", "init", "-q"], ["git", "remote", "add", "origin", H3_REPO]):
-            subprocess.run(komut, cwd=repo_dizin, check=True)
-    head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo_dizin, capture_output=True, text=True).stdout.strip()
-    if head != commit:
-        subprocess.run(["git", "fetch", "-q", "--depth", "1", "origin", commit], cwd=repo_dizin, check=True)
-        subprocess.run(["git", "checkout", "-q", "--detach", commit], cwd=repo_dizin, check=True)
-    head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo_dizin, capture_output=True, text=True).stdout.strip()
-    if head != commit:
-        raise RuntimeError(f"h3 deposu yanlış commit'te: {head}")
+def h3app_ac(dizin, durum):
+    """Yüklenen h3app.tar'ı DIZIN/repo altına açar (her seferinde temiz). Repo klasörünü döner."""
+    repo = os.path.join(dizin, "repo")
+    paket = os.path.join(dizin, "h3app.tar")
+    if not os.path.isfile(paket):
+        raise RuntimeError("h3app.tar yüklenmemiş.")
+    durum.yaz(asama="kurulum", son_satir="h3app açılıyor")
+    hedef = os.path.join(repo, "h3app")
+    if os.path.isdir(hedef):
+        import shutil
+        shutil.rmtree(hedef)
+    os.makedirs(repo, exist_ok=True)
+    with tarfile.open(paket) as t:
+        t.extractall(repo, filter="data")
+    return repo
 
 
 def teslim_paketi(dizin, dosyalar, temel):
@@ -160,7 +160,7 @@ def tek_video(senaryo, dizin, anahtar, durum, gunluk_yol):
 def main(argv=None):
     p = argparse.ArgumentParser()
     p.add_argument("--dizin", default="/content/h3muse")
-    p.add_argument("--repo", help="h3 deposu klasörü (varsayılan: DIZIN/repo)")
+    p.add_argument("--repo", help="h3app'i içeren klasör (verilmezse DIZIN/h3app.tar açılır)")
     a = p.parse_args(argv)
     dizin = a.dizin
     os.makedirs(dizin, exist_ok=True)
@@ -190,18 +190,22 @@ def main(argv=None):
                                 f"sine=frequency=440:duration={sure}", "-shortest", "-c:v", "libx264",
                                 "-pix_fmt", "yuv420p", "-c:a", "aac", ornek], check=True)
                 os.environ["H3APP_FAKE_VIDEO"] = ornek
-        repo = a.repo or os.path.join(dizin, "repo")
-        if not os.environ.get("H3APP_MUSE_REPO_HAZIR"):
-            repo_hazirla(repo, senaryo["h3_commit"], durum)
+        repo = a.repo or h3app_ac(dizin, durum)
         sys.path.insert(0, repo)
         durum.yaz(asama="kurulum", son_satir="h3app yükleniyor")
         if not anahtar and not senaryo.get("sahte"):
             durum.yaz(uyari="Gemini anahtarı yok: otomatik izleme yapılmayacak")
         durum.yaz(asama="uretim", son_satir="üretim başladı")
         if senaryo.get("tur") == "uzun":
-            sys.path.insert(0, dizin)
-            import uzun_runtime
-            sonuc = uzun_runtime.calistir(senaryo, anahtar, Gunluk(gunluk_yol, durum))
+            from h3app import uzun
+            refs = [os.path.join(dizin, f"ref_{i}{os.path.splitext(r['dosya'])[1].lower() or '.png'}")
+                    for i, r in enumerate(senaryo.get("referanslar") or [], 1)]
+            roller = [{"role": r["rol"], "name": r.get("ad", "")} for r in senaryo.get("referanslar") or []]
+            sonuc = uzun.generate({k: v["bloklar"] for k, v in senaryo["kollar"].items()}, senaryo["yontem"],
+                                  senaryo["cozunurluk"], senaryo["seed"], senaryo["stil"], refs=refs, roles=roller,
+                                  bible=senaryo.get("hikaye"), api_key=anahtar,
+                                  retries=senaryo.get("yeniden_uretim", 0), bridge=senaryo.get("kopru"),
+                                  experiment=senaryo.get("deney"), log=Gunluk(gunluk_yol, durum))
         else:
             sonuc = tek_video(senaryo, dizin, anahtar, durum, gunluk_yol)
         secilen = sonuc["secilen"]

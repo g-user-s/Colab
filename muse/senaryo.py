@@ -18,30 +18,21 @@ Brief'i elle düzelttiysen yalnızca prompt'u yeniden yazdır:
 import argparse
 import datetime
 import os
-import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ortak  # noqa: E402
 
 
-def h3_yukle(h3_dizin):
-    """h3app'i verilen klasörden yükler; commit sabit commit değilse durur."""
-    h3_dizin = os.path.abspath(os.path.expanduser(h3_dizin))
+def h3_yukle(h3_dizin=None):
+    """h3app'i bu deponun h3/ klasöründen yükler."""
+    h3_dizin = os.path.abspath(os.path.expanduser(h3_dizin or ortak.H3_DIZIN))
     if not os.path.isfile(os.path.join(h3_dizin, "h3app", "prompt_writer.py")):
-        raise SystemExit(f"h3app bulunamadı: {h3_dizin}. Kurulum adımındaki klonlama komutunu çalıştır.")
-    try:
-        head = subprocess.run(["git", "-C", h3_dizin, "rev-parse", "HEAD"], capture_output=True, text=True,
-                              check=True).stdout.strip()
-    except (OSError, subprocess.CalledProcessError):
-        head = "?"
-    if head != ortak.H3_COMMIT:
-        raise SystemExit(f"h3 deposu yanlış commit'te ({head[:12]}). Beklenen: {ortak.H3_COMMIT[:12]}.\n"
-                         f"Düzelt: git -C {h3_dizin} fetch --depth 1 origin {ortak.H3_COMMIT} && "
-                         f"git -C {h3_dizin} checkout --detach {ortak.H3_COMMIT}")
+        raise SystemExit(f"h3app bulunamadı: {h3_dizin}. 'git pull' ile depoyu güncelle.")
     # Kılavuz önbelleği /content yerine yerel bir klasöre yazılsın (config içe aktarılmadan önce)
     os.environ.setdefault("H3APP_WORK_DIR", os.path.expanduser("~/.cache/h3muse"))
-    sys.path.insert(0, h3_dizin)
+    if h3_dizin not in sys.path:
+        sys.path.insert(0, h3_dizin)
     from h3app import config, prompt_writer
     return config, prompt_writer
 
@@ -61,7 +52,7 @@ def ref_coz(deger):
 
 def main(argv=None):
     p = argparse.ArgumentParser(description="Fikir → brief → H3 prompt'u (Gemini, GPU'suz)")
-    p.add_argument("--h3", required=True, help="h3-video-studyosu klonunun yolu (sabit commit'te)")
+    p.add_argument("--h3", help="h3 klasörü (varsayılan: bu deponun h3/ klasörü)")
     p.add_argument("--fikir", required=True, help="Kısa fikir (Türkçe; replikler çift tırnak içinde)")
     p.add_argument("--sure", type=int, default=10, help="Saniye, 4–15 (varsayılan 10)")
     p.add_argument("--stil", choices=ortak.STILLER, default="real")
@@ -118,7 +109,7 @@ def main(argv=None):
     senaryo = {
         "surum": 1,
         "olusturma": datetime.datetime.now().isoformat(timespec="seconds"),
-        "h3_commit": ortak.H3_COMMIT,
+        "h3app_surum": ortak.h3app_surum(a.h3),
         "fikir": a.fikir.strip(),
         "sure": a.sure,
         "stil": a.stil,

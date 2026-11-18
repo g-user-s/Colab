@@ -1,12 +1,44 @@
 """Muse betiklerinin ortak ayarları. Bu dosyadaki değerler bilerek sabittir; değiştirmeden önce orhan'a sorulur."""
 
+import hashlib
+import io
 import json
 import os
 import stat
+import tarfile
 
-# H3 Video Stüdyosu: test edilmiş sabit commit (17 Kasım 2026). Başka commit kullanılmaz.
-H3_REPO = "https://github.com/orha9n/h3-video-studyosu"
-H3_COMMIT = "70e0bc4244643119b35398078d3a2fe25a7a953b"
+# H3 Video Stüdyosu bu deponun h3/ klasöründe (orha9n/h3-video-studyosu@70e0bc4'ten git subtree ile alındı).
+# Runtime'a GitHub'dan klonlanmaz; h3/h3app klasörü paketlenip yüklenir.
+H3_DIZIN = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "h3")
+
+
+def _h3app_dosyalari(h3_dizin=None):
+    kok = os.path.join(h3_dizin or H3_DIZIN, "h3app")
+    if not os.path.isfile(os.path.join(kok, "__init__.py")):
+        raise SystemExit(f"h3app bulunamadı: {kok}")
+    out = []
+    for d, alt, dosyalar in os.walk(kok):
+        alt[:] = sorted(x for x in alt if x != "__pycache__")
+        out += [os.path.join(d, f) for f in sorted(dosyalar) if f.endswith(".py")]
+    return kok, out
+
+
+def h3app_surum(h3_dizin=None):
+    """h3app kaynak kodunun içerik özeti (12 hane). Senaryo ile üretim aynı kodla yapılsın diye kaydedilir."""
+    kok, dosyalar = _h3app_dosyalari(h3_dizin)
+    h = hashlib.sha256()
+    for f in dosyalar:
+        h.update(os.path.relpath(f, kok).encode() + b"\0" + open(f, "rb").read() + b"\0")
+    return h.hexdigest()[:12]
+
+
+def h3app_paketle(hedef, h3_dizin=None):
+    """h3app'i runtime'a yüklenecek bir tar dosyasına koyar (yalnızca .py dosyaları)."""
+    kok, dosyalar = _h3app_dosyalari(h3_dizin)
+    with tarfile.open(hedef, "w") as t:
+        for f in dosyalar:
+            t.add(f, arcname=os.path.join("h3app", os.path.relpath(f, kok)))
+    return hedef
 
 # Runtime üzerindeki çalışma klasörü (Jupyter yolu "content/h3muse" ile aynı yer)
 UZAK_DIZIN = "/content/h3muse"

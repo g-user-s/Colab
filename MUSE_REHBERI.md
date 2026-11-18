@@ -32,12 +32,12 @@ Onay kuralların her zamanki gibi geçerli. Bu rehber onlara bir şey eklemez; y
 | `muse/runtime_runner.py` | Üretimi Colab'de arka planda yürütür | Colab runtime'ında (`h3_uret.py` yükler, sen elle çalıştırmazsın) |
 | `muse/yama_411.py` | Colab CLI'daki 411 hatasını düzeltir | Senin makinende, kurulumda bir kez |
 | `muse/uzun_senaryo.py` | Uzun video: hikâye kartı → karakter/mekân görselleri → blok prompt'ları | Senin makinende (CCU harcamaz) |
-| `muse/uzun_runtime.py` | Uzun videonun bloklarını üretir, izler, birleştirir | Colab runtime'ında (`h3_uret.py` yükler) |
+| `h3/` | H3 Video Stüdyosu'nun kendisi (uzun video modülleri `h3app/hikaye.py`, `h3app/uzun.py` dahil) | `h3_uret.py` runtime'a `h3app.tar` olarak yükler |
 | `muse/ortak.py` | Sabit ayarlar (h3 commit'i, süre sınırları) | — |
 
 Bu betikler H3 Video Stüdyosu'nun kendi fonksiyonlarını çağırır: `prompt_writer.expand`, `prompt_writer.rewrite`, `ui._generate_job`. Yani notebook'taki "Fikirden videoya" düğmesiyle aynı kalitede iş çıkar: Gemini brief'i ve prompt'u yazar, video üretilir, otomatik kontrol yapılır, Gemini videoyu izler ve kusur bulursa yeni seed ile yeniden üretir.
 
-H3 deposu **sabit commit**'te kullanılır: `70e0bc4244643119b35398078d3a2fe25a7a953b`. Betikler başka bir commit'le çalışmayı reddeder. Commit değişecekse orhan'a sor.
+H3 Video Stüdyosu bu deponun `h3/` klasöründedir; ayrıca klonlanmaz. `git pull` ile H3 kodu da güncellenir. Her senaryo yazıldığı `h3app` sürümünü kaydeder; kod değiştiyse `h3_uret.py` eski senaryoyu reddeder ve senaryoyu yeniden yazdırman gerekir.
 
 ### Klasörler (senin makinende)
 
@@ -45,7 +45,6 @@ H3 deposu **sabit commit**'te kullanılır: `70e0bc4244643119b35398078d3a2fe25a7
 ~/workspace/tools/colab                 # Colab CLI sarmalayıcısı (zaten var)
 ~/workspace/tools/colab-cli-venv/       # CLI'nın venv'i (zaten var)
 ~/workspace/tools/h3muse-venv/          # senaryo.py için venv (kurulumda oluşturulur)
-~/workspace/h3-video-studyosu/          # H3 deposu, sabit commit'te
 ~/workspace/Colab/                      # bu depo (rehber + betikler)
 ~/.config/h3muse/gemini.key             # Gemini anahtarı (chmod 600)
 ~/workspace/h3uretim/<tarih>_<ad>/      # her üretimin klasörü: senaryo, oturum, çıktı, rapor
@@ -80,16 +79,14 @@ find ~/.local/share/python_keyring -type f -exec chmod 600 {} \; 2>/dev/null; tr
 
 CLI güncellenir ya da yeniden kurulursa yama silinir; bu komutu tekrar çalıştır. Kendiliğinden `colab update` çalıştırma (bkz. Yapılmayacaklar).
 
-### 2.3 H3 deposu (sabit commit)
+### 2.3 Bu depo
 
 ```bash
-cd ~/workspace
-[ -d h3-video-studyosu ] || git clone https://github.com/orha9n/h3-video-studyosu
-git -C h3-video-studyosu fetch --depth 1 origin 70e0bc4244643119b35398078d3a2fe25a7a953b
-git -C h3-video-studyosu checkout --detach 70e0bc4244643119b35398078d3a2fe25a7a953b
-git -C h3-video-studyosu rev-parse HEAD
+cd ~/workspace && ([ -d Colab ] || git clone https://github.com/g-user-s/Colab) && cd Colab
+git checkout claude/trusting-johnson-c5d0tf && git pull
+ls h3/h3app/hikaye.py
 ```
-**Beklenen:** son satır `70e0bc4244643119b35398078d3a2fe25a7a953b`.
+**Beklenen:** son komut dosya yolunu yazar. H3 kodu bu deponun içinde gelir; ayrı bir H3 klonu gerekmez. Eski `~/workspace/h3-video-studyosu` klonu artık kullanılmaz.
 
 ### 2.4 Senaryo için venv
 
@@ -117,7 +114,7 @@ Akışın tamamını Colab CPU runtime'ında, sahte video ve sahte Gemini metinl
 ```bash
 cd ~/workspace/Colab
 D=~/workspace/h3uretim/kuru_deneme
-~/workspace/tools/h3muse-venv/bin/python muse/senaryo.py --h3 ~/workspace/h3-video-studyosu \
+~/workspace/tools/h3muse-venv/bin/python muse/senaryo.py \
   --fikir 'Kuru deneme' --sure 5 --sahte --cikti $D/senaryo.json
 python3 muse/h3_uret.py uret --senaryo $D/senaryo.json --oturum-dizini $D/oturum \
   --gpu cpu --anahtar '' --aralik 15
@@ -129,7 +126,7 @@ python3 muse/h3_uret.py uret --senaryo $D/senaryo.json --oturum-dizini $D/oturum
 - `$D/oturum/cikti/` içinde bir `.mp4`, `_prompt.txt`, `_bilgi.json` ve `gunluk.txt`;
 - raporda `aktif atama: 0`.
 
-İlk kurulumda h3 deposu runtime'a klonlanır ve h3app yüklenir. Bu birkaç dakika sürebilir.
+H3 kodu runtime'a `h3app.tar` olarak yüklenir; GitHub'a erişim gerekmez.
 
 Kuru deneme geçmeden gerçek üretime geçme.
 
@@ -148,7 +145,6 @@ Orhan'ın isteğini bölüm 4'teki şablona göre kısa bir Türkçe fikre çevi
 ```bash
 cd ~/workspace/Colab
 ~/workspace/tools/h3muse-venv/bin/python muse/senaryo.py \
-  --h3 ~/workspace/h3-video-studyosu \
   --fikir '<fikir>' --sure 10 --stil real --yontem pika --cozunurluk yatay \
   --cikti $D/senaryo.json
 ```
@@ -427,14 +423,14 @@ Yeni akışta **kimliği görseller taşır**:
 
 **1. Hikâye kartı**
 ```bash
-$PY muse/uzun_senaryo.py kart --h3 ~/workspace/h3-video-studyosu --dizin $D \
+$PY muse/uzun_senaryo.py kart --dizin $D \
   --fikir '<fikir; replikler çift tırnak içinde>' --sure 30 --stil real
 ```
 `$D/hikaye.json` dosyasını oku. Karakterlerin `gorunum`, `kiyafet` ve `ses` alanları net ve ayırt edici mi? Bloklardaki `replikler` fikirdekiyle harfi harfine aynı mı? Bir şey yanlışsa JSON'u elle düzelt; `_meta` alanına dokunma. Kartı orhan'a özetle ve onay al.
 
 **2. Görseller**
 ```bash
-$PY muse/uzun_senaryo.py gorsel --h3 ~/workspace/h3-video-studyosu --dizin $D
+$PY muse/uzun_senaryo.py gorsel --dizin $D
 ```
 `$D/gorseller/` içindeki `K1.png`, `K2.png`… ve `MEKAN.png` dosyalarına bak. Sorular:
 - Görseldeki kişi karttaki tarife uyuyor mu (yaş, saç, kıyafet)?
@@ -445,7 +441,7 @@ Beğenmediğin görseli yeniden ürettir: `--yeniden K1`. Orhan'ın kendi görse
 
 **3. Plan ve prompt'lar**
 ```bash
-$PY muse/uzun_senaryo.py plan --h3 ~/workspace/h3-video-studyosu --dizin $D --kol ref
+$PY muse/uzun_senaryo.py plan --dizin $D --kol ref
 ```
 Çıktı `$D/uzun_senaryo.json`. Kod `2` ise sorunları oku. Kart kaynaklıysa kartı düzeltip 3. adımı tekrarla.
 

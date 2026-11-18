@@ -18,7 +18,6 @@ Her adımda `MUSE_REHBERI.md`'deki kurallar geçerlidir; bu belge yalnızca dene
 ```bash
 cd ~/workspace/Colab && git pull
 PY=~/workspace/tools/h3muse-venv/bin/python
-H3=~/workspace/h3-video-studyosu
 ```
 
 Ön koşul: rehberin 2. bölümü tamamlanmış, 2.6'daki kuru deneme geçmiş olmalı.
@@ -27,9 +26,9 @@ H3=~/workspace/h3-video-studyosu
 
 ```bash
 K=~/workspace/h3uretim/uzun_kuru_deneme
-$PY muse/uzun_senaryo.py kart   --h3 $H3 --dizin $K --fikir 'Kuru deneme: "Merhaba."' --sure 24 --sahte
-$PY muse/uzun_senaryo.py gorsel --h3 $H3 --dizin $K
-$PY muse/uzun_senaryo.py plan   --h3 $H3 --dizin $K --kol ikisi
+$PY muse/uzun_senaryo.py kart   --dizin $K --fikir 'Kuru deneme: "Merhaba."' --sure 24 --sahte
+$PY muse/uzun_senaryo.py gorsel --dizin $K
+$PY muse/uzun_senaryo.py plan   --dizin $K --kol ikisi
 python3 muse/h3_uret.py uret --senaryo $K/uzun_senaryo.json --oturum-dizini $K/oturum --gpu cpu --anahtar '' --aralik 15
 ```
 
@@ -45,7 +44,7 @@ Kuru deneme geçmezse deneye geçme. Çıktıyı orhan'a ilet.
 
 ```bash
 D=~/workspace/h3uretim/$(date +%Y%m%d)_uzun_deney
-$PY muse/uzun_senaryo.py kart --h3 $H3 --dizin $D --sure 30 --stil real --fikir 'Akşamüstü, deniz kenarında bir çay bahçesi; arkada sakin deniz ve martılar. Kır bıyıklı, beyaz önlüklü, ellili yaşlarda çaycı Ahmet, kırmızı hırkalı, uzun siyah saçlı genç bir kadının masasına ince belli bardakta çay getiriyor. Ahmet: "Çaylar taze, buyurun abla." Kadın gülümseyerek: "Sağ olun Ahmet abi, bugün deniz çok güzel." Ahmet yan masayı topluyor, sonra dönüp gülümsüyor: "Bu manzara her akşam böyle, alışırsınız." Kadın çayından bir yudum alıp: "Alışmak istemem, hep ilk günkü gibi kalsın."'
+$PY muse/uzun_senaryo.py kart --dizin $D --sure 30 --stil real --fikir 'Akşamüstü, deniz kenarında bir çay bahçesi; arkada sakin deniz ve martılar. Kır bıyıklı, beyaz önlüklü, ellili yaşlarda çaycı Ahmet, kırmızı hırkalı, uzun siyah saçlı genç bir kadının masasına ince belli bardakta çay getiriyor. Ahmet: "Çaylar taze, buyurun abla." Kadın gülümseyerek: "Sağ olun Ahmet abi, bugün deniz çok güzel." Ahmet yan masayı topluyor, sonra dönüp gülümsüyor: "Bu manzara her akşam böyle, alışırsınız." Kadın çayından bir yudum alıp: "Alışmak istemem, hep ilk günkü gibi kalsın."'
 ```
 
 Bu fikri **değiştirmeden** kullan; deneyin karşılaştırılabilir olması için sabit.
@@ -61,7 +60,7 @@ Kartı orhan'a özetle ve **onay al**.
 ## 3. Görseller
 
 ```bash
-$PY muse/uzun_senaryo.py gorsel --h3 $H3 --dizin $D
+$PY muse/uzun_senaryo.py gorsel --dizin $D
 ```
 
 `gorseller/K1.png`, `K2.png` ve `MEKAN.png` dosyalarına bak:
@@ -76,7 +75,7 @@ Gemini görsel üretemezse (hata mesajı) tam mesajı orhan'a ilet. Orhan görse
 ## 4. Plan (iki kol)
 
 ```bash
-$PY muse/uzun_senaryo.py plan --h3 $H3 --dizin $D --kol ikisi
+$PY muse/uzun_senaryo.py plan --dizin $D --kol ikisi
 ```
 
 Çıkış kodu `0` olmalı. `uzun_senaryo.json` içinde `"deney": true`, `"yeniden_uretim": 0` ve iki kol (`metin`, `ref`) olduğunu kontrol et. Deneyde yeniden üretim kapalıdır, böylece iki kol eşit koşullarda karşılaştırılır.
