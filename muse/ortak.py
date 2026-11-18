@@ -69,20 +69,44 @@ def azami_dakika(senaryo):
     return 20 + blok * (int(senaryo.get("yeniden_uretim", 0)) + 1) * BLOK_DAKIKA[senaryo["yontem"]]
 
 
+ANAHTAR_DEGISKENLERI = ("GEMINI_API_KEY", "GEMINI", "GOOGLE_API_KEY")
+
+
 def anahtar_oku(yol):
-    """Gemini anahtarını dosyadan okur. Anahtar hiçbir zaman ekrana yazılmaz."""
-    yol = os.path.expanduser(yol)
-    if not os.path.isfile(yol):
-        raise SystemExit(f"❌ Gemini anahtarı yok: {yol}\n"
-                         "   Bu adım Gemini ister. Anahtarı orhan verir (güvenli giriş kartıyla); sen onu bu dosyaya "
-                         "tek satır olarak yazar ve 'chmod 600' yaparsın (rehber 2.5). Anahtarı başka yerden arama.")
-    mod = stat.S_IMODE(os.stat(yol).st_mode)
-    if mod & 0o077:
-        raise SystemExit(f"Anahtar dosyasının izinleri çok açık ({oct(mod)}). Çalıştır: chmod 600 {yol}")
-    anahtar = open(yol, encoding="utf-8").read().strip()
-    if not anahtar:
-        raise SystemExit(f"Anahtar dosyası boş: {yol}")
-    return anahtar
+    """Gemini anahtarını okur: önce dosyadan (chmod 600), dosya yoksa ortam değişkeninden
+    (GEMINI_API_KEY, GEMINI, GOOGLE_API_KEY — ör. ajanın güvenli kasası anahtarı böyle veriyorsa).
+    Anahtar hiçbir zaman ekrana yazılmaz."""
+    yol = os.path.expanduser(yol or "")
+    if yol and os.path.isfile(yol):
+        mod = stat.S_IMODE(os.stat(yol).st_mode)
+        if mod & 0o077:
+            raise SystemExit(f"Anahtar dosyasının izinleri çok açık ({oct(mod)}). Çalıştır: chmod 600 {yol}")
+        anahtar = open(yol, encoding="utf-8").read().strip()
+        if not anahtar:
+            raise SystemExit(f"Anahtar dosyası boş: {yol}")
+        return anahtar
+    for ad in ANAHTAR_DEGISKENLERI:
+        if os.environ.get(ad, "").strip():
+            return os.environ[ad].strip()
+    raise SystemExit(f"❌ Gemini anahtarı yok: ne {yol or '(dosya verilmedi)'} dosyası ne de "
+                     f"{' / '.join(ANAHTAR_DEGISKENLERI)} ortam değişkeni var.\n"
+                     "   Bu adım Gemini ister. Anahtarı orhan güvenli giriş kartıyla verir. Kasan anahtarı ortam "
+                     "değişkeni olarak veriyorsa adı yukarıdakilerden biri olmalı; dosya olarak veriyorsa "
+                     "rehber 2.5'teki yola yaz. Anahtarı başka yerden arama.")
+
+
+def anahtar_dosyasi_hazirla(yol, gecici_dizin):
+    """Runtime'a yüklenecek anahtar dosyasının yolu. Anahtar ortam değişkenindeyse geçici bir 600 dosyası yazılır;
+    (yol, gecici_mi) döner. Çağıran, gecici dosyayı yüklemeden hemen sonra siler."""
+    yol = os.path.expanduser(yol or "")
+    anahtar = anahtar_oku(yol)
+    if yol and os.path.isfile(yol):
+        return yol, False
+    hedef = os.path.join(gecici_dizin, ".gemini.key.gecici")
+    fd = os.open(hedef, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
+        f.write(anahtar + "\n")
+    return hedef, True
 
 
 def json_yaz(yol, veri):

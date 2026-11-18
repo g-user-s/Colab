@@ -20,15 +20,16 @@ Bu tur, anahtar olmadığı için yapamadığın testleri tamamlıyor. Raporlama
 
 ## H0 — Hazırlık: Gemini anahtarı
 
-orhan anahtarı güvenli giriş kartıyla verecek. Anahtarı `~/.config/h3muse/gemini.key` dosyasına tek satır olarak yaz (rehber 2.5), sonra doğrula:
+orhan anahtarı güvenli giriş kartıyla verecek. Betikler anahtarı iki yerden okuyabilir; kasanın anahtarı nasıl verdiğine göre birini kullan:
 
+- **Dosya:** `~/.config/h3muse/gemini.key`, tek satır, `chmod 600` (rehber 2.5).
+- **Ortam değişkeni:** `GEMINI_API_KEY` (ya da `GEMINI`, `GOOGLE_API_KEY`). Kasan anahtarı komutlarına ortam değişkeni olarak veriyorsa dosya gerekmez; betikler dosya yoksa değişkene bakar. Runtime'a giderken geçici bir dosya yazılır ve yüklemeden hemen sonra silinir.
+
+Doğrulama (anahtarı göstermeden):
 ```bash
-stat -c '%a' ~/.config/h3muse/gemini.key       # 600
-wc -c < ~/.config/h3muse/gemini.key             # yalnızca uzunluk
-grep -c -F -f ~/.config/h3muse/gemini.key ~/.bash_history 2>/dev/null || echo 0   # 0
+python3 -c "import sys; sys.path.insert(0,'muse'); import ortak; print('anahtar uzunluğu:', len(ortak.anahtar_oku('~/.config/h3muse/gemini.key')))"
 ```
-
-Anahtar sohbete, komut satırına ya da ekrana düştü mü? Dürüstçe yaz.
+Bu komutun anahtarı gördüğü yer, `senaryo.py`'nin de göreceği yerdir. Anahtar hangi yoldan geldi (dosya mı, değişken mi)? Sohbete, komut satırına ya da ekrana düştü mü? Dürüstçe yaz.
 
 ## T2b — Yama kontrolü (tekrar)
 

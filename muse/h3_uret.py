@@ -12,7 +12,8 @@ Komutlar:
 Kurallar (kodda zorunlu):
   - Runtime, betik içinde bir hata olursa önce çıktılar indirilmeye çalışılarak kapatılır.
   - Başarılı yolda runtime ancak teslim paketi indirilip sha256 ile doğrulandıktan sonra kapatılır.
-  - Gemini anahtarı yalnızca dosya olarak yüklenir; komut satırına ya da günlüklere girmez.
+  - Gemini anahtarı (dosyadan ya da GEMINI_API_KEY ortam değişkeninden) runtime'a yalnızca dosya olarak yüklenir;
+    komut satırına ya da günlüklere girmez. Ortam değişkeninden geldiyse geçici dosya yüklemeden sonra silinir.
 Çıkış kodları: 0 = video teslim edildi, 1 = hata (rapor.md'ye bak), 3 = GPU alınamadı (hiçbir şey açılmadı).
 """
 
@@ -210,14 +211,20 @@ def yukle(c, o, senaryo_yol, anahtar_yol):
     for i, r in enumerate(senaryo.get("referanslar") or [], 1):
         uzanti = os.path.splitext(r["dosya"])[1].lower() or ".png"
         yuklenecek.append((r["dosya"], f"ref_{i}{uzanti}"))
+    gecici = None
     if anahtar_yol:
-        ortak.anahtar_oku(anahtar_yol)   # izin ve boşluk denetimi; değer kullanılmaz
-        yuklenecek.append((os.path.expanduser(anahtar_yol), "gemini.key"))
-    for yerel, uzak in yuklenecek:
-        rc, out = c.calistir("upload", "-s", ad, yerel, f"{UZAK_J}/{uzak}", sure=600)
-        if rc != 0:
-            raise Hata(f"Yükleme başarısız ({uzak}): {out.strip()[-300:]}")
-        yaz(f"Yüklendi: {uzak}")
+        dosya, gecici_mi = ortak.anahtar_dosyasi_hazirla(anahtar_yol, o.dizin)
+        gecici = dosya if gecici_mi else None
+        yuklenecek.append((dosya, "gemini.key"))
+    try:
+        for yerel, uzak in yuklenecek:
+            rc, out = c.calistir("upload", "-s", ad, yerel, f"{UZAK_J}/{uzak}", sure=600)
+            if rc != 0:
+                raise Hata(f"Yükleme başarısız ({uzak}): {out.strip()[-300:]}")
+            yaz(f"Yüklendi: {uzak}")
+    finally:
+        if gecici and os.path.exists(gecici):
+            os.remove(gecici)
     o.kaydet(asama="yuklendi")
 
 

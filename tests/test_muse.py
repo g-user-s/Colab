@@ -331,7 +331,19 @@ def test_anahtar_yoksa_gemini_oncesi_acik_mesaj(ortam):
     r = calistir(os.path.join(MUSE, "uzun_senaryo.py"), "kart", "--dizin", str(ortam["tmp"] / "k"), "--sure", "20",
                  "--fikir", "x", "--anahtar", str(ortam["tmp"] / "yok.key"), env=ortam["env"])
     cikti = r.stdout + r.stderr
-    assert r.returncode != 0 and "orhan verir" in cikti and "hikâye kartını yazıyor" not in cikti
+    assert r.returncode != 0 and "güvenli giriş kartıyla" in cikti and "hikâye kartını yazıyor" not in cikti
     r2 = calistir(os.path.join(MUSE, "uzun_senaryo.py"), "gorsel", "--dizin", str(ortam["tmp"] / "k"),
                   env=ortam["env"])
     assert r2.returncode == 1 and "Önce 'kart'" in r2.stdout
+
+
+def test_anahtar_ortam_degiskeninden(ortam):
+    s = senaryo_yaz(ortam)
+    env = dict(ortam["env"], GEMINI_API_KEY="ORTAM-ANAHTARI-456")
+    oturum = ortam["tmp"] / "ortam_anahtar"
+    r = calistir(os.path.join(MUSE, "h3_uret.py"), "uret", "--senaryo", s, "--oturum-dizini", str(oturum),
+                 "--anahtar", str(ortam["tmp"] / "olmayan.key"), "--aralik", "1", env=env)
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "ORTAM-ANAHTARI" not in r.stdout + r.stderr
+    assert not any(p.name.startswith(".gemini") for p in oturum.iterdir())   # geçici dosya silindi
+    assert "ORTAM-ANAHTARI" not in json.dumps(cagrilar(ortam))

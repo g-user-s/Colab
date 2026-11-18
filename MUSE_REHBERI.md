@@ -114,7 +114,7 @@ mkdir -p ~/.config/h3muse && chmod 700 ~/.config/h3muse
 # anahtarı ~/.config/h3muse/gemini.key dosyasına yaz (tek satır), sonra:
 chmod 600 ~/.config/h3muse/gemini.key
 ```
-Betikler izinleri 600'den geniş bir anahtar dosyasını reddeder. Anahtar runtime'a dosya olarak gider; runner onu okur okumaz siler. Komut satırına, günlüğe ya da rapora hiçbir zaman girmez.
+Dosya yoksa betikler anahtarı `GEMINI_API_KEY` (ya da `GEMINI`, `GOOGLE_API_KEY`) ortam değişkeninden okur; güvenli kasan anahtarı böyle veriyorsa dosya yazmana gerek yok. Betikler izinleri 600'den geniş bir anahtar dosyasını reddeder. Anahtar runtime'a dosya olarak gider; runner onu okur okumaz siler. Komut satırına, günlüğe ya da rapora hiçbir zaman girmez.
 
 ### 2.6 Kuru deneme (bir kez, yaklaşık 0,01 CCU)
 
