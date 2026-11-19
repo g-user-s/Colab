@@ -50,7 +50,7 @@ def test_gorsel_metni_stile_gore():
     kart = hikaye.ornek_kart('"A."', 20)
     assert "Photorealistic" in hikaye.gorsel_metni(kart, "K1", "real")
     anime = hikaye.gorsel_metni(kart, "MEKAN", "anime")
-    assert config.STYLES["anime"]["look"] in anime and "no people at all" in anime
+    assert config.STYLES["anime"]["look"] in anime and "Never add the story's main characters" in anime
 
 
 def test_blok_kesmeleri():
@@ -111,8 +111,9 @@ def test_gorsel_uret_ilham_gorseli_gonderir(monkeypatch, tmp_path):
     assert "remove every modern element" in gelen["contents"][0] and len(gelen["contents"]) == 2
 
 
-def test_mekan_tarifinde_insan_uyarisi():
+def test_mekan_gorseli_yalnizca_sabit_kalabalik():
     kart = hikaye.ornek_kart('"A."', 20)
-    kart["mekan"]["tarif"] = "A city gate with janissaries lining the road and red banners."
-    assert any("Mekân tarifinde insan" in s for s in hikaye.kart_denetle(kart, 20, ""))
-    assert "COMPLETELY EMPTY" in hikaye.gorsel_metni(kart, "MEKAN")
+    kart["mekan"]["tarif"] = "A city gate; rows of janissaries line both sides of the road."
+    metin = hikaye.gorsel_metni(kart, "MEKAN")
+    assert "FIXED" in metin and "janissaries line both sides" in metin
+    assert hikaye.kart_denetle(kart, 20, "") == []

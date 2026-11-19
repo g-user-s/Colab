@@ -59,6 +59,9 @@ Rules:
 - Turkish fields ("baslik", "ad", "mekan.ad", "metin") keep Turkish letters exactly (ı İ ş Ş ğ Ğ ç Ç ö Ö ü Ü):
   "Rıza", not "Riza"; "Sahaf Dükkânı", not "Sahaf Dukkani".
 - Do not move the story to a specific named place (city, district, landmark) the idea does not name.
+- "mekan.tarif" may include a FIXED background crowd only if it stands in the same place in EVERY block (e.g. soldiers
+  lining both sides of a road); say exactly where. People who arrive, move, kneel, gather or appear in only some
+  blocks, and the main characters, are NOT in "mekan.tarif" — they belong in the blocks' "ozet".
 - "mekan.tarif" describes the set as it is BEFORE the first block starts: an object that a character brings, serves
   or places later in the story (a tea glass, a tray, a letter) must NOT be in it. Props that are already there at
   the start (used glasses waiting to be cleared, furniture) may be.
@@ -71,13 +74,13 @@ No text, no letters, no logos, no watermark."""
 
 MEKAN_GORSELI = """A {kind} wide establishing image of an empty place, ready for actors: {tarif}. {isik}.
 Colour palette: {palet}. Eye-level camera, natural perspective. {look}
-The place is COMPLETELY EMPTY: no people at all (no soldiers, guards, crowds, kneeling or standing figures, no
-silhouettes in doorways), no animals, no flags, banners or standards, no vehicles. Characters, crowds and props are
-added later in the video, never in this image.
+Show only what the description includes. People appear only if the description explicitly lists them as a FIXED
+background that stays in the same place for the whole video (e.g. rows of guards lining a road); then show them exactly
+there and nowhere else. Never add the story's main characters, people who arrive, move, kneel or appear only later,
+horses, or anything the description does not list. No modern elements.
 No readable text, no signs, no letters, no logos, no watermark."""
 
-INSAN_KELIMELERI = ("people", "person", "crowd", "soldier", "guard", "janissar", "villager", "citizen", "army",
-                    "troop", "man ", "men ", "woman", "women", "child", "flag", "banner", "standard-bearer")
+
 
 
 def blok_sayisi(toplam):
@@ -112,11 +115,6 @@ def kart_denetle(kart, toplam, fikir=""):
         sorunlar.append(f"Konuşmacı kimlikleri S1, S2… sırasıyla verilmeli (şu an: {konusmacilar}).")
     if not ((kart.get("mekan") or {}).get("tarif") or "").strip():
         sorunlar.append("Mekân tarifi boş.")
-    tarif = " " + ((kart.get("mekan") or {}).get("tarif") or "").lower() + " "
-    bulunan = sorted({k.strip() for k in INSAN_KELIMELERI if k in tarif})
-    if bulunan:
-        sorunlar.append("Mekân tarifinde insan/kalabalık/sancak geçiyor (" + ", ".join(bulunan) + "); mekân boş "
-                        "olmalı, bunlar blok özetlerine ait (mekân görseline girer ve her bloğa taşınır).")
     bloklar = kart.get("bloklar") or []
     if not bloklar:
         sorunlar.append("Blok listesi boş.")

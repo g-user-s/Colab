@@ -36,7 +36,7 @@ Kartta ve görsellerde bunlara uy:
 - **Sultan II. Mehmed 21 yaşında:** ince bıyık, kısa sakal. Yaşlı ya da gür sakallı olmamalı.
 - **Kan, ceset, yaralı, yağma sahnesi yok.** Saygılı, törensel bir giriş. Halk korku içinde, ama yaralı ya da perişan gösterilmiyor.
 - **Sancaklarda yazı yok:** yalnızca tek bir beyaz hilal, **yıldız yok** (ay-yıldızlı bugünkü bayrak 1453'e ait değil). Arapça hat dahil hiçbir yazı olmamalı.
-- **Mekân görseli bomboş:** insan, yeniçeri, halk, at ve sancak yok. Bunların hepsi bloklarda gelir. Mekân görseli bütün blokların sahne çapasıdır; içine konan her şey her bloğa taşınır.
+- **Mekân görselinde yalnızca sabit arka plan:** kapı, surlar, toprak yol ve **yolun iki yanında saf tutan yeniçeriler, sancaklarıyla** (bloklar 1–2 boyunca aynı yerde duruyorlar). **Halk, Sultan, Akşemseddin ve at mekân görselinde yok.** Halk yalnızca 3. blokta, kapının **içinde** görünür. Mekân görseli bütün blokların sahne çapasıdır; içine konan her şey her bloğa aynı yerde taşınır. Halkın kapının dışında, Sultan'ın geldiği yolda görünmesi bu yüzden yanlıştı.
 - **Modern öğe yok:** çimen, parke yol, tabela, demir kapı, kablo.
 - Akşemseddin, Sultan'ın hocası: yaşlı, ak sakallı, beyaz sarıklı, koyu mavi cübbeli, yaya.
 
@@ -46,7 +46,7 @@ Kartta ve görsellerde bunlara uy:
 
 ```bash
 cd ~/workspace/Colab
-~/workspace/tools/h3muse-venv/bin/python muse/uzun_senaryo.py kart --dizin ~/workspace/h3uretim/20261119_fatih --sure 45 --stil real --fikir 'Fethin üçüncü günü, Haziran 1453, öğleden sonra, açık ve güneşli bir gök. İstanbul kara surlarındaki Topkapı: kalker taş bloklar arasında kırmızı tuğla bantlar, mazgallı burçlar, tuğla kemerli büyük kapı; surlarda kuşatmadan kalma gedikler ve kararmış taşlar, kapının önünde sıkıştırılmış toprak yol. Yirmi bir yaşındaki genç Sultan II. Mehmed, ince bıyıklı ve kısa sakallı, kırmızı kaftanın üstüne gümüş zırh giymiş, başında sorguçlu çelik miğfer, süslü eğerli beyaz bir atın üzerinde kapıya doğru ağır ağır ilerliyor. Yanında yaya yürüyen hocası Akşemseddin, ak sakallı, beyaz sarıklı ve koyu mavi cübbeli. Yolun iki yanında kırmızı börklü yeniçeriler saf tutmuş; üzerinde yalnızca beyaz hilal olan, yazısız kırmızı sancaklar rüzgârda dalgalanıyor. Kapının önünde Sultan atını durdurup surlara bakıyor. Akşemseddin ona dönüp: "Hünkârım, Peygamber efendimizin müjdesi bugün gerçek oldu." Sultan derin bir nefes alıp sakin bir sesle: "Bu zafer bizim değil, Allah'ındır." Sultan kemerin altından geçip hemen içeride atını durduruyor; arkasında kapının kemeri, önünde şehrin halkı, sade yün giysili kadınlar, erkekler ve yaşlılar, korku içinde diz çökmüş, başları önde bekliyor. Sultan onlara bakıp yüksek, sakin ve güven veren bir sesle: "Kalkınız ve müsterih olunuz. Ben Sultan Mehmed; hepinize söylüyorum ki bu andan itibaren ne hürriyetleriniz ne de hayatlarınız hakkında korkmayınız." Halk şaşkınlıkla başını kaldırıyor ve yavaşça ayağa kalkıyor. Kan, ceset, yaralı ya da yağma sahnesi yok; saygılı ve törensel bir giriş.'
+~/workspace/tools/h3muse-venv/bin/python muse/uzun_senaryo.py kart --dizin ~/workspace/h3uretim/20261119_fatih --sure 45 --stil real --fikir 'Gerçekçi, sinematik bir tarih filmi sahnesi. Fethin üçüncü günü, Haziran 1453, öğleden sonra, açık ve güneşli bir gök, hafif toz. İstanbul kara surlarındaki Topkapı: kalker taş bloklar arasında kırmızı tuğla bantlar, mazgallı burçlar, tuğla kemerli büyük kapı; surlarda kuşatmadan kalma gedikler ve kararmış taşlar, kapıya uzanan sıkıştırılmış toprak yol. Yolun iki yanında kırmızı kaftanlı, beyaz börklü yüzlerce yeniçeri sıra sıra saf tutmuş; üzerinde yalnızca tek bir beyaz hilal bulunan, yıldızsız ve yazısız kırmızı sancaklar rüzgârda dalgalanıyor. Geniş açıyla açılıyor: Yirmi bir yaşındaki genç Sultan II. Mehmed, ince bıyıklı ve kısa sakallı, kırmızı kaftanın üstüne gümüş zırh giymiş, başında sorguçlu çelik miğfer, süslü eğerli beyaz bir atın üzerinde kapıya doğru ağır ağır ilerliyor; yanında yaya yürüyen ak sakallı, beyaz sarıklı, koyu mavi cübbeli hocası Akşemseddin, arkasında vezirler ve ağalar. Kalabalığın derin uğultusu, at nallarının toprakta tok sesleri, sancakların rüzgârdaki çırpınışı. Kapının önünde, kemerin altında Sultan atını durduruyor; Fausto Zonaro tablosundaki gibi alçak açıdan, kemerin içinde, arkasında sancaklar. Uğultu yavaşça kesiliyor, ağır bir sessizlik iniyor. Akşemseddin ona dönüp: "Hünkârım, Peygamber efendimizin müjdesi bugün gerçek oldu." Sultan derin bir nefes alıp sakin bir sesle: "Bu zafer bizim değil, Allah'ındır." Sultan kemerin altından geçip kapının iç tarafına çıkıyor ve atını durduruyor. Geniş açı, kapının iç yüzü arkada: önünde, şehrin içindeki meydanda yüzlerce Rum halk, sade yün giysili kadınlar, erkekler, yaşlılar, çocuklarını kucaklayan anneler korku içinde diz çökmüş, başları önde. Yalnızca rüzgârın ve atın nefesinin duyulduğu ürkek bir sessizlik. Sultan onlara bakıp yüksek, sakin ve güven veren bir sesle: "Kalkınız ve müsterih olunuz. Ben Sultan Mehmed; hepinize söylüyorum ki bu andan itibaren ne hürriyetleriniz ne de hayatlarınız hakkında korkmayınız." Halk şaşkınlıkla başını kaldırıyor, yavaşça ayağa kalkıyor, kalabalığa rahatlamış bir mırıltı yayılıyor. Kan, ceset, yaralı ya da yağma sahnesi yok; gerçekçi, ağırbaşlı ve törensel bir giriş.'
 ```
 
 Fikri değiştirme. Kartta şunları kontrol et:
@@ -55,7 +55,7 @@ Fikri değiştirme. Kartta şunları kontrol et:
 - Sultan'ın son sözü 22 kelime ve tek blokta (3. blok) olmalı, bölünmemeli. Halk bu sözlerden sonra ayağa kalkıyor.
 - Türkçe harfler korunmuş ("Hünkârım", "Allah'ındır", "Akşemseddin");
 - 2 karakter: K1 Sultan II. Mehmed (21 yaş), K2 Akşemseddin. At ve yeniçeriler karakter değil; tarifte geçsinler.
-- mekân: 1453'teki Topkapı, dışarıdan; modern öğe yok;
+- mekân: 1453'teki Topkapı, dışarıdan; yolun iki yanında saf tutmuş yeniçeriler ve yıldızsız sancaklar olabilir; halk, Sultan ve at yok; modern öğe yok;
 - ışık: açık, güneşli öğleden sonra.
 
 Kartı orhan'a özetle.
@@ -72,7 +72,7 @@ Kartı orhan'a özetle.
 Kontrol et:
 - **K1:** genç (21), ince bıyık ve kısa sakal, zırh ve kaftan, sorguçlu miğfer; tam boy, tek kişi, gerçekçi (resim gibi değil).
 - **K2:** ak sakal, beyaz sarık, koyu mavi cübbe; tam boy, tek kişi, gerçekçi.
-- **MEKAN:** fotoğraftaki kapının mimarisi (taş ve tuğla bantlar, tuğla kemer, mazgallar); 1453 hâli; insan, at, yazı ve modern öğe yok; güneşli.
+- **MEKAN:** fotoğraftaki kapının mimarisi (taş ve tuğla bantlar, tuğla kemer, mazgallar); 1453 hâli; yolun iki yanında saf tutmuş yeniçeriler ve yıldızsız sancaklar; **halk, Sultan ve at yok**; kapı ağzı ve yol boş; yazı ve modern öğe yok; güneşli.
 
 Beğenmediğini yeniden üret. İlhamı tekrar vermek için `--yeniden K1 --ilham K1=…` kullan; her görsel için en fazla 2 kez. Görselleri orhan'a göster.
 
