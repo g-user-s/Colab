@@ -5,8 +5,7 @@ Kişisel ajan Muse'un, [H3 Video Stüdyosu](https://github.com/orha9n/h3-video-s
 - **[masaustu/BENIOKU.md](masaustu/BENIOKU.md)**: **H3 Stüdyo** — Linux masaüstü uygulaması (PySide6). Kurulum: `bash masaustu/kur.sh`.
 - **[MUSE_REHBERI.md](MUSE_REHBERI.md)**: adım adım rehber. Buradan başla.
 - **[GOREV_UZUN_VIDEO_URETIM.md](GOREV_UZUN_VIDEO_URETIM.md)**: ilk gerçek uzun video (45 sn, ref, yeniden üretim açık).
-- **[GOREV_FATIH_2.md](GOREV_FATIH_2.md)**: Fatih'in girişi — elle yazılmış kart ve prompt'lar (`muse_gorevleri/20261119_fatih2/`), 60 sn, ters ışık.
-- **[GOREV_FATIH.md](GOREV_FATIH.md)**: tarihî uzun video — Fatih'in Topkapı'dan girişi (ilham görselleriyle).
+- **[GOREV_FATIH.md](GOREV_FATIH.md)**: Fatih'in İstanbul'a girişi — film sahnesi, elle yazılmış senaryo (`muse_gorevleri/20261119_fatih3/`), 60 sn.
 - **[GOREV_UZUN_VIDEO_2.md](GOREV_UZUN_VIDEO_2.md)**: uzun video 2 — aydınlık mutfak, köprü açık, kadraj sürekliliği, eşik orta.
 - **[GOREV_KOPRU_DENEYI.md](GOREV_KOPRU_DENEYI.md)**: köprü deneyi (önceki bloğun son karesi + Gemini prompt'u) — geçişler daha akıcı olur mu?
 - **[DENEY_SONUCLARI.md](DENEY_SONUCLARI.md)**: uzun video deneyinin sonucu (görsel referans açık ara daha iyi).
