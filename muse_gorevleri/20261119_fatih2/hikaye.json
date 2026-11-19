@@ -36,13 +36,13 @@
     {
       "blok": 1,
       "sure": 15,
-      "ozet": "From inside the shadowed square, past the bowed heads of the kneeling crowd, the Sultan rides from the far end of the sunlit road toward the gate between the janissary ranks, Akşemseddin walking at his right stirrup and two viziers behind; he enters the arch and halts in its golden backlight. Distant slow drum beats and the army's murmur fade into silence.",
+      "ozet": "From inside the shadowed square, past the bowed heads of the kneeling crowd, the full ceremonial procession comes up the sunlit road toward the gate between the janissary ranks: the mehter band playing a slow march, mounted heralds and standard-bearers with banners and a gilded alem, then the Sultan on his white horse flanked by solak guards, Akşemseddin at his right stirrup, the viziers and pashas on horseback behind. The band and banners halt and part before the gate; the Sultan rides into the arch and halts in its golden backlight; the music stops and the murmur fades into silence.",
       "replikler": []
     },
     {
       "blok": 2,
       "sure": 15,
-      "ozet": "Under the arch, in backlight. Akşemseddin looks up at the Sultan and speaks; the Sultan breathes in and answers calmly; he then looks ahead into the shadowed square.",
+      "ozet": "Under the arch, in backlight, solak guards on both sides, the mounted pashas and banners behind. Akşemseddin looks up at the Sultan and speaks; the Sultan breathes in and answers calmly; he then looks ahead into the shadowed square.",
       "replikler": [
         {
           "konusmaci": "S2",
@@ -57,7 +57,7 @@
     {
       "blok": 3,
       "sure": 15,
-      "ozet": "The Sultan rides a few steps out of the arch into the shadow of the square and stops. Over his shoulder: hundreds of Greek townspeople kneel with bowed heads. Close on the young mother pressing her son to her chest, trembling, her eyes lifting for a moment. The Sultan's face softens.",
+      "ozet": "The Sultan rides a few steps out of the arch into the shadow of the square and stops; the solak guards fan out in two lines beside him, the pashas and standard-bearers fill the arch behind. Over his shoulder: hundreds of Greek townspeople kneel with bowed heads. Close on the young mother pressing her son to her chest, trembling, her eyes lifting for a moment. The Sultan's face softens.",
       "replikler": []
     },
     {
@@ -73,13 +73,13 @@
     }
   ],
   "_meta": {
-    "fikir": "Gerçekçi, sinematik bir tarih filmi sahnesi; 60 saniye. Fethin üçüncü günü, Haziran 1453, öğleden sonra. Bütün sahne İstanbul kara surlarındaki Topkapı'nın şehir içi tarafından, kapının kemerinden dışarıya, batıya bakan kameralarla çekiliyor (Fausto Zonaro'nun tablosundaki bakış). Güneş batıda, kapının arkasında: dışarıdaki toprak yol altın ışık içinde, yolun iki yanında sıra sıra saf tutmuş kırmızı kaftanlı, beyaz börklü yeniçeriler ve yalnızca tek beyaz hilalli, yıldızsız, yazısız kırmızı sancaklar; içerideki meydan surun uzun gölgesinde. Meydanda korku içinde diz çökmüş, başları önde yüzlerce Rum: kadınlar, erkekler, yaşlılar; aralarında altı yaşındaki oğlunu bağrına basmış genç bir anne. Uzaktan ağır davul vuruşları ve ordunun uğultusu. Genç Sultan II. Mehmed (21 yaşında, ince bıyıklı, kısa sakallı, gümüş zırh, kırmızı kaftan, sorguçlu miğfer) beyaz atıyla yolun sonundan kapıya ilerliyor; yanında yaya hocası Akşemseddin, arkasında iki vezir. Kemerin altına girip ters ışık içinde duruyor; uğultu kesiliyor. Akşemseddin: \"Hünkârım, Peygamber efendimizin müjdesi bugün gerçek oldu.\" Sultan: \"Bu zafer bizim değil, Allah'ındır.\" Sultan kemerden meydanın gölgesine çıkıyor; diz çökmüş kalabalığı görüyor; anne oğlunu daha sıkı tutuyor. Sultan'ın yüzü yumuşuyor. Sultan yüksek, sakin ve güven veren bir sesle: \"Kalkınız ve müsterih olunuz. Ben Sultan Mehmed; hepinize söylüyorum ki bu andan itibaren ne hürriyetleriniz ne de hayatlarınız hakkında korkmayınız.\" Halk başını kaldırıyor, anne ve çocuk dahil yavaşça ayağa kalkıyor, rahatlamış bir mırıltı yayılıyor. Kan, ceset, yaralı ya da yağma yok; ağırbaşlı ve törensel.",
+    "fikir": "Gerçekçi, sinematik bir tarih filmi sahnesi; 60 saniye. Fethin üçüncü günü, Haziran 1453, öğleden sonra. Bütün sahne İstanbul kara surlarındaki Topkapı'nın şehir içi tarafından, kapının kemerinden dışarıya, batıya bakan kameralarla çekiliyor (Fausto Zonaro'nun tablosundaki bakış). Güneş batıda, kapının arkasında: dışarıdaki toprak yol altın ışık içinde, yolun iki yanında sıra sıra saf tutmuş kırmızı kaftanlı, beyaz börklü yeniçeriler ve yalnızca tek beyaz hilalli, yıldızsız, yazısız kırmızı sancaklar; içerideki meydan surun uzun gölgesinde. Meydanda korku içinde diz çökmüş, başları önde yüzlerce Rum: kadınlar, erkekler, yaşlılar; aralarında altı yaşındaki oğlunu bağrına basmış genç bir anne. Uzaktan yaklaşan mehter marşı ve ordunun uğultusu. Genç Sultan II. Mehmed (21 yaşında, ince bıyıklı, kısa sakallı, gümüş zırh, kırmızı kaftan, sorguçlu miğfer) beyaz atıyla yolun sonundan kapıya ilerliyor; yanında yaya hocası Akşemseddin. Tören alayıyla geliyor: önde ağır bir marş çalan mehter takımı, atlı çavuşlar, sancaktarlar ve yaldızlı alem; Sultan'ın iki yanında yaya, kırmızı kaftanlı, beyaz sorguçlu solaklar; arkasında atlı vezirler ve paşalar, yeniçeri ağası ve sıra sıra yeniçeriler. Mehter kemerin önünde susuyor; Sultan kemerin altına girip ters ışık içinde duruyor, uğultu kesiliyor. Akşemseddin: \"Hünkârım, Peygamber efendimizin müjdesi bugün gerçek oldu.\" Sultan: \"Bu zafer bizim değil, Allah'ındır.\" Sultan kemerden meydanın gölgesine çıkıyor; diz çökmüş kalabalığı görüyor; anne oğlunu daha sıkı tutuyor. Sultan'ın yüzü yumuşuyor. Sultan yüksek, sakin ve güven veren bir sesle: \"Kalkınız ve müsterih olunuz. Ben Sultan Mehmed; hepinize söylüyorum ki bu andan itibaren ne hürriyetleriniz ne de hayatlarınız hakkında korkmayınız.\" Halk başını kaldırıyor, anne ve çocuk dahil yavaşça ayağa kalkıyor, rahatlamış bir mırıltı yayılıyor. Kan, ceset, yaralı ya da yağma yok; ağırbaşlı ve törensel.",
     "sure": 60,
     "stil": "real",
     "sahte": false,
     "modeller": {
       "hikâye kartı": "elle yazıldı (Claude)"
     },
-    "olusturma": "2026-11-19T16:49:27"
+    "olusturma": "2026-11-19T19:27:39"
   }
 }

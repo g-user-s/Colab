@@ -17,9 +17,15 @@
 - **Kamera yönü:** bütün sahne şehrin içinden, kapının kemerinden dışarı (batıya) bakan kameralarla çekiliyor (Zonaro'nun bakışı).
 - **Işık:** güneş kapının arkasında; Sultan kemerden ters ışıkla, kenarları parlayan bir siluet olarak giriyor, meydan gölgede.
 - **Duygusal odak:** oğlunu bağrına basan genç bir Rum anne, kendi görseliyle sabitlenen sessiz bir karakter (K3).
+- **Tören alayı:**
+  - önde ağır bir marş çalan mehter takımı (kös, zurna, zil), atlı çavuşlar, sancaktarlar ve yaldızlı alem;
+  - Sultan'ın iki yanında yaya solaklar (kırmızı kaftan, beyaz sorguçlu börk, sırtta yay), sağ üzengisinde Akşemseddin;
+  - arkada atlı vezirler ve paşalar, yeniçeri ağası ve yeniçeriler.
+
+  Her grup tek tip giyinik. Kalabalık geniş planlarda görünüyor, yakın planlarda az kişi var.
 
 **Bloklar:**
-1. Kemerin ardından Sultan'ın yaklaşması.
+1. Tören alayının kemerin ardından yaklaşması; mehter kapının önünde susuyor.
 2. Kemerin altında iki replik.
 3. Meydana çıkış: kalabalığın görülmesi, annenin yakın planı, Sultan'ın yüzünün yumuşaması.
 4. Sultan'ın hitabı ve halkın ayağa kalkması.
@@ -113,6 +119,7 @@ Bu videoya özel olarak şunlara bak ve her birini ayrı yaz:
 - **At:** yürüyüşü doğal mı, binici sabit mi?
 - **Anne yakın planı** (3. blok, ~39–42. sn): yüz ve çocuk K3'e uyuyor mu, eller doğal mı?
 - **Sultan'ın sözü** (4. blok): bölünmeden ~46,5–55. sn arasında söyleniyor mu, halk ondan **sonra** mı kalkıyor?
+- **Alay:** sıra doğru mu (mehter, çavuşlar ve sancaktarlar, Sultan ve solaklar, atlı paşalar)? Solaklar bloklar boyunca aynı mı? Kalabalıkta kopya yüzler ya da birbirine kaynaşan figürler var mı? Mehter sesi 1. bloğun sonunda susuyor mu?
 - Sancaklarda yıldız ya da yazı var mı? Vezirler bloklar boyunca aynı mı? Kan, ceset var mı?
 
 ## 6. Teslim ve sorular
