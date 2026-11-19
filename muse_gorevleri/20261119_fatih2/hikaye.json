@@ -1,0 +1,85 @@
+{
+  "baslik": "Fethin Üçüncü Günü",
+  "karakterler": [
+    {
+      "id": "K1",
+      "ad": "Sultan II. Mehmed",
+      "konusmaci": "S1",
+      "gorunum": "21-year-old Turkish man, oval aristocratic face, slightly aquiline nose, warm olive-fair skin, dark brown almond-shaped eyes, thick dark arched eyebrows, thin neatly trimmed dark moustache and short dark beard, dark hair under his helmet, lean athletic build, tall",
+      "kiyafet": "deep crimson silk kaftan with long sleeves under polished silver chainmail and an ornate silver breastplate, pointed polished steel helmet with a gold-inlaid brow band and a tall white plume, silver bracers, dark leather riding boots; he rides a tall white Arabian stallion with a crimson velvet saddle cloth, silver-embossed saddle and gilded bridle",
+      "ses": "measured, resonant young baritone, calm and commanding, clear formal Istanbul Turkish"
+    },
+    {
+      "id": "K2",
+      "ad": "Akşemseddin",
+      "konusmaci": "S2",
+      "gorunum": "Turkish scholar about 63 years old, dignified weathered oval face, fair-olive skin with fine wrinkles, calm deep-set dark eyes, thick white eyebrows, straight nose, long full white beard and white moustache, slender upright build",
+      "kiyafet": "long flowing dark navy-blue wool robe over an off-white inner tunic with a dark sash, large neatly wrapped white linen turban, soft dark leather flat boots; he walks on foot",
+      "ses": "warm, deep, slightly weathered baritone, slow and reverent, Istanbul Turkish"
+    },
+    {
+      "id": "K3",
+      "ad": "Rum anne ve oğlu",
+      "konusmaci": "",
+      "gorunum": "Greek woman about 30 years old, oval face, olive skin, dark tired eyes, dark brown hair under a plain undyed linen head veil, slim build",
+      "kiyafet": "long faded indigo wool dress, rough brown wool shawl over her shoulders, simple leather sandals; she holds her son of about six close to her chest: short dark curly hair, plain beige linen tunic, barefoot",
+      "ses": ""
+    }
+  ],
+  "mekan": {
+    "ad": "Topkapı, şehir içinden",
+    "tarif": "The city-side (inner) face of Topkapı on the Theodosian land walls, seen from inside the city looking west through the open gate: pale cream limestone blocks with horizontal red-brick bands, crenellated battlements, fresh siege breaches and soot-blackened stone, a tall brick-arched gate passage with both heavy wooden gate leaves thrown fully open against the walls. Through the arch the sunlit packed-earth road outside runs straight away into the distance; fixed ranks of janissaries in crimson kaftans and tall white felt börk caps line both sides of that outside road for the whole video, holding plain crimson banners that each bear only a single white crescent, no star and no writing. On the inner side, a wide dusty square of packed earth and worn paving stones lies in the long shadow of the wall, edged by weathered two-storey stone houses with timber balconies and tiled roofs; the square and the gate passage are empty."
+  },
+  "zaman_isik": "Late afternoon, June 1453. The sun is low in the west, directly behind the gate: the road outside glows golden, the inner square lies in cool blue-grey shadow, and a strong golden backlight pours through the arch, rim-lighting anyone who stands in it; fine dust hangs in the shafts of light.",
+  "renk_paleti": "crimson red, warm limestone cream, terracotta brick, cool shadow blue-grey, burnished silver, golden backlight",
+  "bloklar": [
+    {
+      "blok": 1,
+      "sure": 15,
+      "ozet": "From inside the shadowed square, past the bowed heads of the kneeling crowd, the Sultan rides from the far end of the sunlit road toward the gate between the janissary ranks, Akşemseddin walking at his right stirrup and two viziers behind; he enters the arch and halts in its golden backlight. Distant slow drum beats and the army's murmur fade into silence.",
+      "replikler": []
+    },
+    {
+      "blok": 2,
+      "sure": 15,
+      "ozet": "Under the arch, in backlight. Akşemseddin looks up at the Sultan and speaks; the Sultan breathes in and answers calmly; he then looks ahead into the shadowed square.",
+      "replikler": [
+        {
+          "konusmaci": "S2",
+          "metin": "Hünkârım, Peygamber efendimizin müjdesi bugün gerçek oldu."
+        },
+        {
+          "konusmaci": "S1",
+          "metin": "Bu zafer bizim değil, Allah'ındır."
+        }
+      ]
+    },
+    {
+      "blok": 3,
+      "sure": 15,
+      "ozet": "The Sultan rides a few steps out of the arch into the shadow of the square and stops. Over his shoulder: hundreds of Greek townspeople kneel with bowed heads. Close on the young mother pressing her son to her chest, trembling, her eyes lifting for a moment. The Sultan's face softens.",
+      "replikler": []
+    },
+    {
+      "blok": 4,
+      "sure": 15,
+      "ozet": "The Sultan addresses the kneeling crowd in a loud, calm, reassuring voice. As he finishes, the people lift their heads in astonishment and slowly rise, the mother and child too; a relieved murmur spreads. No violence, no disorder.",
+      "replikler": [
+        {
+          "konusmaci": "S1",
+          "metin": "Kalkınız ve müsterih olunuz. Ben Sultan Mehmed; hepinize söylüyorum ki bu andan itibaren ne hürriyetleriniz ne de hayatlarınız hakkında korkmayınız."
+        }
+      ]
+    }
+  ],
+  "_meta": {
+    "fikir": "Gerçekçi, sinematik bir tarih filmi sahnesi; 60 saniye. Fethin üçüncü günü, Haziran 1453, öğleden sonra. Bütün sahne İstanbul kara surlarındaki Topkapı'nın şehir içi tarafından, kapının kemerinden dışarıya, batıya bakan kameralarla çekiliyor (Fausto Zonaro'nun tablosundaki bakış). Güneş batıda, kapının arkasında: dışarıdaki toprak yol altın ışık içinde, yolun iki yanında sıra sıra saf tutmuş kırmızı kaftanlı, beyaz börklü yeniçeriler ve yalnızca tek beyaz hilalli, yıldızsız, yazısız kırmızı sancaklar; içerideki meydan surun uzun gölgesinde. Meydanda korku içinde diz çökmüş, başları önde yüzlerce Rum: kadınlar, erkekler, yaşlılar; aralarında altı yaşındaki oğlunu bağrına basmış genç bir anne. Uzaktan ağır davul vuruşları ve ordunun uğultusu. Genç Sultan II. Mehmed (21 yaşında, ince bıyıklı, kısa sakallı, gümüş zırh, kırmızı kaftan, sorguçlu miğfer) beyaz atıyla yolun sonundan kapıya ilerliyor; yanında yaya hocası Akşemseddin, arkasında iki vezir. Kemerin altına girip ters ışık içinde duruyor; uğultu kesiliyor. Akşemseddin: \"Hünkârım, Peygamber efendimizin müjdesi bugün gerçek oldu.\" Sultan: \"Bu zafer bizim değil, Allah'ındır.\" Sultan kemerden meydanın gölgesine çıkıyor; diz çökmüş kalabalığı görüyor; anne oğlunu daha sıkı tutuyor. Sultan'ın yüzü yumuşuyor. Sultan yüksek, sakin ve güven veren bir sesle: \"Kalkınız ve müsterih olunuz. Ben Sultan Mehmed; hepinize söylüyorum ki bu andan itibaren ne hürriyetleriniz ne de hayatlarınız hakkında korkmayınız.\" Halk başını kaldırıyor, anne ve çocuk dahil yavaşça ayağa kalkıyor, rahatlamış bir mırıltı yayılıyor. Kan, ceset, yaralı ya da yağma yok; ağırbaşlı ve törensel.",
+    "sure": 60,
+    "stil": "real",
+    "sahte": false,
+    "modeller": {
+      "hikâye kartı": "elle yazıldı (Claude)"
+    },
+    "olusturma": "2026-11-19T16:49:27"
+  }
+}
