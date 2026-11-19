@@ -210,6 +210,7 @@ def uzun_senaryo_hazirla(ortam, kol="ikisi", ek=()):
 def test_uzun_senaryo_sahte(ortam):
     d, s = uzun_senaryo_hazirla(ortam)
     assert s["tur"] == "uzun" and s["deney"] and s["yeniden_uretim"] == 0
+    assert s["kopru"] is True                                   # köprü varsayılan açık
     assert set(s["kollar"]) == {"metin", "ref"}
     assert [b["sure"] for b in s["kollar"]["ref"]["bloklar"]] == [12, 12]
     assert [r["rol"] for r in s["referanslar"]] == ["karakter", "arka_plan"]

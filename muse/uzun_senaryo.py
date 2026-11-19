@@ -182,8 +182,9 @@ def main(argv=None):
             q.add_argument("--seed", type=int, default=22)
             q.add_argument("--yeniden-uretim", type=int, default=1,
                            help="Kusurlu blok için en fazla kaç yeniden üretim (deneyde 0)")
-            q.add_argument("--kopru", action="store_true",
-                           help="Deneysel: her bloğa önceki bloğun son karesi de sahne görseli olarak verilir")
+            q.add_argument("--kopru", action=argparse.BooleanOptionalAction, default=True,
+                           help="Köprü (varsayılan açık): her bloğa önceki bloğun son karesi de sahne görseli olarak "
+                                "verilir ve bloğun prompt'u o kareye göre yeniden yazılır. Kapatmak: --no-kopru")
     a = p.parse_args(argv)
     a.dizin = os.path.abspath(os.path.expanduser(a.dizin))
     config, pw = h3_yukle(a.h3)

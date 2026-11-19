@@ -177,6 +177,10 @@ def dunya_capasi(kart):
 def plan_fikri(kart):
     """plan_shots için fikir metni: kart blok blok, replikler tırnak içinde (planda korunmaları denetlenir)."""
     satirlar = ["Follow this story bible exactly. Keep the block count and each block's duration as given.",
+                "Continuity across blocks: every block after the first OPENS with the same framing, camera position, "
+                "character positions and light as the last shot of the previous block, continuing from its calm "
+                "final moment, so the join plays like one continuous take; change shot size only after the "
+                "block's first shot.",
                 "Characters: " + "; ".join(
                     f"{k['ad']}" + (f" (speaker {k['konusmaci']}, voice: {k.get('ses', '')})" if k.get("konusmaci") else "")
                     for k in kart["karakterler"]),
