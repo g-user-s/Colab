@@ -50,7 +50,7 @@ def test_gorsel_metni_stile_gore():
     kart = hikaye.ornek_kart('"A."', 20)
     assert "Photorealistic" in hikaye.gorsel_metni(kart, "K1", "real")
     anime = hikaye.gorsel_metni(kart, "MEKAN", "anime")
-    assert config.STYLES["anime"]["look"] in anime and "No people" in anime
+    assert config.STYLES["anime"]["look"] in anime and "no people at all" in anime
 
 
 def test_blok_kesmeleri():
