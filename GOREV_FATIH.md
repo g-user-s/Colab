@@ -1,4 +1,4 @@
-# Görev: tarihî uzun video — Fatih Sultan Mehmed İstanbul'a giriyor (29 Mayıs 1453)
+# Görev: tarihî uzun video — Fatih Sultan Mehmed İstanbul'a giriyor (fethin üçüncü günü, 1453)
 
 **Depo:** https://github.com/g-user-s/Colab (dal `claude/trusting-johnson-c5d0tf`). Önce: `cd ~/workspace/Colab && git pull`.
 
@@ -34,7 +34,7 @@ Bunun yerine `--ilham` ile Gemini'ye ilham olarak ver:
 
 Kartta ve görsellerde bunlara uy:
 - **Sultan II. Mehmed 21 yaşında:** ince bıyık, kısa sakal. Yaşlı ya da gür sakallı olmamalı.
-- **Kan, ceset, yaralı yok.** Saygılı, törensel bir giriş.
+- **Kan, ceset, yaralı, yağma sahnesi yok.** Saygılı, törensel bir giriş. Halk korku içinde, ama yaralı ya da perişan gösterilmiyor.
 - **Sancaklarda yazı yok:** yalnızca hilal. Arapça hat dahil hiçbir yazı olmamalı.
 - **Modern öğe yok:** çimen, parke yol, tabela, demir kapı, kablo.
 - Akşemseddin, Sultan'ın hocası: yaşlı, ak sakallı, beyaz sarıklı, koyu mavi cübbeli, yaya.
@@ -45,12 +45,13 @@ Kartta ve görsellerde bunlara uy:
 
 ```bash
 cd ~/workspace/Colab
-~/workspace/tools/h3muse-venv/bin/python muse/uzun_senaryo.py kart --dizin ~/workspace/h3uretim/20261119_fatih --sure 45 --stil real --fikir '29 Mayıs 1453, öğleden sonra, açık ve güneşli bir gök. İstanbul kara surlarındaki Topkapı: kalker taş bloklar arasında kırmızı tuğla bantlar, mazgallı burçlar, tuğla kemerli büyük kapı; surlarda kuşatmadan kalma gedikler ve kararmış taşlar, kapının önünde sıkıştırılmış toprak yol. Yirmi bir yaşındaki genç Sultan II. Mehmed, ince bıyıklı ve kısa sakallı, kırmızı kaftanın üstüne gümüş zırh giymiş, başında sorguçlu çelik miğfer, süslü eğerli beyaz bir atın üzerinde kapıya doğru ağır ağır ilerliyor. Yanında yaya yürüyen hocası Akşemseddin, ak sakallı, beyaz sarıklı ve koyu mavi cübbeli. Yolun iki yanında kırmızı börklü yeniçeriler saf tutmuş; üzerinde yalnızca beyaz hilal olan, yazısız kırmızı sancaklar rüzgârda dalgalanıyor. Kapının önünde Sultan atını durdurup surlara bakıyor. Akşemseddin ona dönüp: "Hünkârım, Peygamber efendimizin müjdesi bugün gerçek oldu." Sultan derin bir nefes alıp sakin bir sesle: "Bu zafer bizim değil, Allah'ındır." Sultan kemerin altından geçip hemen içeride atını durduruyor; arkasında kapının kemeri, önünde toplanmış halk ve askerler sessizce bekliyor. Sultan yüksek ve kararlı bir sesle: "Bugünden sonra kimsenin canına, malına ve inancına dokunulmayacak!" Yeniçeriler sancakları kaldırıp hep bir ağızdan sevinçle bağırıyor. Kan, ceset ya da yaralı yok; saygılı, törensel bir giriş.'
+~/workspace/tools/h3muse-venv/bin/python muse/uzun_senaryo.py kart --dizin ~/workspace/h3uretim/20261119_fatih --sure 45 --stil real --fikir 'Fethin üçüncü günü, Haziran 1453, öğleden sonra, açık ve güneşli bir gök. İstanbul kara surlarındaki Topkapı: kalker taş bloklar arasında kırmızı tuğla bantlar, mazgallı burçlar, tuğla kemerli büyük kapı; surlarda kuşatmadan kalma gedikler ve kararmış taşlar, kapının önünde sıkıştırılmış toprak yol. Yirmi bir yaşındaki genç Sultan II. Mehmed, ince bıyıklı ve kısa sakallı, kırmızı kaftanın üstüne gümüş zırh giymiş, başında sorguçlu çelik miğfer, süslü eğerli beyaz bir atın üzerinde kapıya doğru ağır ağır ilerliyor. Yanında yaya yürüyen hocası Akşemseddin, ak sakallı, beyaz sarıklı ve koyu mavi cübbeli. Yolun iki yanında kırmızı börklü yeniçeriler saf tutmuş; üzerinde yalnızca beyaz hilal olan, yazısız kırmızı sancaklar rüzgârda dalgalanıyor. Kapının önünde Sultan atını durdurup surlara bakıyor. Akşemseddin ona dönüp: "Hünkârım, Peygamber efendimizin müjdesi bugün gerçek oldu." Sultan derin bir nefes alıp sakin bir sesle: "Bu zafer bizim değil, Allah'ındır." Sultan kemerin altından geçip hemen içeride atını durduruyor; arkasında kapının kemeri, önünde şehrin halkı, sade yün giysili kadınlar, erkekler ve yaşlılar, korku içinde diz çökmüş, başları önde bekliyor. Sultan onlara bakıp yüksek, sakin ve güven veren bir sesle: "Kalkınız ve müsterih olunuz. Ben Sultan Mehmed; hepinize söylüyorum ki bu andan itibaren ne hürriyetleriniz ne de hayatlarınız hakkında korkmayınız." Halk şaşkınlıkla başını kaldırıyor ve yavaşça ayağa kalkıyor. Kan, ceset, yaralı ya da yağma sahnesi yok; saygılı ve törensel bir giriş.'
 ```
 
 Fikri değiştirme. Kartta şunları kontrol et:
 - 3 blok, 15 + 15 + 15 sn;
 - 3 replik harfi harfine aynı: Akşemseddin 1, Sultan 2. Sultan S1, Akşemseddin S2; gerekirse elle düzelt.
+- Sultan'ın son sözü 22 kelime ve tek blokta (3. blok) olmalı, bölünmemeli. Halk bu sözlerden sonra ayağa kalkıyor.
 - Türkçe harfler korunmuş ("Hünkârım", "Allah'ındır", "Akşemseddin");
 - 2 karakter: K1 Sultan II. Mehmed (21 yaş), K2 Akşemseddin. At ve yeniçeriler karakter değil; tarifte geçsinler.
 - mekân: 1453'teki Topkapı, dışarıdan; modern öğe yok;
@@ -108,7 +109,7 @@ Bu videoya özel olarak şunlara da bak:
 - At: bacaklar doğal mı, binici atın üstünde sabit mi?
 - Sultan kemerin altından geçerken: kimlik ve zırh korunuyor mu?
 - Sancaklarda yazı var mı?
-- Kalabalıkta kopya yüzler var mı?
+- Kalabalıkta kopya yüzler var mı? Halk Sultan'ın sözünden sonra ayağa kalkıyor mu?
 - Kan ya da ceset var mı?
 
 orhan'a sor:
