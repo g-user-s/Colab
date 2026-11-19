@@ -68,6 +68,10 @@ def kmt_gorsel(a, config, pw, hk):
     gdizin = os.path.join(a.dizin, "gorseller")
     os.makedirs(gdizin, exist_ok=True)
     verilen = dict(r.split("=", 1) for r in a.ref)
+    ilhamlar = {k: os.path.expanduser(v) for k, v in (r.split("=", 1) for r in a.ilham)}
+    for k, v in ilhamlar.items():
+        if not os.path.isfile(v):
+            raise SystemExit(f"İlham görseli yok: {v}")
     anahtar = None if meta.get("sahte") else ortak.anahtar_oku(a.anahtar)
     kayit = kart.setdefault("_gorseller", {})
     for g in hk.gorsel_listesi(kart, gdizin):
@@ -89,7 +93,11 @@ def kmt_gorsel(a, config, pw, hk):
             continue
         print(f"⏳ {g['id']} görseli üretiliyor…", flush=True)
         try:
-            model = hk.gorsel_uret(hk.gorsel_metni(kart, g["id"], meta["stil"]), anahtar, g["dosya"])
+            ilham = ilhamlar.get(g["id"])
+            if ilham:
+                print(f"   ilham görseli: {ilham}", flush=True)
+            model = hk.gorsel_uret(hk.gorsel_metni(kart, g["id"], meta["stil"]), anahtar, g["dosya"],
+                                   ilham=ilham, mekan=g["id"] == "MEKAN")
         except Exception as e:  # noqa: BLE001
             print(f"❌ {g['id']}: {str(e).replace(anahtar, '***')}")
             ortak.json_yaz(yol, kart)
@@ -173,7 +181,11 @@ def main(argv=None):
             q.add_argument("--stil", choices=ortak.STILLER, default="real")
             q.add_argument("--sahte", action="store_true")
         if ad == "gorsel":
-            q.add_argument("--ref", action="append", default=[], metavar="ID=YOL.png")
+            q.add_argument("--ref", action="append", default=[], metavar="ID=YOL.png",
+                           help="Bu görseli olduğu gibi kullan (üretme)")
+            q.add_argument("--ilham", action="append", default=[], metavar="ID=YOL",
+                           help="Görseli üretirken bu fotoğrafı/resmi Gemini'ye ilham olarak ver (MEKAN: mimari "
+                                "referans; karakter: kıyafet/zırh ilhamı). --yeniden ile birlikte mevcut görseli yeniler")
             q.add_argument("--yeniden", action="append", default=[], metavar="ID")
         if ad == "plan":
             q.add_argument("--kol", choices=("ref", "metin", "ikisi"), default="ref")

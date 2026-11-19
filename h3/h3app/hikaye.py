@@ -234,9 +234,24 @@ def gorsel_metni(kart, kimlik, style=config.DEFAULT_STYLE):
     return PORTRE.format(kind=s["kind"], gorunum=k["gorunum"], kiyafet=k["kiyafet"], look=look)
 
 
-def gorsel_uret(metin, api_key, hedef, models=None):
-    """Gemini görsel modeliyle tek görsel üretir ve `hedef`e yazar; kullanılan modeli döner."""
+ILHAM_KARAKTER = """The attached picture is only INSPIRATION for this person's costume, armour, headwear, colours and
+bearing (it may be a painting or show several people; use the figure that best matches the description above). Do not copy its painting style,
+its background or other people. The result is the reference image described above, in the style described above."""
+ILHAM_MEKAN = """The attached photo shows the real place. Keep its architecture exactly: wall materials, stone and brick
+banding, arch shape, towers, crenellations, proportions. Change only what the description above changes (era, condition,
+ground, light); remove every modern element (lawns, paved paths, signs, plaques, metal gates, lamps, wires)."""
+
+
+def gorsel_uret(metin, api_key, hedef, models=None, ilham=None, mekan=False):
+    """Gemini görsel modeliyle tek görsel üretir ve `hedef`e yazar; kullanılan modeli döner.
+    ilham: isteğe bağlı bir fotoğraf/resim yolu; mekânda mimari referans, karakterde kıyafet ilhamı olarak verilir."""
+    import mimetypes
     from google.genai import types
+    icerik = [metin]
+    if ilham:
+        icerik = [metin + "\n\n" + (ILHAM_MEKAN if mekan else ILHAM_KARAKTER),
+                  types.Part.from_bytes(data=open(ilham, "rb").read(),
+                                        mime_type=mimetypes.guess_type(ilham)[0] or "image/jpeg")]
     modeller = list(models or pw.image_models(api_key))
     if not modeller:
         raise RuntimeError("Bu anahtarla görsel üretebilen Gemini modeli yok.")
@@ -245,7 +260,7 @@ def gorsel_uret(metin, api_key, hedef, models=None):
     hatalar = []
     for model in modeller[:2]:
         try:
-            resp = client.models.generate_content(model=model, contents=[metin], config=cfg)
+            resp = client.models.generate_content(model=model, contents=icerik, config=cfg)
         except Exception as e:  # noqa: BLE001
             hatalar.append(f"{model}: {str(e)[:150]}")
             continue

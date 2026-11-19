@@ -79,3 +79,33 @@ def test_sureklilik_izleme_puanlari(monkeypatch, tmp_path):
 def test_kopru_istegi_ilk_saniyeleri_korur():
     metin = hikaye.kopru_istegi("Block 2 (15 seconds total, 2 shot(s)).", 4)
     assert metin.startswith("Block 2") and "<Picture 4>" in metin and "1.5 seconds" in metin
+
+
+def test_gorsel_uret_ilham_gorseli_gonderir(monkeypatch, tmp_path):
+    gelen = {}
+
+    class Parca:
+        class inline_data:
+            data = b"PNG"
+            mime_type = "image/png"
+
+    class Yanit:
+        class _c:
+            class content:
+                parts = [Parca]
+        candidates = [_c]
+
+    class Istemci:
+        class models:
+            @staticmethod
+            def generate_content(model, contents, config):
+                gelen["contents"] = contents
+                return Yanit()
+
+    monkeypatch.setattr(pw, "_client", lambda *a, **k: Istemci())
+    foto = tmp_path / "kapi.jpg"
+    foto.write_bytes(b"\xff\xd8jpeg")
+    hedef = tmp_path / "MEKAN.png"
+    assert hikaye.gorsel_uret("A gate.", "k", str(hedef), models=["m"], ilham=str(foto), mekan=True) == "m"
+    assert hedef.read_bytes() == b"PNG"
+    assert "remove every modern element" in gelen["contents"][0] and len(gelen["contents"]) == 2
