@@ -194,6 +194,21 @@ def plan_fikri(kart):
     return "\n".join(satirlar)
 
 
+# ---------------- köprü ----------------
+
+KOPRU_KURALI = """Bridge rule: <Picture {n}> is the final frame of the previous block. The first 1.5 seconds of this
+block continue EXACTLY from that frame: the same framing and camera position, the same body poses, every object in the
+same hand or in the same place, the same light; nothing new appears and nothing moves to a new place. Only after
+1.5 seconds does the block's first new action begin. Never jump straight into a later step of an action."""
+
+
+def kopru_istegi(istek, n_gorsel):
+    """Köprülü bir bloğun istek metni: önceki bloğun son karesi <Picture n_gorsel> olarak verilir; bloğun ilk 1,5 sn'si
+    o kareyi birebir sürdürür. (18.11.2026 mutfak: Gemini blok 3'e kendiliğinden 2 sn sabit bekleme koyunca 30. sn
+    kesintisiz oldu; blok 2'de koymayınca 15. sn'de hareket sıçradı.)"""
+    return f"{istek.rstrip()}\n\n{KOPRU_KURALI.format(n=n_gorsel)}"
+
+
 # ---------------- referans görseller ----------------
 
 def gorsel_listesi(kart, dizin):

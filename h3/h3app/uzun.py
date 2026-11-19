@@ -145,7 +145,9 @@ def generate(arms, method, resolution, seed, style, refs=(), roles=None, bible=N
                 if fake:
                     log("   Test modu: prompt yeniden yazılmadı.")
                 else:
-                    prompt, probs = pw.rewrite(b["istek"], seconds, api_key, config.GEMINI_MODEL, b_imgs, log=log,
+                    from . import hikaye
+                    prompt, probs = pw.rewrite(hikaye.kopru_istegi(b["istek"], len(b_imgs)), seconds, api_key,
+                                               config.GEMINI_MODEL, b_imgs, log=log,
                                                style=style, roles=b_roles)
                     if probs:
                         log(f"   ⚠️ Köprü prompt'unda uyarı: {' | '.join(probs)}")

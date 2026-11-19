@@ -74,3 +74,8 @@ def test_sureklilik_izleme_puanlari(monkeypatch, tmp_path):
     video.write_bytes(b"0")
     s = review.continuity_review(str(video), [15.08], {"baslik": "x"}, "anahtar")
     assert s["kiyafet"] == 10 and s["ortalama"] == 7.8 and s["sorunlar"] == [] and s["model"]
+
+
+def test_kopru_istegi_ilk_saniyeleri_korur():
+    metin = hikaye.kopru_istegi("Block 2 (15 seconds total, 2 shot(s)).", 4)
+    assert metin.startswith("Block 2") and "<Picture 4>" in metin and "1.5 seconds" in metin

@@ -379,6 +379,10 @@ class Gemini:
             except ImportError:
                 raise Hata("google-genai yok. Bu betiği ~/workspace/tools/h3muse-venv/bin/python ile çalıştır.")
 
+    @property
+    def esik_adi(self):
+        return "Orta ya da yüksek önemde" if self.o.v.get("yeniden_esik") == "orta" else "Yüksek önemde"
+
     def engel(self, inceleme):
         """Yeniden üretim gerekir mi? Eşik 'yuksek' (varsayılan): yalnızca yüksek önemde kusur; 'orta': orta da."""
         if not inceleme:
@@ -427,7 +431,9 @@ class Gemini:
             if not self.anahtar or self.senaryo.get("sahte"):
                 return None
             yaz(f"🔗 {k}: köprü prompt'u yazılıyor (bu makineden)…")
-            prompt, sorun = self.pw.rewrite(istek, sure, self.anahtar, self.config.GEMINI_MODEL, gorseller, log=yaz,
+            from h3app import hikaye
+            prompt, sorun = self.pw.rewrite(hikaye.kopru_istegi(istek, len(gorseller)), sure, self.anahtar,
+                                            self.config.GEMINI_MODEL, gorseller, log=yaz,
                                             style=self.senaryo["stil"], roles=roller)
             if sorun:
                 yaz(f"   ⚠️ Köprü prompt'unda uyarı: {' | '.join(sorun)}")
@@ -465,13 +471,13 @@ def akis_tek(c, o, senaryo, gm):
         if not gm.engel(inc):
             break
         if k < tekrar:
-            yaz(f"🔁 Yüksek önemde kusur; aynı runtime'da yeni seed ({int(senaryo['seed']) + 1000 * (k + 1)}) ile "
+            yaz(f"🔁 {gm.esik_adi} kusur; aynı runtime'da yeni seed ({int(senaryo['seed']) + 1000 * (k + 1)}) ile "
                 f"yeniden üretiliyor ({k + 1}/{tekrar}).")
     en_iyi = min(adaylar, key=lambda a: rv.score(a["inceleme"])) if gm.aktif else adaylar[-1]
     secim = (f"⭐ Seçilen: {os.path.basename(en_iyi['video'])} (seed {en_iyi['seed']}, {len(adaylar)} aday) — izleme: "
              f"{rv.short(en_iyi['inceleme']) if gm.aktif else 'yapılmadı (anahtar verilmedi ya da kuru deneme)'}")
     if gm.aktif and gm.engel(en_iyi["inceleme"]):
-        secim += " · ⚠️ bütün adaylarda yüksek önemde kusur kaldı"
+        secim += f" · ⚠️ bütün adaylarda {gm.esik_adi.lower()} kusur kaldı"
     yaz(secim)
     o.kaydet(sonuc={"secilen": en_iyi["video"], "secim": secim,
                     "adaylar": [{"video": os.path.basename(a["video"]), "seed": a["seed"],
@@ -528,7 +534,8 @@ def akis_uzun(c, o, senaryo, gm):
                 if not gm.engel(inc):
                     break
                 if d < tekrar:
-                    yaz(f"🔁 [{kol}] Blok {n}: yüksek önemde kusur; aynı runtime'da yeni seed ile yeniden üretiliyor")
+                    yaz(f"🔁 [{kol}] Blok {n}: {gm.esik_adi.lower()} kusur; aynı runtime'da yeni seed ile yeniden "
+                        "üretiliyor")
             en_iyi = min(adaylar, key=lambda a: rv.score(a["inceleme"])) if gm.aktif else adaylar[-1]
             secilen_ad.append(en_iyi["ad"])
             secilen_yerel.append(en_iyi["video"])
