@@ -70,8 +70,14 @@ in front of a plain light-grey background, even soft studio light. Exactly one p
 No text, no letters, no logos, no watermark."""
 
 MEKAN_GORSELI = """A {kind} wide establishing image of an empty place, ready for actors: {tarif}. {isik}.
-Colour palette: {palet}. Eye-level camera, natural perspective. No people, no animals. {look}
+Colour palette: {palet}. Eye-level camera, natural perspective. {look}
+The place is COMPLETELY EMPTY: no people at all (no soldiers, guards, crowds, kneeling or standing figures, no
+silhouettes in doorways), no animals, no flags, banners or standards, no vehicles. Characters, crowds and props are
+added later in the video, never in this image.
 No readable text, no signs, no letters, no logos, no watermark."""
+
+INSAN_KELIMELERI = ("people", "person", "crowd", "soldier", "guard", "janissar", "villager", "citizen", "army",
+                    "troop", "man ", "men ", "woman", "women", "child", "flag", "banner", "standard-bearer")
 
 
 def blok_sayisi(toplam):
@@ -106,6 +112,11 @@ def kart_denetle(kart, toplam, fikir=""):
         sorunlar.append(f"Konuşmacı kimlikleri S1, S2… sırasıyla verilmeli (şu an: {konusmacilar}).")
     if not ((kart.get("mekan") or {}).get("tarif") or "").strip():
         sorunlar.append("Mekân tarifi boş.")
+    tarif = " " + ((kart.get("mekan") or {}).get("tarif") or "").lower() + " "
+    bulunan = sorted({k.strip() for k in INSAN_KELIMELERI if k in tarif})
+    if bulunan:
+        sorunlar.append("Mekân tarifinde insan/kalabalık/sancak geçiyor (" + ", ".join(bulunan) + "); mekân boş "
+                        "olmalı, bunlar blok özetlerine ait (mekân görseline girer ve her bloğa taşınır).")
     bloklar = kart.get("bloklar") or []
     if not bloklar:
         sorunlar.append("Blok listesi boş.")

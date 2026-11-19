@@ -35,7 +35,8 @@ Bunun yerine `--ilham` ile Gemini'ye ilham olarak ver:
 Kartta ve görsellerde bunlara uy:
 - **Sultan II. Mehmed 21 yaşında:** ince bıyık, kısa sakal. Yaşlı ya da gür sakallı olmamalı.
 - **Kan, ceset, yaralı, yağma sahnesi yok.** Saygılı, törensel bir giriş. Halk korku içinde, ama yaralı ya da perişan gösterilmiyor.
-- **Sancaklarda yazı yok:** yalnızca hilal. Arapça hat dahil hiçbir yazı olmamalı.
+- **Sancaklarda yazı yok:** yalnızca tek bir beyaz hilal, **yıldız yok** (ay-yıldızlı bugünkü bayrak 1453'e ait değil). Arapça hat dahil hiçbir yazı olmamalı.
+- **Mekân görseli bomboş:** insan, yeniçeri, halk, at ve sancak yok. Bunların hepsi bloklarda gelir. Mekân görseli bütün blokların sahne çapasıdır; içine konan her şey her bloğa taşınır.
 - **Modern öğe yok:** çimen, parke yol, tabela, demir kapı, kablo.
 - Akşemseddin, Sultan'ın hocası: yaşlı, ak sakallı, beyaz sarıklı, koyu mavi cübbeli, yaya.
 

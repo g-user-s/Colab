@@ -109,3 +109,10 @@ def test_gorsel_uret_ilham_gorseli_gonderir(monkeypatch, tmp_path):
     assert hikaye.gorsel_uret("A gate.", "k", str(hedef), models=["m"], ilham=str(foto), mekan=True) == "m"
     assert hedef.read_bytes() == b"PNG"
     assert "remove every modern element" in gelen["contents"][0] and len(gelen["contents"]) == 2
+
+
+def test_mekan_tarifinde_insan_uyarisi():
+    kart = hikaye.ornek_kart('"A."', 20)
+    kart["mekan"]["tarif"] = "A city gate with janissaries lining the road and red banners."
+    assert any("Mekân tarifinde insan" in s for s in hikaye.kart_denetle(kart, 20, ""))
+    assert "COMPLETELY EMPTY" in hikaye.gorsel_metni(kart, "MEKAN")
