@@ -2,7 +2,7 @@
 
 **Depo:** https://github.com/g-user-s/Colab (dal `claude/trusting-johnson-c5d0tf`). Önce: `cd ~/workspace/Colab && git pull`.
 
-**Önceki Fatih görevlerinin hepsi iptal** (`20261119_fatih`, `fatih2`, `fatih3`). Yalnızca `20261119_fatih4`.
+**İlk Fatih planı (`20261119_fatih`) iptal; onu üretme.** Oradaki `ilham/` klasörü (tablo.jpg, kapi.jpg) kullanılacak. Yeni klasör: `20261119_fatih4`.
 
 ## Sahne
 
