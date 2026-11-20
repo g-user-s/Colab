@@ -1,7 +1,7 @@
 {
   "surum": 2,
   "tur": "uzun",
-  "olusturma": "2026-11-20T14:56:51",
+  "olusturma": "2026-11-20T19:36:25",
   "h3app_surum": "c9c1d9f9b2b4",
   "fikir": "Fatih'in İstanbul'a girişi — anahtar kare yöntemi (fatih4 ile aynı sahne)",
   "sure": 60,
@@ -40,15 +40,11 @@
     {
       "id": "C2a",
       "dosya": "/home/hatch/workspace/h3uretim/20261120_fatih_kare/kareler/C2a.png",
-      "tarif": "An eye-level medium shot inside the crowd behind the cordon, 50mm lens, shallow depth of field. In the left third of the foreground stands the young mother holding her son on her hip, his face turned into her shoulder; her face is tense and she looks toward the gate in the background. An old man beside her grips his cap with both hands. The red backs and tall white felt caps of two janissaries fill the lower edge of the frame. Far behind, softly out of focus, the arch blazes with light above the empty road. Late afternoon, June 1453; the low sun is directly behind the gate: hazy golden light and dust pour through the arch toward the camera, the passage under the arch is in deep shade, every figure on the road is rim-lit. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
+      "tarif": "An eye-level medium shot inside the packed crowd standing at the side of the road, 50mm lens, shallow depth of field. Slightly right of centre stands the young mother in three-quarter view, holding her son on her hip, his face turned into her shoulder; her face is tense and she looks off-screen to the left, toward the gate. An old man beside her grips his cap with both hands. Behind them, softly out of focus, more silent townspeople stand packed shoulder to shoulder. Late afternoon, June 1453; the low sun shines from screen left, from the direction of the gate, which is OUT OF FRAME: warm golden side light across faces and clothes, soft shade on the right side. The gate, the arch and the city walls are NOT visible in this frame; behind the people there are only more townspeople and the stone-and-brick wall of a house with a shuttered window. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
       "girdiler": [
         {
           "etiket": "the young Greek mother and her son",
           "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/K3.png"
-        },
-        {
-          "etiket": "the place: the inner face of the gate, the road, the square, the cordon and the crowd",
-          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/MEKAN.png"
         }
       ],
       "taban": null,
@@ -57,7 +53,7 @@
     {
       "id": "C2b",
       "dosya": "/home/hatch/workspace/h3uretim/20261120_fatih_kare/kareler/C2b.png",
-      "tarif": "Far behind, still out of focus, the first tall crimson and green banners and the mehter band in red and green kaftans have stepped out of the shadowed passage of the arch into the light. The mother has pulled her son tighter and lifted her eyes toward the gate. Late afternoon, June 1453; the low sun is directly behind the gate: hazy golden light and dust pour through the arch toward the camera, the passage under the arch is in deep shade, every figure on the road is rim-lit. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
+      "tarif": "The mother has pulled her son tighter and lifted her chin, still looking off-screen to the left; the boy has turned his head to look the same way, and the people behind them crane their necks toward the left. Late afternoon, June 1453; the low sun shines from screen left, from the direction of the gate, which is OUT OF FRAME: warm golden side light across faces and clothes, soft shade on the right side. The gate, the arch and the city walls are NOT visible in this frame; behind the people there are only more townspeople and the stone-and-brick wall of a house with a shuttered window. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
       "girdiler": [
         {
           "etiket": "the young Greek mother and her son",
@@ -236,7 +232,7 @@
     {
       "id": "C8a",
       "dosya": "/home/hatch/workspace/h3uretim/20261120_fatih_kare/kareler/C8a.png",
-      "tarif": "A close-up of the young mother kneeling on the stone paving among the crowd behind the cordon, 50mm lens: she presses her son's curly head to her chest with both arms, her eyes cast down, trembling; other kneeling townspeople soft behind her. Late afternoon, June 1453; the low sun is directly behind the gate: hazy golden light and dust pour through the arch toward the camera, the passage under the arch is in deep shade, every figure on the road is rim-lit. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
+      "tarif": "A close-up of the young mother kneeling on the stone paving among the crowd at the side of the road, 50mm lens: she presses her son's curly head to her chest with both arms, her eyes cast down, trembling; other kneeling townspeople soft behind her. Late afternoon, June 1453; the low sun shines from screen left, from the direction of the gate, which is OUT OF FRAME: warm golden side light across faces and clothes, soft shade on the right side. The gate, the arch and the city walls are NOT visible in this frame; behind the people there are only more townspeople and the stone-and-brick wall of a house with a shuttered window. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
       "girdiler": [
         {
           "etiket": "the young Greek mother and her son",
@@ -249,7 +245,7 @@
     {
       "id": "C8b",
       "dosya": "/home/hatch/workspace/h3uretim/20261120_fatih_kare/kareler/C8b.png",
-      "tarif": "She has slowly lifted her eyes toward the Sultan off-screen right, lips parted, still holding her son tight; the boy has turned his face to look too. Late afternoon, June 1453; the low sun is directly behind the gate: hazy golden light and dust pour through the arch toward the camera, the passage under the arch is in deep shade, every figure on the road is rim-lit. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
+      "tarif": "She has slowly lifted her eyes toward the Sultan off-screen right, lips parted, still holding her son tight; the boy has turned his face to look too. Late afternoon, June 1453; the low sun shines from screen left, from the direction of the gate, which is OUT OF FRAME: warm golden side light across faces and clothes, soft shade on the right side. The gate, the arch and the city walls are NOT visible in this frame; behind the people there are only more townspeople and the stone-and-brick wall of a house with a shuttered window. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
       "girdiler": [
         {
           "etiket": "the young Greek mother and her son",
@@ -406,7 +402,7 @@
         "sure": 5,
         "ilk": "C2a",
         "son": "C2b",
-        "istek": "Kalabalığın içinde anne ve oğlu; kemerden ilk sancaklar ve mehter çıkıyor."
+        "istek": "Kalabalığın içinde anne ve oğlu; mehter yaklaşıyor, herkes kapıya doğru bakıyor."
       },
       {
         "blok": 3,
@@ -485,8 +481,8 @@
           "sure": 5,
           "ilk": "C2a",
           "son": "C2b",
-          "istek": "Kalabalığın içinde anne ve oğlu; kemerden ilk sancaklar ve mehter çıkıyor.",
-          "prompt": "How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 1) aligns with the 5.17-second mark of the target video.\n\nintegrated_multimodal_description: [Shot 1] Live-action, cinematic historical feature film, 35mm film with anamorphic lenses, natural light only. A static eye-level medium shot inside the crowd, 50mm lens, shallow depth of field, beginning on Picture 1: the young mother with her son on her hip among tense, silent townspeople, the red backs of the janissaries at the bottom of the frame, the blazing arch out of focus far behind. The mehter music grows louder; she swallows and pulls her son tighter. Far behind, out of focus, the first banners and the band step out of the arch into the light, and the shot ends on Picture 2 with her eyes lifted toward the gate. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.\n\noverall_soundscape: The mehter march grows louder and echoes through the arch; close whispers are hushed; the boy breathes quickly against his mother's shoulder.\n\nnon_diegetic_music: A low sustained drone of bowed double basses, a soft frame-drum pulse joining underneath.",
+          "istek": "Kalabalığın içinde anne ve oğlu; mehter yaklaşıyor, herkes kapıya doğru bakıyor.",
+          "prompt": "How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 1) aligns with the 5.17-second mark of the target video.\n\nintegrated_multimodal_description: [Shot 1] Live-action, cinematic historical feature film, 35mm film with anamorphic lenses, natural light only. A static eye-level medium shot inside the packed crowd at the side of the road, 50mm lens, shallow depth of field, beginning on Picture 1: the young mother with her son on her hip among tense, silent townspeople, looking off-screen to the left toward the gate, warm low sunlight from the left on their faces; the gate itself is never in frame. The mehter music grows louder; she swallows and pulls her son tighter; the boy lifts his head and looks left, and the people behind them crane their necks the same way. The shot ends on Picture 2. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.\n\noverall_soundscape: The mehter march grows louder and echoes through the arch; close whispers are hushed; the boy breathes quickly against his mother's shoulder.\n\nnon_diegetic_music: A low sustained drone of bowed double basses, a soft frame-drum pulse joining underneath.",
           "sorunlar": []
         },
         {
@@ -540,7 +536,7 @@
           "ilk": "C8a",
           "son": "C8b",
           "istek": "Diz çökmüş anne oğlunu göğsüne bastırıyor; gözlerini Sultan'a kaldırıyor.",
-          "prompt": "How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 1) aligns with the 5.17-second mark of the target video.\n\nintegrated_multimodal_description: [Shot 1] Live-action, cinematic historical feature film, 35mm film with anamorphic lenses, natural light only. A static close-up of the young mother kneeling on the paving among the crowd, 50mm lens, beginning on Picture 1: she presses her son's curly head to her chest with both arms, trembling, eyes cast down. She takes a shaky breath, then slowly lifts her eyes toward the Sultan off-screen right, lips parting; the boy turns his face to look too. The shot ends on Picture 2. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.\n\noverall_soundscape: Silence; the mother's shaky breath; the soft rustle of cloth; far off, a horse snorts.\n\nnon_diegetic_music: N/A",
+          "prompt": "How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 1) aligns with the 5.17-second mark of the target video.\n\nintegrated_multimodal_description: [Shot 1] Live-action, cinematic historical feature film, 35mm film with anamorphic lenses, natural light only. A static close-up of the young mother kneeling on the paving among the crowd, 50mm lens, the gate out of frame, beginning on Picture 1: she presses her son's curly head to her chest with both arms, trembling, eyes cast down. She takes a shaky breath, then slowly lifts her eyes toward the Sultan off-screen right, lips parting; the boy turns his face to look too. The shot ends on Picture 2. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.\n\noverall_soundscape: Silence; the mother's shaky breath; the soft rustle of cloth; far off, a horse snorts.\n\nnon_diegetic_music: N/A",
           "sorunlar": []
         },
         {
