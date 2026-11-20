@@ -31,19 +31,13 @@ STIL = "Live-action, cinematic historical feature film, 35mm film with anamorphi
 SAHNE = ("the great limestone-and-red-brick arch of the city gate with its faded Byzantine fresco, the stone road and "
          "square, the crimson janissary cordon with tall crimson and green banners each bearing only a single white "
          "crescent, and thousands of Greek townspeople behind it on rubble, roofs and the wall-walk")
-# Kalabalığın içindeki çekimlerde kamera kapıya bakmaz: kapı kadrajın dışında, solda; ışık oradan yandan vurur.
-ISIK_YAN = ("Late afternoon, June 1453; the low sun shines from screen left, from the direction of the gate, which is OUT "
-            "OF FRAME: warm golden side light across faces and clothes, soft shade on the right side.")
-KAPI_YOK = ("The gate, the arch and the city walls are NOT visible in this frame; behind the people there are only more "
-            "townspeople and the stone-and-brick wall of a house with a shuttered window.")
 YOK = ("No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.")
 
 KARELER = []   # üretim sırası önemli: taban önce gelir
 
 
-def K(kimlik, tarif, girdiler=(), taban=None, kompozisyon=None, kapi=True):
-    isik = ISIK if kapi else f"{ISIK_YAN} {KAPI_YOK}"
-    KARELER.append({"id": kimlik, "dosya": f"{MUSE_DIZIN}/kareler/{kimlik}.png", "tarif": f"{tarif} {isik} {YOK}",
+def K(kimlik, tarif, girdiler=(), taban=None, kompozisyon=None):
+    KARELER.append({"id": kimlik, "dosya": f"{MUSE_DIZIN}/kareler/{kimlik}.png", "tarif": f"{tarif} {ISIK} {YOK}",
                     "girdiler": list(girdiler), "taban": taban, "kompozisyon": kompozisyon})
 
 
@@ -66,14 +60,14 @@ K("C1a", "A high wide view from a flat rooftop inside the city, about fifteen me
 K("C1b", "The camera has descended about five metres in the same shot: the arch now sits a little higher in the frame, "
   "the near roof edge has left the bottom of the frame, and the crowd along the road is closer and larger. Nothing "
   "else has changed and nobody has moved.", [MEK], taban="C1a")
-K("C2a", "An eye-level medium shot inside the packed crowd standing at the side of the road, 50mm lens, shallow depth "
-  "of field. Slightly right of centre stands the young mother in three-quarter view, holding her son on her hip, his "
-  "face turned into her shoulder; her face is tense and she looks off-screen to the left, toward the gate. An old man "
-  "beside her grips his cap with both hands. Behind them, softly out of focus, more silent townspeople stand packed "
-  "shoulder to shoulder.", [ANNE], kapi=False)
-K("C2b", "The mother has pulled her son tighter and lifted her chin, still looking off-screen to the left; the boy has "
-  "turned his head to look the same way, and the people behind them crane their necks toward the left.",
-  [ANNE], taban="C2a", kapi=False)
+K("C2a", "An eye-level medium shot inside the crowd behind the cordon, 50mm lens, shallow depth of field. In the left "
+  "third of the foreground stands the young mother holding her son on her hip, his face turned into her shoulder; her "
+  "face is tense and she looks toward the gate in the background. An old man beside her grips his cap with both hands. "
+  "The red backs and tall white felt caps of two janissaries fill the lower edge of the frame. Far behind, softly out "
+  "of focus, the arch blazes with light above the empty road.", [ANNE, MEK])
+K("C2b", "Far behind, still out of focus, the first tall crimson and green banners and the mehter band in red and "
+  "green kaftans have stepped out of the shadowed passage of the arch into the light. The mother has pulled her son "
+  "tighter and lifted her eyes toward the gate.", [ANNE], taban="C2a")
 K("C3a", "A low frontal wide shot on the axis of the road, 32mm lens, facing the arch from about thirty metres. Out of "
   "the deep shade of the passage the mehter band marches toward the camera on foot in strict ranks: kettle drums and "
   "big drums carried on straps, zurnas raised, cymbals, red and green kaftans and tall caps. Behind them mounted "
@@ -116,11 +110,11 @@ K("C7a", "A medium close-up of the Sultan from slightly below, 50mm lens, chest 
   "looks down toward screen left, lips closed.", [SUL, MEK])
 K("C7b", "His lips are closed again after speaking and his gaze has lifted from screen left toward the crowd in front "
   "of him.", [SUL], taban="C7a")
-K("C8a", "A close-up of the young mother kneeling on the stone paving among the crowd at the side of the road, 50mm "
-  "lens: she presses her son's curly head to her chest with both arms, her eyes cast down, trembling; other kneeling "
-  "townspeople soft behind her.", [ANNE], kapi=False)
+K("C8a", "A close-up of the young mother kneeling on the stone paving among the crowd behind the cordon, 50mm lens: "
+  "she presses her son's curly head to her chest with both arms, her eyes cast down, trembling; other kneeling "
+  "townspeople soft behind her.", [ANNE])
 K("C8b", "She has slowly lifted her eyes toward the Sultan off-screen right, lips parted, still holding her son tight; "
-  "the boy has turned his face to look too.", [ANNE], taban="C8a", kapi=False)
+  "the boy has turned his face to look too.", [ANNE], taban="C8a")
 K("C9a", "A medium shot of the Sultan from slightly below, 50mm lens, from the waist up with the white horse's neck "
   "and mane in the lower frame; he sits straight in the saddle and looks out over the kneeling crowd in front of him, "
   "lips closed; rim-lit, the blazing arch soft behind his shoulder.", [SUL, MEK])
@@ -142,12 +136,12 @@ C(1, 5, "C1a", "C1b", "Damdan yüksek geniş plan: binlerce kişi sessizce bekli
   "Wind over the rooftops, banners flapping, the vast low murmur of thousands of silent people; far beyond the walls, "
   "the slow heavy beat of mehter drums, muffled.",
   "A low sustained drone of bowed double basses at a very slow tempo.")
-C(2, 5, "C2a", "C2b", "Kalabalığın içinde anne ve oğlu; mehter yaklaşıyor, herkes kapıya doğru bakıyor.",
-  "A static eye-level medium shot inside the packed crowd at the side of the road, 50mm lens, shallow depth of field, "
-  "beginning on Picture 1: the young mother with her son on her hip among tense, silent townspeople, looking off-screen "
-  "to the left toward the gate, warm low sunlight from the left on their faces; the gate itself is never in frame. The "
-  "mehter music grows louder; she swallows and pulls her son tighter; the boy lifts his head and looks left, and the "
-  "people behind them crane their necks the same way. The shot ends on Picture 2.",
+C(2, 5, "C2a", "C2b", "Kalabalığın içinde anne ve oğlu; kemerden ilk sancaklar ve mehter çıkıyor.",
+  "A static eye-level medium shot inside the crowd, 50mm lens, shallow depth of field, beginning on Picture 1: the "
+  "young mother with her son on her hip among tense, silent townspeople, the red backs of the janissaries at the "
+  "bottom of the frame, the blazing arch out of focus far behind. The mehter music grows louder; she swallows and "
+  "pulls her son tighter. Far behind, out of focus, the first banners and the band step out of the arch into the "
+  "light, and the shot ends on Picture 2 with her eyes lifted toward the gate.",
   "The mehter march grows louder and echoes through the arch; close whispers are hushed; the boy breathes quickly "
   "against his mother's shoulder.",
   "A low sustained drone of bowed double basses, a soft frame-drum pulse joining underneath.")
@@ -194,8 +188,7 @@ C(7, 5, "C7a", "C7b", "Sultan sakin bir sesle cevap veriyor.",
   "then close and his gaze lifts toward the crowd, ending on Picture 2.",
   "Silence, faint wind, a banner flapping once; the horse shifts its weight.")
 C(8, 5, "C8a", "C8b", "Diz çökmüş anne oğlunu göğsüne bastırıyor; gözlerini Sultan'a kaldırıyor.",
-  "A static close-up of the young mother kneeling on the paving among the crowd, 50mm lens, the gate out of frame, "
-  "beginning on Picture 1: "
+  "A static close-up of the young mother kneeling on the paving among the crowd, 50mm lens, beginning on Picture 1: "
   "she presses her son's curly head to her chest with both arms, trembling, eyes cast down. She takes a shaky breath, "
   "then slowly lifts her eyes toward the Sultan off-screen right, lips parting; the boy turns his face to look too. "
   "The shot ends on Picture 2.",

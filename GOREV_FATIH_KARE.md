@@ -18,7 +18,7 @@ Kaynaklar:
 | Çekim | Süre | Ne oluyor |
 |---|---|---|
 | 1 | 5 sn | Damdan yüksek geniş plan: binlerce kişi sessizce bekliyor, kamera alçalıyor |
-| 2 | 5 sn | Kalabalığın içinde anne ve oğlu; mehter yaklaşıyor, herkes kapıya doğru bakıyor (kapı kadraj dışında) |
+| 2 | 5 sn | Kalabalığın içinde anne ve oğlu; kemerden ilk sancaklar çıkıyor |
 | 3 | 5 sn | Mehter kemerden kameraya doğru çıkıp yolun iki yanına açılıyor |
 | 4 | 8 sn | **Tablonun anı:** Sultan beyaz atıyla kemerin gölgesinden ışığa çıkıyor |
 | 5 | 5 sn | Sultan geçerken kalabalık diz çöküyor, alay duruyor |
@@ -67,11 +67,6 @@ cp ~/workspace/Colab/muse_gorevleri/20261120_fatih_kare/uzun_senaryo.json $D/
 
 ## 2. Anahtar kareler (20 görsel)
 
-> **Düzeltme (20.11):** C2 ve C8'de kapı yanlışlıkla annenin arkasına konmuştu. Bu çekimlerde kapı artık kadraj dışında,
-> solda; anne ve oğlunun arkasında yalnızca kalabalık ve ev duvarı var. Kareleri bu düzeltmeden önce ürettiysen:
-> `git pull`, `uzun_senaryo.json`'u 1. adımdaki gibi yeniden kopyala, sonra yalnızca şu dört kareyi yenile:
-> `... kareler --dizin ~/workspace/h3uretim/20261120_fatih_kare --yeniden C2a --yeniden C2b --yeniden C8a --yeniden C8b`
-
 ```bash
 cd ~/workspace/Colab
 ~/workspace/tools/h3muse-venv/bin/python muse/uzun_senaryo.py kareler --dizin ~/workspace/h3uretim/20261120_fatih_kare
@@ -84,7 +79,6 @@ cd ~/workspace/Colab
 
 **Kontrol et (çekim çekim, a ve b yan yana):**
 - **Kimlik:** Sultan, Akşemseddin ve anne fatih4 görselleriyle aynı mı?
-- **Mekân mantığı:** kapı yalnızca kameranın kapıya baktığı karelerde görünmeli. C2 ve C8'de (anne) kapı, kemer ya da sur **görünmemeli**.
 - **a → b farkı:** küçük ve tarif edilen kadar mı? Kamera aynı yerde mi? Özellikle C1, C2, C6, C7, C9, C10.
 - **C4b (en önemlisi):** Zonaro'nun tablosu gibi mi?
   - Sultan beyaz atla kemerden kameraya doğru, hafif solda;
