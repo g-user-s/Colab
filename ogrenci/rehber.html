@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>H3 Öğrenme Rehberi</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+  :root { --ink:#1d1d1f; --mute:#5b5b66; --line:#d9d6cf; --acc:#9b2c2c; --acc2:#2f5d62; --paper:#fbfaf7; --ok:#2e6b3a; --bad:#a03030; }
+  * { box-sizing: border-box; }
+  body { font-family: "DejaVu Serif", "Noto Serif", Georgia, serif; color: var(--ink); font-size: 10.5pt; line-height: 1.5; margin: 0; background: white; }
+  h1, h2, h3, .sans { font-family: "DejaVu Sans", "Noto Sans", Arial, sans-serif; }
+  h1 { font-size: 26pt; margin: 0 0 6mm; letter-spacing: -0.5px; }
+  h2 { font-size: 15pt; color: var(--acc); border-bottom: 1.5px solid var(--acc); padding-bottom: 2mm; margin: 9mm 0 4mm; page-break-after: avoid; }
+  h3 { font-size: 11.5pt; color: var(--acc2); margin: 5mm 0 2mm; page-break-after: avoid; }
+  p { margin: 0 0 2.5mm; }
+  ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+  li { margin-bottom: 1mm; }
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm; font-size: 9.3pt; page-break-inside: avoid; }
+  th, td { border: 1px solid var(--line); padding: 1.6mm 2mm; vertical-align: top; text-align: left; }
+  th { background: #f1eee7; font-family: "DejaVu Sans", Arial, sans-serif; font-size: 8.8pt; }
+  code, .kod { font-family: "DejaVu Sans Mono", monospace; font-size: 8.6pt; }
+  .kod { background: #f4f2ec; border: 1px solid var(--line); border-radius: 2mm; padding: 3mm; white-space: pre-wrap; margin: 2mm 0 4mm; page-break-inside: avoid; }
+  .kutu { border-left: 3px solid var(--acc2); background: #f2f6f6; padding: 2.5mm 3.5mm; margin: 3mm 0; page-break-inside: avoid; }
+  .iyi, .kotu { padding: 2.5mm 3.5mm; margin: 2mm 0; border-radius: 1.5mm; page-break-inside: avoid; }
+  .iyi { background: #eef6ef; border: 1px solid #b8d8bd; }
+  .kotu { background: #f9eded; border: 1px solid #e3b9b9; }
+  .iyi b:first-child { color: var(--ok); } .kotu b:first-child { color: var(--bad); }
+  .kapak { height: 255mm; display: flex; flex-direction: column; justify-content: center; page-break-after: always; }
+  .kapak .ust { font-family: "DejaVu Sans", Arial, sans-serif; letter-spacing: 3px; color: var(--acc); font-size: 9pt; text-transform: uppercase; margin-bottom: 4mm; }
+  .kapak p { font-size: 12pt; color: var(--mute); max-width: 140mm; }
+  .icindekiler { margin-top: 12mm; font-family: "DejaVu Sans", Arial, sans-serif; font-size: 10pt; color: var(--mute); columns: 2; }
+  .sayfa { page-break-before: always; }
+  .k { font-size: 8.8pt; color: var(--mute); }
+  svg { display: block; margin: 3mm auto; }
+</style>
+</head>
+<body>
+
+<section class="kapak">
+  <div class="ust">H3 Video Stüdyosu · Öğrenme rehberi</div>
+  <h1>Bir sahneyi anahtar karelerle anlatmak</h1>
+  <p>Sinema bilgisini yapay zekâ video üretimine aktarmak için adım adım rehber. Örnek: Fatih'in İstanbul'a girişi (Zonaro'nun tablosunun canlı hâli). Bu rehberi bitiren kişi, Muse'a verilecek bir çekim defterini kendisi yazabilir.</p>
+  <div class="icindekiler">
+    1. Sistem nasıl çalışır<br>2. Temel kavramlar<br>3. Çekim tasarımı kuralları<br>4. Kamera dili sözlüğü<br>5. Işık ve mekân mantığı<br>6. Kare tarifi nasıl yazılır<br>7. Çekim tarifi nasıl yazılır<br>8. Replik ve zamanlama<br>9. Ses ve müzik<br>10. Örnek: Fatih sahnesi<br>11. Sık yapılan hatalar<br>12. Boş çekim defteri şablonu<br>13. Muse'a teslim ve onay<br>14. Kontrol listesi
+  </div>
+</section>
+
+<h2>1. Sistem nasıl çalışır</h2>
+<p>Üç oyuncu var:</p>
+<table>
+<tr><th style="width:22%">Kim</th><th>Ne yapar</th></tr>
+<tr><td><b>Sen (yönetmen)</b></td><td>Sahneyi tasarlarsın: çekimler, kareler, kamera, ışık, replikler, ses. Çıktın bir <b>çekim defteridir</b>.</td></tr>
+<tr><td><b>Muse</b> (kişisel yapay zekâ ajanı)</td><td>Defteri uygular: Gemini'ye kare fotoğraflarını ürettirir, onayını alır, Google Colab'da GPU açıp H3 ile videoyu üretir, izletip puanlatır, teslim eder. Her maliyetli adımda onay ister.</td></tr>
+<tr><td><b>Modeller</b></td><td><b>Gemini görsel modeli:</b> kare fotoğraflarını üretir. <b>MiniMax H3:</b> iki kare arasındaki hareketi, sesi ve konuşmayı üretir. <b>Gemini:</b> videoyu izleyip kusurları ve sürekliliği puanlar.</td></tr>
+</table>
+<div class="kutu"><b>Neden anahtar kare?</b> H3 tek seferde en fazla ~15 sn üretir. Uzun sahne parçalardan oluşur. Parçalar yalnızca metinle tarif edilince model yüzü, kıyafeti, mekânı ve kamera açısını her seferinde biraz farklı çizer. Anahtar kare yönteminde her çekimin <b>ilk ve son karesini önceden fotoğraf olarak</b> belirleriz; H3 yalnızca aradaki hareketi doldurur. Kompozisyonu artık model değil, sen belirlersin.</div>
+
+<h2>2. Temel kavramlar</h2>
+<table>
+<tr><th style="width:24%">Terim</th><th>Anlamı</th></tr>
+<tr><td><b>Çekim</b></td><td>Kesmesiz tek bir görüntü parçası. Bu yöntemde her çekim ayrı üretilir ve <b>5–15 sn</b> sürer.</td></tr>
+<tr><td><b>Anahtar kare</b></td><td>Çekimin belirlenmiş bir anı; önceden fotoğraf olarak üretilir.</td></tr>
+<tr><td><b>İlk kare (a) / son kare (b)</b></td><td>Çekim tam olarak ilk kareyle başlar, son kareyle biter. Adlandırma: <code>C4a</code>, <code>C4b</code>.</td></tr>
+<tr><td><b>Taban kare</b></td><td>Bir kareyi sıfırdan değil, başka bir karenin <b>aynı kamera açısıyla, yalnızca söylenen şey değişmiş</b> hâli olarak üretmek. Kamera kilitli kalır, a ile b birbirine oturur.</td></tr>
+<tr><td><b>Kompozisyon referansı</b></td><td>Bir tablo ya da fotoğraf, yalnızca <b>düzen</b> için verilir: kim nerede, kamera nereden bakıyor. Üslubu kopyalanmaz.</td></tr>
+<tr><td><b>Oyuncu ve mekân görselleri</b></td><td>Her karakterin boydan bir fotoğrafı ve mekânın boş hâli (K1, K2, K3, MEKAN). Her karede kimliği bunlar taşır.</td></tr>
+<tr><td><b>Konuşmacı kimliği (S1, S2)</b></td><td>Konuşan karaktere verilir; sesi tarif edilir. Konuşmayanlara verilmez.</td></tr>
+<tr><td><b>Seed</b></td><td>Rastgeleliğin başlangıç sayısı. Aynı seed, aynı girdiyle aynı sonucu verir.</td></tr>
+<tr><td><b>CCU</b></td><td>Colab'ın GPU kredisi. A100 saatte ~6,7 CCU harcar.</td></tr>
+</table>
+
+<svg width="640" height="120" viewBox="0 0 640 120" xmlns="http://www.w3.org/2000/svg" font-family="DejaVu Sans, Arial" font-size="11">
+  <rect x="20" y="30" width="110" height="62" fill="#efe6d8" stroke="#9b2c2c"/>
+  <text x="75" y="58" text-anchor="middle">İLK KARE</text><text x="75" y="76" text-anchor="middle" fill="#5b5b66">C4a (fotoğraf)</text>
+  <rect x="510" y="30" width="110" height="62" fill="#efe6d8" stroke="#9b2c2c"/>
+  <text x="565" y="58" text-anchor="middle">SON KARE</text><text x="565" y="76" text-anchor="middle" fill="#5b5b66">C4b (fotoğraf)</text>
+  <line x1="135" y1="61" x2="505" y2="61" stroke="#2f5d62" stroke-width="2" marker-end="url(#ok)"/>
+  <defs><marker id="ok" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2f5d62"/></marker></defs>
+  <text x="320" y="50" text-anchor="middle" fill="#2f5d62">H3 aradaki hareketi, sesi ve konuşmayı üretir</text>
+  <text x="320" y="80" text-anchor="middle" fill="#5b5b66">0,00 sn ──────── çekim süresi (5–15 sn) ──────── 8,00 sn</text>
+  <text x="565" y="110" text-anchor="middle" fill="#5b5b66" font-size="10">taban: C4a, C4b'den türetildi</text>
+</svg>
+
+<h2>3. Çekim tasarımı kuralları</h2>
+<ol>
+<li><b>Çekim süresi 5–15 sn.</b> 5 sn'nin altını model iyi bilmez. Dekupajı buna göre yap: 60 sn'lik sahne için 8–12 çekim makuldür.</li>
+<li><b>Her çekim tek çekimdir.</b> Çekimin içinde kesme yazma. Yeni bir açı istiyorsan yeni bir çekim aç.</li>
+<li><b>İlk ve son kare arasındaki fark ölçülü olmalı.</b> Model iki kareyi akıcı bir hareketle bağlar. Fark ne kadar büyükse (kişi kadrajın öbür ucuna gitmiş, ışık değişmiş) ara hareket o kadar uydurulur. İyi farklar: kamera 5 m alçalmış, kişi başını çevirmiş, alay 10 m yaklaşmış, kalabalık diz çökmüş.</li>
+<li><b>Son kareyi tabanla üret.</b> b karesi, a karesinin tabanıyla yazılır: "aynı kamera, yalnızca şu değişti". İstisna: asıl hedef son kareyse (ör. tablo anı) önce b'yi yaz, a'yı ondan geriye türet.</li>
+<li><b>Çekimler arası geçiş bir kesmedir.</b> Bir çekimin son karesiyle sonrakinin ilk karesi farklı açıdan olabilir; bu normal sinema kurgusudur. Aynı açıyla devam etmek istersen sonraki çekimin ilk karesini öncekinin son karesinden türet (örnek: C10a, C1b'den).</li>
+<li><b>Her kare kendi başına okunabilir olmalı.</b> Gemini her kareyi ayrı çizer. Bir kare tarifinde "yukarıdaki gibi" yazma; o karede görünen her şeyi yaz.</li>
+</ol>
+
+<h2>4. Kamera dili sözlüğü</h2>
+<p>MiniMax'in resmî rehberi kamera hareketini üç parçayla yazar: <b>hareket türü + genlik + hız</b>. Defterde Türkçe yaz; senaryoya çevrilirken bu karşılıklar kullanılır.</p>
+<table>
+<tr><th>Türkçe</th><th>Rehberdeki karşılığı</th><th>Ne zaman</th></tr>
+<tr><td>Sabit</td><td>static shot</td><td>Konuşma, yüz, duygu</td></tr>
+<tr><td>İleri itme / geri çekme (kamera gider)</td><td>push in / pull out</td><td>Gerilim artırma, hitap</td></tr>
+<tr><td>Zum (yalnızca odak uzaklığı)</td><td>zoom in / zoom out</td><td>Nadiren; itme daha doğal</td></tr>
+<tr><td>Sağa/sola çevrinme (yerinde döner)</td><td>pan right / pan left</td><td>Geçen birini izleme</td></tr>
+<tr><td>Sağa/sola kayma (yana gider)</td><td>truck right / truck left</td><td>Yanından geçme, kalabalık boyunca</td></tr>
+<tr><td>Yukarı/aşağı eğme</td><td>tilt up / tilt down</td><td>Bir şeyi yukarıdan aşağı açma</td></tr>
+<tr><td>Yükselme / alçalma (kamera gövdesi)</td><td>pedestal up / pedestal down</td><td>Vinç benzeri açılış/kapanış</td></tr>
+<tr><td>Yay çizme</td><td>arc shot</td><td>Bir kişinin etrafında dönme</td></tr>
+<tr><td>Takip</td><td>tracking shot</td><td>Hareket edeni izleme</td></tr>
+<tr><td>Hafif/sert sarsıntı</td><td>shake slightly / strongly</td><td>Omuz kamerası, kaos</td></tr>
+<tr><td><i>Genlik:</i> küçük / büyük</td><td>with small / large amplitude</td><td>Anahtar karede çoğu zaman <b>küçük</b></td></tr>
+<tr><td><i>Hız:</i> yavaş / hızlı</td><td>at slow / fast speed</td><td>Tarihî, ağır sahnede <b>yavaş</b></td></tr>
+</table>
+<p><b>Objektif:</b> 24 mm geniş, mekânı anlatır; 32–35 mm doğal geniş; 50 mm insan gözü, yüz ve ikili planlar. <b>Açı:</b> alttan bakış güç, yüksekten bakış kalabalık ve kader duygusu verir.</p>
+
+<h2>5. Işık ve mekân mantığı</h2>
+<p>Her karede kendine iki soru sor: <b>Kamera nereye bakıyor? Arkada ne var?</b> Model yazdığın her şeyi çizmeye çalışır; mantıksız bir tarif mantıksız bir kare üretir.</p>
+<div class="kotu"><b>Kötü (gerçek hata):</b> "Anne kapıya bakıyor. Arkasında, flu, kemer ışıkla parlıyor." Anne kapıya bakıyorsa kapı onun önündedir, arkasında olamaz. Üstelik her kareye "güneş kapının tam arkasında, ışık kemerden kameraya geliyor" cümlesi eklenmişti; bu cümle yakın plana da kapıyı çağırdı. Sonuç: annenin arkasında kapı çıktı.</div>
+<div class="iyi"><b>İyi:</b> "Anne kadraj dışında, soldaki kapıya bakıyor. Arkasında yalnızca kalabalık ve bir ev duvarı var. Kapı, kemer ve sur görünmüyor. Güneş soldan, yandan vuruyor."</div>
+<p>Kural: <b>ışık cümlesi her karede ortak olabilir, ama kameranın yönüne uymalı.</b> Kapıya bakan karelerde "ters ışık, kemerden gelen ışık"; kapıya sırtı dönük karelerde "yandan ışık, kapı kadraj dışında". Mekânın kâğıt üstünde bir krokisini çiz: kapı nerede, güneş nerede, kalabalık nerede, kamera her çekimde nerede duruyor.</p>
+
+<h2>6. Kare tarifi nasıl yazılır</h2>
+<p>Bir kare tarifi bir <b>film karesinin fotoğrafçıya anlatımıdır</b>. Sırayla şunları yaz:</p>
+<ol>
+<li><b>Plan ve kamera:</b> plan ölçeği, kamera yüksekliği, yön, objektif.</li>
+<li><b>Ana figürler:</b> kim, kadrajın neresinde, ne yapıyor, yüz ifadesi, el ve baş.</li>
+<li><b>Arka plan:</b> ne görünüyor, ne flu, ne <b>görünmüyor</b>.</li>
+<li><b>Işık:</b> nereden geliyor, ne parlıyor, ne gölgede.</li>
+<li><b>Girdi görselleri:</b> o karede görünen her karakterin ve mekânın görseli (K1, K2, MEKAN…).</li>
+<li><b>Taban ya da kompozisyon</b> gerekiyorsa hangisi.</li>
+</ol>
+<h3>Örnek: ilk kare (sıfırdan)</h3>
+<div class="kod">C3a · girdi: MEKAN
+Yolun ekseninde alçak, cepheden geniş plan, 32 mm, kemere ~30 m. Mehter takımı geçidin gölgesinden
+kameraya doğru sıra sıra yürüyor: nakkareler ve kösler askıda, zurnalar havada, zilller; kırmızı-yeşil
+kaftanlar, uzun külahlar. Arkada atlı sancaktarlar, uzun sancaklar ve yaldızlı alem. Kenarlarda kordon
+ve kalabalık, yolun ortası açık.</div>
+<h3>Örnek: son kare (tabanla)</h3>
+<div class="kod">C3b · taban: C3a · girdi: MEKAN
+Takım ~10 m yaklaşmış ve yolun iki yanına açılıyor, orta boşalıyor. Kemerin gölgesinde beyaz at ve
+sorguçlu binici yeni seçiliyor.</div>
+<p class="k">Tabanlı tarif kısa olur: yalnızca <b>değişeni</b> yazarsın. Geri kalan her şey (kamera, ışık, mekân, kimlikler) tabandan aynen alınır.</p>
+<h3>Örnek: kompozisyon referanslı kare (tablo anı)</h3>
+<div class="kod">C4b · girdi: K2 (Sultan), K1 (Akşemseddin), MEKAN · kompozisyon: Zonaro tablosu
+Zonaro'nun anı, gerçek fotoğraf olarak. Yolun ekseninde alçak, cepheden geniş plan, 32 mm. Sultan beyaz
+atıyla geçidin gölgesinden altın ışığa, kameraya doğru, hafif solda çıkıyor; ... Sol ön planda, objektife
+yakın, kırmızı kaftanlı ve kırmızı-altın sarıklı bir muhafız alaya yarı dönük duruyor.</div>
+<p class="k">Kompozisyon görseli tek başına yetmez: tablodan almak istediğin her öğeyi tarifte de say. Tarifte olmayan şey (ör. tablodaki cesetler) alınmaz.</p>
+
+<h2>7. Çekim tarifi nasıl yazılır</h2>
+<p>Çekim tarifi <b>ilk kareden son kareye giden yolu</b> anlatır. Rehberin önerdiği sıra: <b>ilk karedeki durum → hareketin başlaması → aradaki değişim → son karede varılan durum.</b></p>
+<div class="kod">Çekim 4 · 8 sn · C4a → C4b · kamera: yavaş, küçük ileri itme
+İlk karede Sultan ve Akşemseddin geçidin gölgesinde silüet. Beyaz at gölgeden ışığa yavaş ve yüksek
+adımlarla çıkıyor; yelesi ve sorguç güneşi yakalıyor. Sultan dimdik, sağ elini hafifçe kaldırıyor;
+Akşemseddin başı eğik, eli göğsünde yürüyor. At doğal dört vuruşlu yürüyor. Çekim tam son karedeki
+düzende, Zonaro'nun anında bitiyor.</div>
+<ul>
+<li>"Sinematik", "güzel" gibi soyut sözcükler yerine <b>görünen ve duyulan</b> şeyleri yaz.</li>
+<li>Atlar için "doğal dört vuruşlu yürüyüş" yaz; model aksi hâlde bacakları karıştırabilir.</li>
+<li>Bitişte hareketi yavaşlat: "son saniyede herkes kıpırtısız". Bu, son kareye yumuşak varışı sağlar.</li>
+</ul>
+
+<h2>8. Replik ve zamanlama</h2>
+<ul>
+<li><b>Konuşma hızı:</b> ağır, törensel konuşmada saniyede ~2–2,5 kelime. Repliğin kelimelerini say, süreyi hesapla.</li>
+<li><b>Çekimin ilk ~1 saniyesi ve son ~1 saniyesi sessiz kalsın.</b> Konuşma ortalarda olsun.</li>
+<li>Repliği <b>harfi harfine</b> yaz; noktalama dahil. Model metni olduğu gibi seslendirir.</li>
+<li>Konuşanın sesini tarif et: yaş, tını, hız, ton. Aynı karakter her çekimde aynı tarifle konuşmalı.</li>
+<li>Bir çekimde tek konuşan olması en güvenlisi. Diyalog için çekimleri böl (6. çekim Akşemseddin, 7. çekim Sultan).</li>
+</ul>
+<table>
+<tr><th>Replik</th><th>Kelime</th><th>Süre (~2,3 kel/sn)</th><th>Çekim</th><th>Yerleşim</th></tr>
+<tr><td>"Hünkârım, Peygamber efendimizin müjdesi bugün gerçek oldu."</td><td>7</td><td>~3,5 sn (yavaş)</td><td>6 sn</td><td>1,0 → ~4,5 sn</td></tr>
+<tr><td>"Bu zafer bizim değil, Allah'ındır."</td><td>5</td><td>~2,2 sn</td><td>5 sn</td><td>1,0 → ~3,2 sn</td></tr>
+<tr><td>"Kalkınız ve müsterih olunuz. Ben Sultan Mehmed; …korkmayınız."</td><td>20</td><td>~9 sn</td><td>11 sn</td><td>0,8 → ~9,8 sn</td></tr>
+</table>
+
+<h2>9. Ses ve müzik</h2>
+<p>Her çekimin sesini iki ayrı alanda yaz:</p>
+<ul>
+<li><b>Ortam sesi (sahnedekilerin duyduğu):</b> rüzgâr, nal, mehter, kalabalık uğultusu, nefes. Mehter sahnede çaldığı için ortam sesidir.</li>
+<li><b>Müzik (yalnızca seyircinin duyduğu):</b> çalgı, tempo, gelişim. Duygu sözcüğü yazma; "yavaş, sürekli, alçak kontrbas uğultusu" yaz. Gerekmiyorsa "yok".</li>
+</ul>
+<div class="kutu"><b>Dikkat:</b> Her çekim kendi sesini ayrı üretir. Çekimler arasında süren bir ses (mehter marşı) kesmelerde kopabilir. Süreklilik istiyorsan ardışık çekimlerde aynı sesi aynı sözcüklerle tarif et ve sesin yükselişini planla: "boğuk ve uzak" → "yaklaşıyor" → "tam güçte" → "son davul".</div>
+
+<h2 class="sayfa">10. Örnek: Fatih sahnesi (özet)</h2>
+<p>Tam defter: <code>ogrenci/FATIH_KARE_CEKIM_DEFTERI.md</code>. Aşağıda dekupajın mantığı:</p>
+<table>
+<tr><th>No</th><th>Süre</th><th>Plan / kamera</th><th>Dramatik işlev</th></tr>
+<tr><td>1</td><td>5</td><td>Damdan yüksek geniş, alçalma</td><td>Mekân ve bekleyen binlerce kişi: ölçek</td></tr>
+<tr><td>2</td><td>5</td><td>Kalabalığın içinde orta, sabit</td><td>Bir insan yüzü: korku (anne)</td></tr>
+<tr><td>3</td><td>5</td><td>Alçak cepheden geniş, sabit</td><td>Alayın başı: mehter ve sancaklar</td></tr>
+<tr><td>4</td><td>8</td><td>Alçak cephe, ileri itme</td><td><b>Doruk görüntü:</b> Zonaro'nun anı</td></tr>
+<tr><td>5</td><td>5</td><td>Kordon arkasından, çevrinme</td><td>Diz çökme dalgası, durma, sessizlik</td></tr>
+<tr><td>6–7</td><td>6+5</td><td>İkili plan, yakın-orta</td><td>Diyalog: zaferin anlamı</td></tr>
+<tr><td>8</td><td>5</td><td>Yakın plan, sabit</td><td>Karşı çekim: korkudan umuda (anne)</td></tr>
+<tr><td>9</td><td>11</td><td>Orta plan, ileri itme</td><td>Hitap: sahnenin sözü</td></tr>
+<tr><td>10</td><td>5</td><td>Damdan yüksek, yükselme</td><td>Çözülme: binlerce kişi ayağa kalkıyor (1. çekimin aynası)</td></tr>
+</table>
+<p class="k">Yapı: geniş → yakın → doruk → yakın → geniş. Anne (2 ve 8) seyircinin duygusal aynasıdır; açılış ve kapanış aynı damdan görülür.</p>
+
+<h2>11. Sık yapılan hatalar</h2>
+<table>
+<tr><th style="width:38%">Hata</th><th>Doğrusu</th></tr>
+<tr><td>Kameranın göremeyeceği bir şeyi arka plana koymak (annenin arkasında kapı)</td><td>Krokiye bak; kamera yönüne göre arka planı yaz. Görünmemesi gerekeni açıkça "görünmüyor" diye yaz.</td></tr>
+<tr><td>Ortak ışık cümlesini her kareye körlemesine eklemek</td><td>Işığı kamera yönüne göre iki-üç kalıba ayır.</td></tr>
+<tr><td>İlk ve son kare arasında çok büyük fark</td><td>Değişimi küçült ya da çekimi ikiye böl.</td></tr>
+<tr><td>Son kareyi sıfırdan üretmek</td><td>Tabanla üret; kamera kilitli kalsın.</td></tr>
+<tr><td>Bir çekimin içine kesme yazmak</td><td>Yeni bir çekim aç.</td></tr>
+<tr><td>Uzun repliği kısa çekime sıkıştırmak</td><td>Kelimeyi say; çekimi uzat ya da repliği böl.</td></tr>
+<tr><td>Kalabalığı modelin sınırı diye küçültmek</td><td>Sahne ne istiyorsa onu yaz; sınırı deneme gösterir.</td></tr>
+<tr><td>Tarihî hata: sancakta yıldız, yazı</td><td>Dönem bilgisini tarifte açıkça yaz ("yalnızca tek beyaz hilal, yıldız ve yazı yok").</td></tr>
+<tr><td>"Yukarıdaki gibi" demek</td><td>Her kare kendi tarifini taşır; taban kullanılıyorsa yalnızca değişeni yaz.</td></tr>
+</table>
+
+<h2 class="sayfa">12. Boş çekim defteri şablonu</h2>
+<div class="kod"># Çekim Defteri — &lt;sahnenin adı&gt;
+
+## 1. Künye
+Sahne: &lt;ne oluyor, zaman, yer, dönem&gt;
+Süre: &lt;toplam sn&gt;, &lt;çekim sayısı&gt; tek çekim
+Görsel stil: &lt;gerçek çekim / anime / suluboya …; film dokusu, ışık&gt;
+Her karede yasaklar: &lt;yazı yok, …&gt;
+
+## 2. Oyuncular ve mekân
+| Kimlik | Kim (konuşmacı) | Görsel | Tarif (görünüş, kıyafet, ses) |
+| K1 | … (S1) | … | … |
+| MEKAN | … | … | … (sahne başlamadan önceki hâli) |
+
+## 3. Işık ve mekân mantığı
+Güneş/ışık nerede: …
+Kamera X'e bakınca: …   Kamera X'e sırtını dönünce: …
+(Kroki: kapı, güneş, kalabalık, kamera konumları)
+
+## 4. Anahtar kareler
+| Kare | Taban | Girdi görselleri | Tarif |
+| C1a | — | MEKAN | plan, kamera, figürler, arka plan (ne görünmüyor), ışık |
+| C1b | C1a | MEKAN | yalnızca değişen |
+
+## 5. Çekimler
+| No | Süre | İlk → Son | Kamera | Ne oluyor | Ses | Müzik |
+| 1 | 5 sn | C1a → C1b | yavaş, küçük alçalma | … | … | … |</div>
+
+<h2>13. Muse'a teslim ve onay</h2>
+<p>Defter bitince şu adımlar izlenir:</p>
+<ol>
+<li><b>Defter senaryo dosyasına çevrilir.</b> Modeller İngilizce tarif ister; çeviri bu aşamada yapılır. Şu an bu adımı Claude yapıyor: defteri ver, <code>muse_gorevleri/&lt;tarih_ad&gt;/</code> altında senaryo ve Muse görevi hazırlanır.</li>
+<li><b>Muse'a mesaj:</b></li>
+</ol>
+<div class="kod">Merhaba Muse, yeni görev: &lt;sahnenin adı&gt; (anahtar kare yöntemi).
+1. cd ~/workspace/Colab &amp;&amp; git pull
+2. GOREV_&lt;AD&gt;.md'yi aç ve adım adım uygula (klasör: ~/workspace/h3uretim/&lt;tarih_ad&gt;).
+3. Onay noktaları: önce bütün kareleri (çekim sırasıyla, ilk ve son kare yan yana) bana göster,
+   sonra üretim için süre, CCU ve bakiyeyle onay al.
+4. Bitince sonuç mesajını gönder.</div>
+<p><b>Onay noktaları ve senin işin:</b></p>
+<ul>
+<li><b>Kareler:</b> Muse 20 kareyi gösterir. Kimlik, mekân mantığı, a→b farkı ve yasaklara bak. Beğenmediğin kareyi adıyla yenilettir ("C4b'yi yenile, muhafız sağda kalmış"). Bir kare en fazla 2 kez yenilenir; taban kare değişirse ona bağlı kare de yenilenir.</li>
+<li><b>Üretim:</b> Muse tahmini süreyi, CCU'yu ve bakiyeyi söyler. Onay verdikten sonra GPU açılır.</li>
+<li><b>Sonuç:</b> video, rapor, süreklilik puanları ve Muse'un gözlemleri gelir. Senden üç cevap ister: film sahnesi gibi mi, geçişler nasıl, gözüne batan ne.</li>
+</ul>
+
+<h2>14. Kontrol listesi (teslimden önce)</h2>
+<table>
+<tr><th style="width:8%">✓</th><th>Madde</th></tr>
+<tr><td>☐</td><td>Her çekim 5–15 sn ve toplam süre doğru.</td></tr>
+<tr><td>☐</td><td>Her çekimin ilk ve son karesi var; çekim içinde kesme yok.</td></tr>
+<tr><td>☐</td><td>Her kare tarifinde plan, kamera, figürler, arka plan ve ışık yazılı.</td></tr>
+<tr><td>☐</td><td>Kamera yönüyle arka plan ve ışık uyumlu; görünmemesi gereken şey açıkça "görünmüyor".</td></tr>
+<tr><td>☐</td><td>Son kareler tabanla; taban kare listede önce geliyor.</td></tr>
+<tr><td>☐</td><td>Görünen her karakterin görseli o karenin girdisinde.</td></tr>
+<tr><td>☐</td><td>Replikler harfi harfine; kelime sayısına göre süre hesaplandı; ilk ve son saniye sessiz.</td></tr>
+<tr><td>☐</td><td>Konuşmacıların sesi tarif edildi, her çekimde aynı.</td></tr>
+<tr><td>☐</td><td>Ortam sesi ve müzik ayrı yazıldı; süren sesler ardışık çekimlerde planlandı.</td></tr>
+<tr><td>☐</td><td>Dönem doğruluğu ve yasaklar (yazı, sembol, şiddet) her karede.</td></tr>
+</table>
+<p class="k">Kaynaklar: MiniMax H3 resmî prompt rehberi (h3-prompt-writing: base-en, ref-en); ComfyUI MiniMax H3 düğümleri; topluluktan "son kareyi ilk kare tabanıyla üret" ipucu. Örnek sahne: Fausto Zonaro, "Fatih'in İstanbul'a Girişi" (1903).</p>
+</body>
+</html>
