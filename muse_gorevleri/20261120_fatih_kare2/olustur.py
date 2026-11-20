@@ -49,7 +49,7 @@ KARELER = []   # üretim sırası önemli: taban önce gelir
 
 def K(kimlik, tarif, girdiler=(), taban=None, kompozisyon=None, ana=None, kapi=True, plaka=False):
     isik = ISIK if kapi else ISIK_YAN
-    KARELER.append({"id": kimlik, "dosya": f"{MUSE_DIZIN}/kareler/{kimlik}.png", "tarif": f"{tarif} {isik} {YOK}",
+    KARELER.append({"id": kimlik, "dosya": f"{MUSE_DIZIN}/kareler/{kimlik}.png", "tarif": f"{tarif} {CANLI_KARE if not plaka else ''} {isik} {YOK}".replace("  ", " "),
                     "girdiler": list(girdiler), "taban": taban, "kompozisyon": kompozisyon, "ana": ana,
                     "plaka": plaka})
 
@@ -57,8 +57,16 @@ def K(kimlik, tarif, girdiler=(), taban=None, kompozisyon=None, ana=None, kapi=T
 CEKIMLER = []
 
 
+# Kalabalık tablo gibi donmasın (orhan, 20.11.2026): her çekimde figüranlar kendi ritimleriyle küçük hareketler yapar.
+CANLI = ("The crowd and the extras are never frozen: throughout the shot each person makes small, natural movements at "
+         "their own rhythm (breathing, shifting weight, turning heads, whispering to a neighbour, adjusting a shawl, "
+         "children fidgeting), while keeping their place.")
+CANLI_KARE = ("Background people are caught in varied, candid mid-gesture poses, looking in slightly different "
+              "directions, never posed uniformly.")
+
+
 def C(n, sure, ilk, son, istek, aciklama, ses, muzik="N/A", replikler=()):
-    p = kare.prompt_kur(sure, f"[Shot 1] {STIL}. {aciklama} {YOK}", ses, muzik)
+    p = kare.prompt_kur(sure, f"[Shot 1] {STIL}. {aciklama} {CANLI} {YOK}", ses, muzik)
     CEKIMLER.append({"blok": n, "sure": sure, "ilk": ilk, "son": son, "istek": istek, "prompt": p,
                      "sorunlar": kare.kontrol(p, sure, replikler=replikler)})
 
@@ -78,10 +86,10 @@ K("C1a", "A high wide view from a flat rooftop inside the city, about fifteen me
   "white-gold. The stone road and the wide square below are completely empty. Along both sides of the road stands the "
   "crimson janissary cordon with its tall crimson and green banners; behind it thousands of townspeople are packed on "
   "heaps of fallen masonry, on the wall-walk above the gate, on flat roofs and in windows, fathers holding children on "
-  "their shoulders. Everyone is still and silent, faces turned toward the gate.", ana="P_YOL")
+  "their shoulders. The crowd is hushed but alive, most faces turned toward the gate.", ana="P_YOL")
 K("C1b", "The camera has descended about five metres in the same shot: the arch now sits a little higher in the frame, "
-  "the near roof edge has left the bottom of the frame, and the crowd along the road is closer and larger. Nothing "
-  "else has changed and nobody has moved.", taban="C1a")
+  "the near roof edge has left the bottom of the frame, and the crowd along the road is closer and larger. The "
+  "place is unchanged; in the crowd a few people have shifted, turned their heads or leaned to whisper.", taban="C1a")
 K("C2a", "An eye-level medium shot inside the packed crowd standing at the side of the road, 50mm lens, shallow depth "
   "of field. Slightly right of centre stands the young mother in three-quarter view, holding her son on her hip, his "
   "face turned into her shoulder; her face is tense and she looks off-screen to the left, toward the gate. An old man "
@@ -151,8 +159,10 @@ K("C10b", "The camera has risen about five metres: the arch sits lower in the fr
 # ---------- Çekimler (her biri tek çekim, FL2VA) ----------
 C(1, 5, "C1a", "C1b", "Damdan yüksek geniş plan: binlerce kişi sessizce bekliyor, kamera yavaşça alçalıyor.",
   f"A high wide shot from a rooftop inside the city; the shot begins exactly on Picture 1: {SAHNE}, the road and the "
-  "square empty, thousands waiting in silence. The camera pedestals down with small amplitude at slow speed. Nobody "
-  "moves; only the banners stir in the wind and dust drifts in the golden light pouring through the arch. A child on "
+  "square empty, thousands waiting in silence. The camera pedestals down with small amplitude at slow speed. The "
+  "waiting crowd is alive with small natural movements: people shift their weight, lean to whisper, lift children "
+  "higher and shade their eyes against the sun; the banners stir in the wind and dust drifts in the golden light "
+  "pouring through the arch. A child on "
   "his father's shoulders turns his head toward the gate. The descent slows and the shot settles exactly into the "
   "framing of Picture 2.",
   "Wind over the rooftops, banners flapping, the vast low murmur of thousands of silent people; far beyond the walls, "
@@ -192,7 +202,8 @@ C(5, 5, "C5a", "C5b", "Sultan geçerken kalabalık dalga dalga diz çöküyor; a
   "foreground as the Sultan rides from left to right across the middle ground on his white horse, Akşemseddin at his "
   "right stirrup. The camera pans right with small amplitude at slow speed, following him. As he passes, the crowd "
   "sinks to its knees in a slow wave that follows the horse. The Sultan halts in the middle of the square, the mehter "
-  "ends on one last deep drum beat, and everything is still as the shot ends on Picture 2.",
+  "ends on one last deep drum beat; the procession stands still while the kneeling crowd keeps breathing, trembling "
+  "and glancing up as the shot ends on Picture 2.",
   "The mehter march, then one last deep drum beat; the soft rustle of thousands of people kneeling; hooves stop; a "
   "heavy silence with only wind.")
 C(6, 6, "C6a", "C6b", "Akşemseddin başını kaldırıp Sultan'a konuşuyor.",

@@ -12,7 +12,9 @@
 | Sancaklarda yıldız | Model kırmızı sancak + hilali Türk bayrağına tamamladı | Sancaklar **sembolsüz**, düz kırmızı ve düz yeşil |
 | Sessiz sahneler mehter kadar yüksek; son kesmede +19 dB sıçrama | Her çekimin sesi ayrı ayrı −16 LUFS'a çekiliyordu | Artık yalnızca birleşik film dengeleniyor (kodda) |
 
-Ayrıca anne çekimlerinde (C2, C8) kamera kapıya bakmıyor: kapı kadraj dışında, ışık yandan. Senin 1. sürümde yaptığın düzeltmenin aynısı.
+Ayrıca **kalabalık artık tablo gibi donmuyor**: her çekimde figüranlar kendi ritimleriyle küçük hareketler yapıyor (nefes, ağırlık aktarma, baş çevirme, fısıldaşma, kıpırdanan çocuklar); karelerde de doğal, farklı yönlere bakan pozlarda.
+
+Anne çekimlerinde (C2, C8) kamera kapıya bakmıyor: kapı kadraj dışında, ışık yandan. Senin 1. sürümde yaptığın düzeltmenin aynısı.
 
 **Ayarlar:** 1. sürümle aynı: 10 tek çekim, ~62 sn, Pika, seed 22, eşik yüksek, yeniden üretim 1.
 
@@ -106,6 +108,7 @@ for t in 5.1 5.3 10.2 10.4 15.4 15.6 23.4 23.6 28.6 28.8 35.2 35.4 40.3 40.5 45.
 1. sürümle karşılaştırarak yaz:
 - **Kapı:** bütün çekimlerde aynı yapı mı? Kesmeler "aynı yerdeyiz" hissi veriyor mu?
 - **Sancaklar:** yıldız ya da hilal kaldı mı (karede ya da videoda)?
+- **Kalabalık:** canlı mı, yoksa hâlâ tablo gibi donuk mu? Özellikle 1. çekim (bekleyiş), 6–7 (sessizlik) ve 9. çekim (hitap) arka planı.
 - **Ses:**
   - 6–8. çekimlerdeki sessizlik mehterden belirgin biçimde daha sessiz mi?
   - son kesmede (57,1 sn) ani yükselme kaldı mı?
@@ -127,6 +130,7 @@ orhan'a sor:
 - **1. sürüm mü, 2. sürüm mü daha iyi?** Neden?
 - **Kesmeler artık aynı yerde gibi mi?**
 - **Ses dinamiği nasıl?**
+- **Kalabalık canlı mı?**
 - **gözüne batan:** ne varsa.
 
 ## 7. Sonuç mesajı
