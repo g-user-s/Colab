@@ -269,6 +269,8 @@ def yukle(c, o, senaryo_yol):
     dosya_yukle(c, o, senaryo_yol, "senaryo.json")
     for i, r in enumerate(senaryo.get("referanslar") or [], 1):
         dosya_yukle(c, o, r["dosya"], f"ref_{i}{os.path.splitext(r['dosya'])[1].lower() or '.png'}")
+    for k in senaryo.get("kareler") or []:
+        dosya_yukle(c, o, k["dosya"], kare_rt(k["id"]))
     o.kaydet(asama="yuklendi", uretim_baslangic=o.v.get("uretim_baslangic") or time.time())
 
 
@@ -442,6 +444,22 @@ class Gemini:
         return c[k]
 
 
+def kare_rt(kimlik):
+    return f"kare_{kimlik}.png"
+
+
+def eksik_kareler(senaryo):
+    """Anahtar kareli senaryoda eksik kare dosyaları ve bloklarda tanımsız kare kimlikleri."""
+    kareler = {k["id"]: k["dosya"] for k in senaryo.get("kareler") or []}
+    eksik = [f"{i} ({d})" for i, d in kareler.items() if not os.path.isfile(d)]
+    for k in (senaryo.get("kollar") or {}).values():
+        for b in k["bloklar"]:
+            for x in (b.get("ilk"), b.get("son")):
+                if x and x not in kareler:
+                    eksik.append(f"{x} (tanımsız, blok {b['blok']})")
+    return eksik
+
+
 def son_kare(video, hedef):
     subprocess.run(["ffmpeg", "-y", "-v", "error", "-sseof", "-0.2", "-i", video, "-frames:v", "1", hedef], check=True)
     return hedef
@@ -501,7 +519,9 @@ def akis_uzun(c, o, senaryo, gm):
     ozet = {"deney": bool(senaryo.get("deney")), "kollar": {}}
     kopru_kayit = o.v.setdefault("kopru_yuklenen", {})
     for kol, k in senaryo["kollar"].items():
-        yaz(f"━━ Kol: {kol} ({'görsel referanslı, Ref2VA' if k['ref'] else 'yalnızca metin çapası'}) ━━")
+        tur = ("anahtar kareli, FL2VA" if k.get("kare") else
+               "görsel referanslı, Ref2VA" if k["ref"] else "yalnızca metin çapası")
+        yaz(f"━━ Kol: {kol} ({tur}) ━━")
         secilen_ad, secilen_yerel, kol_ozet = [], [], []
         for b in k["bloklar"]:
             n = b["blok"]
@@ -509,6 +529,13 @@ def akis_uzun(c, o, senaryo, gm):
             b_rt = list(ref_rt) if k["ref"] else []
             b_yerel = list(ref_yerel) if k["ref"] else []
             b_rol = list(ref_rol) if k["ref"] else None
+            b_kare = None
+            if k.get("kare"):
+                kareler = {x["id"]: x["dosya"] for x in senaryo.get("kareler") or []}
+                b_kare = [kare_rt(x) if x else None for x in (b.get("ilk"), b.get("son"))]
+                b_yerel = [kareler[x] for x in (b.get("ilk"), b.get("son")) if x]
+                b_rol = [{"role": "arka_plan", "name": ad} for x, ad in ((b.get("ilk"), "first frame of the shot"),
+                                                                         (b.get("son"), "last frame of the shot")) if x]
             if senaryo.get("kopru") and k["ref"] and secilen_yerel and len(b_rt) < config.MAX_REF_IMAGES:
                 ad = f"kopru_{kol}_{n}.png"
                 kare = son_kare(secilen_yerel[-1], os.path.join(o.cikti, ad))
@@ -527,8 +554,11 @@ def akis_uzun(c, o, senaryo, gm):
             adaylar = []
             for d in range(tekrar + 1):
                 seed = int(senaryo["seed"]) + (n - 1) + 1000 * d
-                r = is_calistir(c, o, {"no": sonraki(), "tur": "blok", "kol": kol, "blok": n, "sure": b["sure"],
-                                       "prompt": prompt, "seed": seed, "refs": b_rt})
+                tanim = {"no": sonraki(), "tur": "blok", "kol": kol, "blok": n, "sure": b["sure"],
+                         "prompt": prompt, "seed": seed, "refs": b_rt}
+                if b_kare:
+                    tanim["kareler"] = b_kare
+                r = is_calistir(c, o, tanim)
                 inc = gm.izle(r["video"], prompt, b_yerel, b_rol)
                 adaylar.append({"video": r["video"], "ad": r["video_ad"], "seed": seed, "inceleme": inc})
                 if not gm.engel(inc):
@@ -714,6 +744,9 @@ def main(argv=None):
         if senaryo.get("h3app_surum") != ortak.h3app_surum():
             raise SystemExit(f"Senaryo farklı bir h3app sürümüyle yazılmış ({senaryo.get('h3app_surum')} ≠ "
                              f"{ortak.h3app_surum()}); senaryoyu yeniden yazdır.")
+        eksik = eksik_kareler(senaryo)
+        if eksik:
+            raise SystemExit("Anahtar kareler eksik: " + ", ".join(eksik) + ". Önce 'uzun_senaryo.py kareler' çalıştır.")
         gpular = [g.strip().lower() for g in a.gpu.split(",") if g.strip()]
         if "cpu" in gpular and not senaryo.get("sahte"):
             raise SystemExit("CPU runtime yalnızca kuru deneme (--sahte senaryo) içindir; gerçek üretim GPU ister.")

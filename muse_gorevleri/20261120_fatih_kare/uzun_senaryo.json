@@ -1,0 +1,581 @@
+{
+  "surum": 2,
+  "tur": "uzun",
+  "olusturma": "2026-11-20T14:56:51",
+  "h3app_surum": "c9c1d9f9b2b4",
+  "fikir": "Fatih'in İstanbul'a girişi — anahtar kare yöntemi (fatih4 ile aynı sahne)",
+  "sure": 60,
+  "stil": "real",
+  "yontem": "pika",
+  "cozunurluk": "16:9 yatay · 1344×768",
+  "seed": 22,
+  "referanslar": [],
+  "kareler": [
+    {
+      "id": "C1a",
+      "dosya": "/home/hatch/workspace/h3uretim/20261120_fatih_kare/kareler/C1a.png",
+      "tarif": "A high wide view from a flat rooftop inside the city, about fifteen metres up, 24mm lens, looking straight along the road west into the gate. The great arch fills the upper middle of the frame and the sky beyond it blazes white-gold. The stone road and the wide square below are completely empty. Along both sides of the road stands the crimson janissary cordon with its tall crimson and green banners; behind it thousands of townspeople are packed on heaps of fallen masonry, on the wall-walk above the gate, on flat roofs and in windows, fathers holding children on their shoulders. Everyone is still and silent, faces turned toward the gate. Late afternoon, June 1453; the low sun is directly behind the gate: hazy golden light and dust pour through the arch toward the camera, the passage under the arch is in deep shade, every figure on the road is rim-lit. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
+      "girdiler": [
+        {
+          "etiket": "the place: the inner face of the gate, the road, the square, the cordon and the crowd",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/MEKAN.png"
+        }
+      ],
+      "taban": null,
+      "kompozisyon": null
+    },
+    {
+      "id": "C1b",
+      "dosya": "/home/hatch/workspace/h3uretim/20261120_fatih_kare/kareler/C1b.png",
+      "tarif": "The camera has descended about five metres in the same shot: the arch now sits a little higher in the frame, the near roof edge has left the bottom of the frame, and the crowd along the road is closer and larger. Nothing else has changed and nobody has moved. Late afternoon, June 1453; the low sun is directly behind the gate: hazy golden light and dust pour through the arch toward the camera, the passage under the arch is in deep shade, every figure on the road is rim-lit. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
+      "girdiler": [
+        {
+          "etiket": "the place: the inner face of the gate, the road, the square, the cordon and the crowd",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/MEKAN.png"
+        }
+      ],
+      "taban": "C1a",
+      "kompozisyon": null
+    },
+    {
+      "id": "C2a",
+      "dosya": "/home/hatch/workspace/h3uretim/20261120_fatih_kare/kareler/C2a.png",
+      "tarif": "An eye-level medium shot inside the crowd behind the cordon, 50mm lens, shallow depth of field. In the left third of the foreground stands the young mother holding her son on her hip, his face turned into her shoulder; her face is tense and she looks toward the gate in the background. An old man beside her grips his cap with both hands. The red backs and tall white felt caps of two janissaries fill the lower edge of the frame. Far behind, softly out of focus, the arch blazes with light above the empty road. Late afternoon, June 1453; the low sun is directly behind the gate: hazy golden light and dust pour through the arch toward the camera, the passage under the arch is in deep shade, every figure on the road is rim-lit. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
+      "girdiler": [
+        {
+          "etiket": "the young Greek mother and her son",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/K3.png"
+        },
+        {
+          "etiket": "the place: the inner face of the gate, the road, the square, the cordon and the crowd",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/MEKAN.png"
+        }
+      ],
+      "taban": null,
+      "kompozisyon": null
+    },
+    {
+      "id": "C2b",
+      "dosya": "/home/hatch/workspace/h3uretim/20261120_fatih_kare/kareler/C2b.png",
+      "tarif": "Far behind, still out of focus, the first tall crimson and green banners and the mehter band in red and green kaftans have stepped out of the shadowed passage of the arch into the light. The mother has pulled her son tighter and lifted her eyes toward the gate. Late afternoon, June 1453; the low sun is directly behind the gate: hazy golden light and dust pour through the arch toward the camera, the passage under the arch is in deep shade, every figure on the road is rim-lit. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
+      "girdiler": [
+        {
+          "etiket": "the young Greek mother and her son",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/K3.png"
+        }
+      ],
+      "taban": "C2a",
+      "kompozisyon": null
+    },
+    {
+      "id": "C3a",
+      "dosya": "/home/hatch/workspace/h3uretim/20261120_fatih_kare/kareler/C3a.png",
+      "tarif": "A low frontal wide shot on the axis of the road, 32mm lens, facing the arch from about thirty metres. Out of the deep shade of the passage the mehter band marches toward the camera on foot in strict ranks: kettle drums and big drums carried on straps, zurnas raised, cymbals, red and green kaftans and tall caps. Behind them mounted standard-bearers hold tall crimson and green banners and a gilded alem finial. The cordon and the waiting crowd line both edges of the frame; the centre of the road is open. Late afternoon, June 1453; the low sun is directly behind the gate: hazy golden light and dust pour through the arch toward the camera, the passage under the arch is in deep shade, every figure on the road is rim-lit. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
+      "girdiler": [
+        {
+          "etiket": "the place: the inner face of the gate, the road, the square, the cordon and the crowd",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/MEKAN.png"
+        }
+      ],
+      "taban": null,
+      "kompozisyon": null
+    },
+    {
+      "id": "C3b",
+      "dosya": "/home/hatch/workspace/h3uretim/20261120_fatih_kare/kareler/C3b.png",
+      "tarif": "The band has advanced ten metres closer and is splitting to both sides of the road, leaving the centre open; behind them, inside the shadow of the arch, the white horse and the plumed rider are just becoming visible. Late afternoon, June 1453; the low sun is directly behind the gate: hazy golden light and dust pour through the arch toward the camera, the passage under the arch is in deep shade, every figure on the road is rim-lit. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
+      "girdiler": [
+        {
+          "etiket": "the place: the inner face of the gate, the road, the square, the cordon and the crowd",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/MEKAN.png"
+        }
+      ],
+      "taban": "C3a",
+      "kompozisyon": null
+    },
+    {
+      "id": "C4b",
+      "dosya": "/home/hatch/workspace/h3uretim/20261120_fatih_kare/kareler/C4b.png",
+      "tarif": "Zonaro's composition as a real photograph. A low frontal wide shot on the axis of the road, 32mm lens, facing the arch. Sultan Mehmed II rides out of the shadow of the passage into the golden light straight toward the camera, slightly left of centre, on his tall white stallion; the horse steps high and proud, its mane and the Sultan's white plume rim-lit; he sits upright, his right hand slightly raised, his face calm. A few steps ahead of him on the left walks Akşemseddin, head bowed, right hand on his chest. Behind them the whole passage of the arch is packed with mounted pashas in large white turbans, solak guards in red kaftans and white plumed caps, and a dense forest of upright spears and crimson and green banners against the blazing white-gold sky. The faded fresco of a haloed figure hangs on the arch above them. In the left foreground, close to the lens, a guard in a red kaftan and a red-and-gold turban stands half turned toward the procession. The mehter band stands at both sides of the road. Late afternoon, June 1453; the low sun is directly behind the gate: hazy golden light and dust pour through the arch toward the camera, the passage under the arch is in deep shade, every figure on the road is rim-lit. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
+      "girdiler": [
+        {
+          "etiket": "Sultan Mehmed II and his white horse",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/K2.png"
+        },
+        {
+          "etiket": "Akşemseddin (elderly scholar, white beard, white turban, navy robe)",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/K1.png"
+        },
+        {
+          "etiket": "the place: the inner face of the gate, the road, the square, the cordon and the crowd",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/MEKAN.png"
+        }
+      ],
+      "taban": null,
+      "kompozisyon": "/home/hatch/workspace/h3uretim/20261119_fatih/ilham/tablo.jpg"
+    },
+    {
+      "id": "C4a",
+      "dosya": "/home/hatch/workspace/h3uretim/20261120_fatih_kare/kareler/C4a.png",
+      "tarif": "A few seconds EARLIER in the same shot: the Sultan on his white horse and Akşemseddin are still deep inside the shadowed passage of the arch, about ten metres further back and smaller in the frame, seen mostly as rim-lit outlines with the white horse glowing faintly; the guard in the foreground, the arch, the soldiers, spears and banners behind and the band at the sides are exactly the same. Late afternoon, June 1453; the low sun is directly behind the gate: hazy golden light and dust pour through the arch toward the camera, the passage under the arch is in deep shade, every figure on the road is rim-lit. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
+      "girdiler": [
+        {
+          "etiket": "Sultan Mehmed II and his white horse",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/K2.png"
+        },
+        {
+          "etiket": "Akşemseddin (elderly scholar, white beard, white turban, navy robe)",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/K1.png"
+        }
+      ],
+      "taban": "C4b",
+      "kompozisyon": null
+    },
+    {
+      "id": "C5a",
+      "dosya": "/home/hatch/workspace/h3uretim/20261120_fatih_kare/kareler/C5a.png",
+      "tarif": "A wide shot from just behind the cordon on the left side of the road, 35mm lens, looking diagonally across the road toward the square, the arch blazing in the background on the left. In the foreground the townspeople stand packed behind the janissaries' red backs. In the middle ground the Sultan on his white horse rides from left to right, Akşemseddin walking at his right stirrup, solak guards on foot around them, mounted pashas following. Late afternoon, June 1453; the low sun is directly behind the gate: hazy golden light and dust pour through the arch toward the camera, the passage under the arch is in deep shade, every figure on the road is rim-lit. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
+      "girdiler": [
+        {
+          "etiket": "Sultan Mehmed II and his white horse",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/K2.png"
+        },
+        {
+          "etiket": "Akşemseddin (elderly scholar, white beard, white turban, navy robe)",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/K1.png"
+        },
+        {
+          "etiket": "the place: the inner face of the gate, the road, the square, the cordon and the crowd",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/MEKAN.png"
+        }
+      ],
+      "taban": null,
+      "kompozisyon": null
+    },
+    {
+      "id": "C5b",
+      "dosya": "/home/hatch/workspace/h3uretim/20261120_fatih_kare/kareler/C5b.png",
+      "tarif": "The Sultan has halted in the middle of the square, now at the centre of the frame, the procession standing still behind him. Every townsperson in the frame now kneels on the paving with head bowed; the janissaries remain standing. Late afternoon, June 1453; the low sun is directly behind the gate: hazy golden light and dust pour through the arch toward the camera, the passage under the arch is in deep shade, every figure on the road is rim-lit. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
+      "girdiler": [
+        {
+          "etiket": "Sultan Mehmed II and his white horse",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/K2.png"
+        }
+      ],
+      "taban": "C5a",
+      "kompozisyon": null
+    },
+    {
+      "id": "C6a",
+      "dosya": "/home/hatch/workspace/h3uretim/20261120_fatih_kare/kareler/C6a.png",
+      "tarif": "A medium two-shot from the front-right of the halted procession, 50mm lens. The Sultan sits motionless on his white horse on the right of the frame, rim-lit by the golden light; Akşemseddin stands at his right stirrup on the left of the frame, looking up at him, lips closed. Behind them, softly out of focus, the great arch with its faded fresco and the massed spears and banners; solak guards in red kaftans beyond; kneeling townspeople at the edges. Late afternoon, June 1453; the low sun is directly behind the gate: hazy golden light and dust pour through the arch toward the camera, the passage under the arch is in deep shade, every figure on the road is rim-lit. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
+      "girdiler": [
+        {
+          "etiket": "Akşemseddin (elderly scholar, white beard, white turban, navy robe)",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/K1.png"
+        },
+        {
+          "etiket": "Sultan Mehmed II and his white horse",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/K2.png"
+        },
+        {
+          "etiket": "the place: the inner face of the gate, the road, the square, the cordon and the crowd",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/MEKAN.png"
+        }
+      ],
+      "taban": null,
+      "kompozisyon": null
+    },
+    {
+      "id": "C6b",
+      "dosya": "/home/hatch/workspace/h3uretim/20261120_fatih_kare/kareler/C6b.png",
+      "tarif": "Akşemseddin has finished speaking: his lips are closed and his head is bowed slightly lower; the Sultan looks down at him. Late afternoon, June 1453; the low sun is directly behind the gate: hazy golden light and dust pour through the arch toward the camera, the passage under the arch is in deep shade, every figure on the road is rim-lit. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
+      "girdiler": [
+        {
+          "etiket": "Akşemseddin (elderly scholar, white beard, white turban, navy robe)",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/K1.png"
+        },
+        {
+          "etiket": "Sultan Mehmed II and his white horse",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/K2.png"
+        }
+      ],
+      "taban": "C6a",
+      "kompozisyon": null
+    },
+    {
+      "id": "C7a",
+      "dosya": "/home/hatch/workspace/h3uretim/20261120_fatih_kare/kareler/C7a.png",
+      "tarif": "A medium close-up of the Sultan from slightly below, 50mm lens, chest up, on his white horse; his face half in warm shade, the golden backlight on his white plume and silver shoulders, the bright arch soft behind him. He looks down toward screen left, lips closed. Late afternoon, June 1453; the low sun is directly behind the gate: hazy golden light and dust pour through the arch toward the camera, the passage under the arch is in deep shade, every figure on the road is rim-lit. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
+      "girdiler": [
+        {
+          "etiket": "Sultan Mehmed II and his white horse",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/K2.png"
+        },
+        {
+          "etiket": "the place: the inner face of the gate, the road, the square, the cordon and the crowd",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/MEKAN.png"
+        }
+      ],
+      "taban": null,
+      "kompozisyon": null
+    },
+    {
+      "id": "C7b",
+      "dosya": "/home/hatch/workspace/h3uretim/20261120_fatih_kare/kareler/C7b.png",
+      "tarif": "His lips are closed again after speaking and his gaze has lifted from screen left toward the crowd in front of him. Late afternoon, June 1453; the low sun is directly behind the gate: hazy golden light and dust pour through the arch toward the camera, the passage under the arch is in deep shade, every figure on the road is rim-lit. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
+      "girdiler": [
+        {
+          "etiket": "Sultan Mehmed II and his white horse",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/K2.png"
+        }
+      ],
+      "taban": "C7a",
+      "kompozisyon": null
+    },
+    {
+      "id": "C8a",
+      "dosya": "/home/hatch/workspace/h3uretim/20261120_fatih_kare/kareler/C8a.png",
+      "tarif": "A close-up of the young mother kneeling on the stone paving among the crowd behind the cordon, 50mm lens: she presses her son's curly head to her chest with both arms, her eyes cast down, trembling; other kneeling townspeople soft behind her. Late afternoon, June 1453; the low sun is directly behind the gate: hazy golden light and dust pour through the arch toward the camera, the passage under the arch is in deep shade, every figure on the road is rim-lit. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
+      "girdiler": [
+        {
+          "etiket": "the young Greek mother and her son",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/K3.png"
+        }
+      ],
+      "taban": null,
+      "kompozisyon": null
+    },
+    {
+      "id": "C8b",
+      "dosya": "/home/hatch/workspace/h3uretim/20261120_fatih_kare/kareler/C8b.png",
+      "tarif": "She has slowly lifted her eyes toward the Sultan off-screen right, lips parted, still holding her son tight; the boy has turned his face to look too. Late afternoon, June 1453; the low sun is directly behind the gate: hazy golden light and dust pour through the arch toward the camera, the passage under the arch is in deep shade, every figure on the road is rim-lit. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
+      "girdiler": [
+        {
+          "etiket": "the young Greek mother and her son",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/K3.png"
+        }
+      ],
+      "taban": "C8a",
+      "kompozisyon": null
+    },
+    {
+      "id": "C9a",
+      "dosya": "/home/hatch/workspace/h3uretim/20261120_fatih_kare/kareler/C9a.png",
+      "tarif": "A medium shot of the Sultan from slightly below, 50mm lens, from the waist up with the white horse's neck and mane in the lower frame; he sits straight in the saddle and looks out over the kneeling crowd in front of him, lips closed; rim-lit, the blazing arch soft behind his shoulder. Late afternoon, June 1453; the low sun is directly behind the gate: hazy golden light and dust pour through the arch toward the camera, the passage under the arch is in deep shade, every figure on the road is rim-lit. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
+      "girdiler": [
+        {
+          "etiket": "Sultan Mehmed II and his white horse",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/K2.png"
+        },
+        {
+          "etiket": "the place: the inner face of the gate, the road, the square, the cordon and the crowd",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/MEKAN.png"
+        }
+      ],
+      "taban": null,
+      "kompozisyon": null
+    },
+    {
+      "id": "C9b",
+      "dosya": "/home/hatch/workspace/h3uretim/20261120_fatih_kare/kareler/C9b.png",
+      "tarif": "The camera has pushed in: the framing is tighter, from the chest up; he has finished speaking, lips closed, his face calm and kind. Late afternoon, June 1453; the low sun is directly behind the gate: hazy golden light and dust pour through the arch toward the camera, the passage under the arch is in deep shade, every figure on the road is rim-lit. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
+      "girdiler": [
+        {
+          "etiket": "Sultan Mehmed II and his white horse",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/K2.png"
+        }
+      ],
+      "taban": "C9a",
+      "kompozisyon": null
+    },
+    {
+      "id": "C10a",
+      "dosya": "/home/hatch/workspace/h3uretim/20261120_fatih_kare/kareler/C10a.png",
+      "tarif": "The same high rooftop view as the base frame, but now the procession stands halted in the middle of the square with the white horse at its centre, the mehter band and banners at the sides, and every townsperson along the road, on the rubble, on the roofs and on the wall-walk kneels with head bowed. Late afternoon, June 1453; the low sun is directly behind the gate: hazy golden light and dust pour through the arch toward the camera, the passage under the arch is in deep shade, every figure on the road is rim-lit. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
+      "girdiler": [
+        {
+          "etiket": "the place: the inner face of the gate, the road, the square, the cordon and the crowd",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/MEKAN.png"
+        }
+      ],
+      "taban": "C1b",
+      "kompozisyon": null
+    },
+    {
+      "id": "C10b",
+      "dosya": "/home/hatch/workspace/h3uretim/20261120_fatih_kare/kareler/C10b.png",
+      "tarif": "The camera has risen about five metres: the arch sits lower in the frame and more of the city roofs are visible. Every townsperson now stands upright with head lifted; the procession is unchanged. Late afternoon, June 1453; the low sun is directly behind the gate: hazy golden light and dust pour through the arch toward the camera, the passage under the arch is in deep shade, every figure on the road is rim-lit. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.",
+      "girdiler": [
+        {
+          "etiket": "the place: the inner face of the gate, the road, the square, the cordon and the crowd",
+          "dosya": "/home/hatch/workspace/h3uretim/20261119_fatih4/gorseller/MEKAN.png"
+        }
+      ],
+      "taban": "C10a",
+      "kompozisyon": null
+    }
+  ],
+  "hikaye": {
+    "baslik": "Fethin Üçüncü Günü",
+    "karakterler": [
+      {
+        "id": "K1",
+        "ad": "Akşemseddin",
+        "konusmaci": "S1",
+        "gorunum": "Turkish scholar about 63 years old, dignified weathered oval face, fair-olive skin with fine wrinkles, calm deep-set dark eyes, thick white eyebrows, straight nose, long full white beard and white moustache, slender upright build",
+        "kiyafet": "long flowing dark navy-blue wool robe over an off-white inner tunic with a dark sash, large neatly wrapped white linen turban, soft dark leather flat boots; he walks on foot",
+        "ses": "warm, deep, slightly weathered baritone, slow and reverent, Istanbul Turkish"
+      },
+      {
+        "id": "K2",
+        "ad": "Sultan II. Mehmed",
+        "konusmaci": "S2",
+        "gorunum": "21-year-old Turkish man, oval aristocratic face, slightly aquiline nose, warm olive-fair skin, dark brown almond-shaped eyes, thick dark arched eyebrows, thin neatly trimmed dark moustache and short dark beard, dark hair under his helmet, lean athletic build, tall",
+        "kiyafet": "deep crimson silk kaftan with long sleeves under polished silver chainmail and an ornate silver breastplate, pointed polished steel helmet with a gold-inlaid brow band and a tall white plume, silver bracers, dark leather riding boots; he rides a tall white Arabian stallion with a crimson velvet saddle cloth, silver-embossed saddle and gilded bridle",
+        "ses": "measured, resonant young baritone, calm and commanding, clear formal Istanbul Turkish"
+      },
+      {
+        "id": "K3",
+        "ad": "Rum anne ve oğlu",
+        "konusmaci": "",
+        "gorunum": "Greek woman about 30 years old, oval face, olive skin, dark tired eyes, dark brown hair under a plain undyed linen head veil, slim build",
+        "kiyafet": "long faded indigo wool dress, rough brown wool shawl over her shoulders, simple leather sandals; she holds her son of about six on her hip: short dark curly hair, plain beige linen tunic, barefoot",
+        "ses": ""
+      }
+    ],
+    "mekan": {
+      "ad": "Topkapı'nın şehir içinden görünüşü ve önündeki meydan",
+      "tarif": "The inner, city-side face of Topkapı, the great gate in the land walls of Constantinople, seen from inside the city at standing eye level about forty metres away, looking straight west into the gate. The massive round arch of pale limestone with bands of red brick fills the upper middle of the frame; its stones are cracked and scarred by cannon fire, and on the plastered inner face of the arch a large faded Byzantine fresco of a haloed figure in ochre and blue is half flaked away. Through the deep, shadowed passage of the arch the open sky beyond blazes white-gold. From the arch toward the camera runs a broad road of worn stone paving that opens into a wide square. A continuous cordon of janissaries in crimson kaftans and tall white felt börk caps stands shoulder to shoulder along both sides of the road, facing inward, holding tall plain crimson and green banners that each bear only a single white crescent. Behind the cordon, on heaps of fallen masonry, on the wall-walk above the gate, on the flat roofs and in the windows of the stone houses on both sides, thousands of townspeople stand packed and waiting: Greek men, women, old people, children on shoulders, in plain wool clothes of muted earth tones. The stone-paved centre of the road and the square is empty."
+    },
+    "zaman_isik": "Late afternoon, June 1453. The sun stands low in the west directly behind the gate: hazy golden light and drifting dust pour through the arch toward the camera, the passage under the arch is in deep shade, the crowd and the houses are in soft warm shade, and every figure on the road is rim-lit from behind.",
+    "renk_paleti": "crimson red, emerald green, warm limestone cream, terracotta brick, faded fresco ochre and blue, earth-brown and grey wool, burnished silver, white-gold sky",
+    "bloklar": [
+      {
+        "blok": 1,
+        "sure": 15,
+        "ozet": "High wide shot of the gate and the square packed with thousands waiting in silence; distant mehter beyond the walls. Then at eye level among the crowd: tense faces, the young mother with her son on her hip; the first banners and the mehter emerge from the blazing arch.",
+        "replikler": []
+      },
+      {
+        "blok": 2,
+        "sure": 15,
+        "ozet": "Zonaro's painting comes alive: out of the shadow of the arch into the light, the Sultan rides toward the camera on his white horse, Akşemseddin walking ahead at left, a forest of spears and banners behind against the bright sky. The crowd kneels in a wave as he passes; the procession halts; silence.",
+        "replikler": []
+      },
+      {
+        "blok": 3,
+        "sure": 15,
+        "ozet": "In the silent square before the gate, Akşemseddin looks up and speaks; the Sultan answers calmly. Close on the kneeling young mother pressing her son to her chest. The Sultan looks over the kneeling thousands.",
+        "replikler": [
+          {
+            "konusmaci": "S1",
+            "metin": "Hünkârım, Peygamber efendimizin müjdesi bugün gerçek oldu."
+          },
+          {
+            "konusmaci": "S2",
+            "metin": "Bu zafer bizim değil, Allah'ındır."
+          }
+        ]
+      },
+      {
+        "blok": 4,
+        "sure": 15,
+        "ozet": "The Sultan addresses the kneeling crowd in a loud, calm, reassuring voice. As he finishes, the thousands lift their heads and slowly rise, seen from high above the gate and the square.",
+        "replikler": [
+          {
+            "konusmaci": "S2",
+            "metin": "Kalkınız ve müsterih olunuz. Ben Sultan Mehmed; hepinize söylüyorum ki bu andan itibaren ne hürriyetleriniz ne de hayatlarınız hakkında korkmayınız."
+          }
+        ]
+      }
+    ]
+  },
+  "dunya_capasi": "",
+  "plan": {
+    "shots": [
+      {
+        "blok": 1,
+        "sure": 5,
+        "ilk": "C1a",
+        "son": "C1b",
+        "istek": "Damdan yüksek geniş plan: binlerce kişi sessizce bekliyor, kamera yavaşça alçalıyor."
+      },
+      {
+        "blok": 2,
+        "sure": 5,
+        "ilk": "C2a",
+        "son": "C2b",
+        "istek": "Kalabalığın içinde anne ve oğlu; kemerden ilk sancaklar ve mehter çıkıyor."
+      },
+      {
+        "blok": 3,
+        "sure": 5,
+        "ilk": "C3a",
+        "son": "C3b",
+        "istek": "Mehter takımı kemerden kameraya doğru çıkıyor, yolun iki yanına açılıyor."
+      },
+      {
+        "blok": 4,
+        "sure": 8,
+        "ilk": "C4a",
+        "son": "C4b",
+        "istek": "Tablonun anı: Sultan beyaz atıyla kemerin gölgesinden ışığa, kameraya doğru çıkıyor."
+      },
+      {
+        "blok": 5,
+        "sure": 5,
+        "ilk": "C5a",
+        "son": "C5b",
+        "istek": "Sultan geçerken kalabalık dalga dalga diz çöküyor; alay meydanda duruyor."
+      },
+      {
+        "blok": 6,
+        "sure": 6,
+        "ilk": "C6a",
+        "son": "C6b",
+        "istek": "Akşemseddin başını kaldırıp Sultan'a konuşuyor."
+      },
+      {
+        "blok": 7,
+        "sure": 5,
+        "ilk": "C7a",
+        "son": "C7b",
+        "istek": "Sultan sakin bir sesle cevap veriyor."
+      },
+      {
+        "blok": 8,
+        "sure": 5,
+        "ilk": "C8a",
+        "son": "C8b",
+        "istek": "Diz çökmüş anne oğlunu göğsüne bastırıyor; gözlerini Sultan'a kaldırıyor."
+      },
+      {
+        "blok": 9,
+        "sure": 11,
+        "ilk": "C9a",
+        "son": "C9b",
+        "istek": "Sultan'ın hitabı: Kalkınız ve müsterih olunuz…"
+      },
+      {
+        "blok": 10,
+        "sure": 5,
+        "ilk": "C10a",
+        "son": "C10b",
+        "istek": "Yüksekten: binlerce kişi başını kaldırıp ayağa kalkıyor."
+      }
+    ]
+  },
+  "kollar": {
+    "kare": {
+      "ref": false,
+      "kare": true,
+      "bloklar": [
+        {
+          "blok": 1,
+          "sure": 5,
+          "ilk": "C1a",
+          "son": "C1b",
+          "istek": "Damdan yüksek geniş plan: binlerce kişi sessizce bekliyor, kamera yavaşça alçalıyor.",
+          "prompt": "How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 1) aligns with the 5.17-second mark of the target video.\n\nintegrated_multimodal_description: [Shot 1] Live-action, cinematic historical feature film, 35mm film with anamorphic lenses, natural light only. A high wide shot from a rooftop inside the city; the shot begins exactly on Picture 1: the great limestone-and-red-brick arch of the city gate with its faded Byzantine fresco, the stone road and square, the crimson janissary cordon with tall crimson and green banners each bearing only a single white crescent, and thousands of Greek townspeople behind it on rubble, roofs and the wall-walk, the road and the square empty, thousands waiting in silence. The camera pedestals down with small amplitude at slow speed. Nobody moves; only the banners stir in the wind and dust drifts in the golden light pouring through the arch. A child on his father's shoulders turns his head toward the gate. The descent slows and the shot settles exactly into the framing of Picture 2. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.\n\noverall_soundscape: Wind over the rooftops, banners flapping, the vast low murmur of thousands of silent people; far beyond the walls, the slow heavy beat of mehter drums, muffled.\n\nnon_diegetic_music: A low sustained drone of bowed double basses at a very slow tempo.",
+          "sorunlar": []
+        },
+        {
+          "blok": 2,
+          "sure": 5,
+          "ilk": "C2a",
+          "son": "C2b",
+          "istek": "Kalabalığın içinde anne ve oğlu; kemerden ilk sancaklar ve mehter çıkıyor.",
+          "prompt": "How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 1) aligns with the 5.17-second mark of the target video.\n\nintegrated_multimodal_description: [Shot 1] Live-action, cinematic historical feature film, 35mm film with anamorphic lenses, natural light only. A static eye-level medium shot inside the crowd, 50mm lens, shallow depth of field, beginning on Picture 1: the young mother with her son on her hip among tense, silent townspeople, the red backs of the janissaries at the bottom of the frame, the blazing arch out of focus far behind. The mehter music grows louder; she swallows and pulls her son tighter. Far behind, out of focus, the first banners and the band step out of the arch into the light, and the shot ends on Picture 2 with her eyes lifted toward the gate. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.\n\noverall_soundscape: The mehter march grows louder and echoes through the arch; close whispers are hushed; the boy breathes quickly against his mother's shoulder.\n\nnon_diegetic_music: A low sustained drone of bowed double basses, a soft frame-drum pulse joining underneath.",
+          "sorunlar": []
+        },
+        {
+          "blok": 3,
+          "sure": 5,
+          "ilk": "C3a",
+          "son": "C3b",
+          "istek": "Mehter takımı kemerden kameraya doğru çıkıyor, yolun iki yanına açılıyor.",
+          "prompt": "How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 1) aligns with the 5.17-second mark of the target video.\n\nintegrated_multimodal_description: [Shot 1] Live-action, cinematic historical feature film, 35mm film with anamorphic lenses, natural light only. A low frontal wide shot on the axis of the road, 32mm lens, beginning on Picture 1: the mehter band marches out of the shadowed passage toward the camera in strict ranks, drummers striking the kettle drums and big drums, zurnas raised, cymbals flashing in the backlight, mounted standard-bearers with tall banners and a gilded alem behind them. The camera holds a static shot. The ranks advance with a heavy measured step and split to both sides of the road, opening the centre; deep in the shadow of the arch a white horse appears, and the shot ends on Picture 2. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.\n\noverall_soundscape: A loud, slow, heavy mehter march of kettle drums, big drums, zurnas and crashing cymbals echoing in the arch; marching feet on stone; banners snapping in the wind.\n\nnon_diegetic_music: N/A",
+          "sorunlar": []
+        },
+        {
+          "blok": 4,
+          "sure": 8,
+          "ilk": "C4a",
+          "son": "C4b",
+          "istek": "Tablonun anı: Sultan beyaz atıyla kemerin gölgesinden ışığa, kameraya doğru çıkıyor.",
+          "prompt": "How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 1) aligns with the 8.00-second mark of the target video.\n\nintegrated_multimodal_description: [Shot 1] Live-action, cinematic historical feature film, 35mm film with anamorphic lenses, natural light only. A low frontal wide shot on the axis of the road, 32mm lens, beginning on Picture 1: deep in the shadowed passage of the great arch, the rim-lit outlines of the Sultan on his white horse and of Akşemseddin walking ahead of him on the left; behind them mounted pashas in white turbans, solak guards and a forest of upright spears and crimson and green banners against the blazing white-gold sky; a guard in a red-and-gold turban in the left foreground. The camera pushes in with small amplitude at slow speed. The white stallion steps high and slow out of the shadow into the golden light, its mane and the Sultan's white plume catching the sun; the Sultan sits upright and slightly raises his right hand; Akşemseddin walks with his head bowed and his right hand on his chest. The horse walks with a natural four-beat gait. At the end the composition lands exactly on Picture 2, the moment of Zonaro's painting. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.\n\noverall_soundscape: The mehter march at full strength on both sides of the road, slow hoofbeats ringing on stone under the arch, harness jingling, banners in the wind, a rising murmur from thousands of people.\n\nnon_diegetic_music: N/A",
+          "sorunlar": []
+        },
+        {
+          "blok": 5,
+          "sure": 5,
+          "ilk": "C5a",
+          "son": "C5b",
+          "istek": "Sultan geçerken kalabalık dalga dalga diz çöküyor; alay meydanda duruyor.",
+          "prompt": "How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 1) aligns with the 5.17-second mark of the target video.\n\nintegrated_multimodal_description: [Shot 1] Live-action, cinematic historical feature film, 35mm film with anamorphic lenses, natural light only. A wide shot from just behind the cordon, 35mm lens, beginning on Picture 1: the townspeople stand packed in the foreground as the Sultan rides from left to right across the middle ground on his white horse, Akşemseddin at his right stirrup. The camera pans right with small amplitude at slow speed, following him. As he passes, the crowd sinks to its knees in a slow wave that follows the horse. The Sultan halts in the middle of the square, the mehter ends on one last deep drum beat, and everything is still as the shot ends on Picture 2. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.\n\noverall_soundscape: The mehter march, then one last deep drum beat; the soft rustle of thousands of people kneeling; hooves stop; a heavy silence with only wind.\n\nnon_diegetic_music: N/A",
+          "sorunlar": []
+        },
+        {
+          "blok": 6,
+          "sure": 6,
+          "ilk": "C6a",
+          "son": "C6b",
+          "istek": "Akşemseddin başını kaldırıp Sultan'a konuşuyor.",
+          "prompt": "How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 1) aligns with the 6.58-second mark of the target video.\n\nintegrated_multimodal_description: [Shot 1] Live-action, cinematic historical feature film, 35mm film with anamorphic lenses, natural light only. A static medium two-shot, 50mm lens, beginning on Picture 1: the Sultan motionless on his white horse on the right, rim-lit, Akşemseddin at his right stirrup on the left, the arch and the massed spears soft behind them. At about 00:01.000, Akşemseddin, an elderly scholar with a warm, deep, slightly weathered baritone voice and a slow, reverent pace (S1), looks up at the Sultan and says: <d>[Turkish] Hünkârım, Peygamber efendimizin müjdesi bugün gerçek oldu.</d> His lips move only while he speaks; then he closes his mouth and bows his head slightly, and the shot ends on Picture 2. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.\n\noverall_soundscape: A deep silence over the square: faint wind through the arch, a horse snorting softly, the creak of saddle leather.\n\nnon_diegetic_music: N/A",
+          "sorunlar": []
+        },
+        {
+          "blok": 7,
+          "sure": 5,
+          "ilk": "C7a",
+          "son": "C7b",
+          "istek": "Sultan sakin bir sesle cevap veriyor.",
+          "prompt": "How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 1) aligns with the 5.17-second mark of the target video.\n\nintegrated_multimodal_description: [Shot 1] Live-action, cinematic historical feature film, 35mm film with anamorphic lenses, natural light only. A static medium close-up of the Sultan from slightly below, 50mm lens, beginning on Picture 1: his face half in warm shade, the golden backlight on his white plume and silver shoulders. He breathes in, and at about 00:01.000, the young Sultan with a measured, resonant young baritone voice (S1) says calmly: <d>[Turkish] Bu zafer bizim değil, Allah'ındır.</d> His lips then close and his gaze lifts toward the crowd, ending on Picture 2. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.\n\noverall_soundscape: Silence, faint wind, a banner flapping once; the horse shifts its weight.\n\nnon_diegetic_music: N/A",
+          "sorunlar": []
+        },
+        {
+          "blok": 8,
+          "sure": 5,
+          "ilk": "C8a",
+          "son": "C8b",
+          "istek": "Diz çökmüş anne oğlunu göğsüne bastırıyor; gözlerini Sultan'a kaldırıyor.",
+          "prompt": "How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 1) aligns with the 5.17-second mark of the target video.\n\nintegrated_multimodal_description: [Shot 1] Live-action, cinematic historical feature film, 35mm film with anamorphic lenses, natural light only. A static close-up of the young mother kneeling on the paving among the crowd, 50mm lens, beginning on Picture 1: she presses her son's curly head to her chest with both arms, trembling, eyes cast down. She takes a shaky breath, then slowly lifts her eyes toward the Sultan off-screen right, lips parting; the boy turns his face to look too. The shot ends on Picture 2. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.\n\noverall_soundscape: Silence; the mother's shaky breath; the soft rustle of cloth; far off, a horse snorts.\n\nnon_diegetic_music: N/A",
+          "sorunlar": []
+        },
+        {
+          "blok": 9,
+          "sure": 11,
+          "ilk": "C9a",
+          "son": "C9b",
+          "istek": "Sultan'ın hitabı: Kalkınız ve müsterih olunuz…",
+          "prompt": "How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 1) aligns with the 11.54-second mark of the target video.\n\nintegrated_multimodal_description: [Shot 1] Live-action, cinematic historical feature film, 35mm film with anamorphic lenses, natural light only. A medium shot of the Sultan from slightly below, 50mm lens, beginning on Picture 1: he sits straight in the saddle, rim-lit, the blazing arch soft behind his shoulder, looking out over the kneeling crowd. The camera pushes in with small amplitude at slow speed. At about 00:00.800, the young Sultan with a measured, resonant young baritone voice (S1), raised loud enough to carry across the square yet calm and reassuring, says: <d>[Turkish] Kalkınız ve müsterih olunuz. Ben Sultan Mehmed; hepinize söylüyorum ki bu andan itibaren ne hürriyetleriniz ne de hayatlarınız hakkında korkmayınız.</d> His lips move clearly and only while he speaks; after the last word he holds still with a calm, kind face, and the shot ends on Picture 2. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.\n\noverall_soundscape: The Sultan's voice carries across the silent square and echoes softly in the arch; wind; the horse breathes.\n\nnon_diegetic_music: N/A",
+          "sorunlar": []
+        },
+        {
+          "blok": 10,
+          "sure": 5,
+          "ilk": "C10a",
+          "son": "C10b",
+          "istek": "Yüksekten: binlerce kişi başını kaldırıp ayağa kalkıyor.",
+          "prompt": "How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 1) aligns with the 5.17-second mark of the target video.\n\nintegrated_multimodal_description: [Shot 1] Live-action, cinematic historical feature film, 35mm film with anamorphic lenses, natural light only. A high wide shot from the rooftop on the axis of the road, beginning on Picture 1: the procession halted in the square with the white horse at its centre and thousands of townspeople kneeling everywhere along the road, on the rubble, on the roofs and on the wall-walk. The camera pedestals up with small amplitude at slow speed. Row after row, the people lift their heads and slowly rise to their feet, until the whole crowd stands, and the shot ends on Picture 2. No readable text or calligraphy anywhere; no star on the banners; no blood, wounds or bodies.\n\noverall_soundscape: The vast soft rustle of thousands of people standing up, a relieved murmur rolling through the crowd, wind.\n\nnon_diegetic_music: A slow, warm string chord swells gently and sustains to the end, with a single low ney note above it.",
+          "sorunlar": []
+        }
+      ]
+    }
+  },
+  "yeniden_uretim": 1,
+  "kopru": false,
+  "deney": false,
+  "brief": "",
+  "sorunlar": [],
+  "modeller": {
+    "çekim planı ve prompt'lar": "elle yazıldı (Claude, MiniMax H3 rehberi FL2VA)"
+  },
+  "yedek_model": [],
+  "notlar": [
+    "Anahtar kare yöntemi: 10 tek çekim, 20 anahtar kare; köprü yok."
+  ],
+  "sahte": false,
+  "durum": "hazir"
+}

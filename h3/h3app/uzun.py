@@ -65,8 +65,9 @@ def prepare(method, with_refs=True, without_refs=False, log=print):
     return te
 
 
-def render_block(method, prompt, seed, seconds, resolution, style, name, refs=(), te=None, log=print):
-    """Bir bloğu üretir (refs verilirse Ref2VA), sesi dengeler, otomatik kontrol yapar.
+def render_block(method, prompt, seed, seconds, resolution, style, name, refs=(), te=None, log=print, frames=None):
+    """Bir bloğu üretir (refs verilirse Ref2VA; frames=(ilk, son) verilirse anahtar kareli FL2VA — biri None
+    olabilir), sesi dengeler, otomatik kontrol yapar.
     {'yol','sure_sn','kontrol','temas','kirpinti'} döner."""
     width, height = config.RESOLUTIONS[resolution]
     out_dir = config.OUTPUT_DIR
@@ -83,8 +84,15 @@ def render_block(method, prompt, seed, seconds, resolution, style, name, refs=()
             n = f"h3app_{os.path.basename(p)}"
             shutil.copyfile(p, os.path.join(config.COMFY_DIR, "input", n))
             names.append(n)
+        kf = []
+        for p in (frames or (None, None)):
+            n = None
+            if p:
+                n = f"h3app_{os.path.basename(p)}"
+                shutil.copyfile(p, os.path.join(config.COMFY_DIR, "input", n))
+            kf.append(n)
         grf = graphs.build(method, prompt, seed, width, height, config.frames_for(seconds), te,
-                           prefix=f"h3app/{name[:-4]}", ref_images=names)
+                           prefix=f"h3app/{name[:-4]}", ref_images=names, first_frame=kf[0], last_frame=kf[1])
         shown = 0
         for sec in comfy_client.run(grf, dest):
             if sec // 60 > shown:

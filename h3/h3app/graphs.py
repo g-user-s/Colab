@@ -10,9 +10,12 @@ def _name(role):
     return os.path.basename(config.MODELS[role][0])
 
 
-def build(method, prompt, seed, width, height, frames, text_encoder="te_nvfp4", prefix="h3app/video", ref_images=()):
+def build(method, prompt, seed, width, height, frames, text_encoder="te_nvfp4", prefix="h3app/video", ref_images=(),
+          first_frame=None, last_frame=None):
     """ref_images boşsa metinden video (T2VA); doluysa ComfyUI/input altındaki görsellerle referanslı video
-    (Ref2VA, resmi `video_pika_h3_flex_ref2va` / `video_minimax_h3_r2v` şablonları)."""
+    (Ref2VA, resmi `video_pika_h3_flex_ref2va` / `video_minimax_h3_r2v` şablonları).
+    first_frame / last_frame (ComfyUI/input altındaki dosya adları): anahtar kareli video (FL2VA / I2VA / L2VA);
+    aynı FL2VA modeli ve LoRA'ları, `MiniMaxH3ImageToVideo` düğümünün isteğe bağlı girişleri."""
     if method not in config.METHODS:
         raise ValueError(f"Bilinmeyen yöntem: {method}")
     ref = bool(ref_images)
@@ -30,6 +33,12 @@ def build(method, prompt, seed, width, height, frames, text_encoder="te_nvfp4", 
         "save": {"class_type": "SaveVideo", "inputs": {"video": ["video", 0], "filename_prefix": prefix,
                                                         "format": "mp4", "format.codec": "h264", "format.codec.encoding": "auto"}},
     }
+    if ref and (first_frame or last_frame):
+        raise ValueError("Referans görseller ile anahtar kareler birlikte kullanılamaz.")
+    for key, name in (("first_frame", first_frame), ("last_frame", last_frame)):
+        if name:
+            g[f"kf_{key}"] = {"class_type": "LoadImage", "inputs": {"image": name}}
+            g["cond"]["inputs"][key] = [f"kf_{key}", 0]
     if ref:
         if len(ref_images) > config.MAX_REF_IMAGES:
             raise ValueError(f"En fazla {config.MAX_REF_IMAGES} referans görsel kullanılabilir.")

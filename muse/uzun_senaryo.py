@@ -14,6 +14,11 @@ GPU açmaz, CCU harcamaz (Gemini kotası harcar). Asıl iş h3app.hikaye'de; bu 
           --kol metin  : eski yöntem, yalnızca metin çapası (T2VA)
           --kol ikisi  : DENEY — aynı plan iki yöntemle de üretilir, sonuçlar karşılaştırılır
 
+  kareler Anahtar kareli senaryoda (uzun_senaryo.json içinde "kareler") her çekimin ilk/son karesini Gemini görsel
+          modeliyle üretir (kareler/<id>.png, tam çözünürlüğe kırpılmış). Senaryo elle (ör. olustur.py) yazılmıştır;
+          bu komut yalnızca görselleri üretir. --yeniden ID, --ref ID=YOL.png. Taban karesi değişirse ona bağlı
+          kareleri de --yeniden ile yenile.
+
 Çıkış kodları: 0 = hazır, 2 = yazıldı ama denetimde sorun var, 1 = hata.
 """
 
@@ -167,10 +172,77 @@ def kmt_plan(a, config, pw, hk):
     return _sonuc(sorunlar)
 
 
+def kmt_kareler(a, config, pw, hk):
+    from h3app import kare
+    yol = os.path.join(a.dizin, "uzun_senaryo.json")
+    if not os.path.isfile(yol):
+        print(f"❌ Senaryo yok: {yol}")
+        return 1
+    senaryo = ortak.json_oku(yol)
+    liste = senaryo.get("kareler") or []
+    if not liste:
+        print("❌ Bu senaryoda anahtar kare yok (\"kareler\" boş).")
+        return 1
+    boyut = tuple(config.RESOLUTIONS[senaryo["cozunurluk"]])
+    verilen = {k: os.path.expanduser(v) for k, v in (r.split("=", 1) for r in a.ref)}
+    bilinen = {k["id"] for k in liste}
+    for x in list(verilen) + a.yeniden:
+        if x not in bilinen:
+            raise SystemExit(f"Bilinmeyen kare: {x}. Kareler: {', '.join(sorted(bilinen))}")
+    sahte = bool(senaryo.get("sahte"))
+    anahtar = None if sahte else ortak.anahtar_oku(a.anahtar)
+    dosya = {k["id"]: k["dosya"] for k in liste}
+    kayit = senaryo.setdefault("kare_modelleri", {})
+    for k in liste:
+        i = k["id"]
+        if i in verilen:
+            if not os.path.isfile(verilen[i]):
+                raise SystemExit(f"{i}: dosya yok ({verilen[i]})")
+            kare.hizala(verilen[i], k["dosya"], *boyut)
+            kayit[i] = "kullanıcı"
+            print(f"✅ {i}: kullanıcının görseli kırpılıp kopyalandı")
+            continue
+        if os.path.isfile(k["dosya"]) and i not in a.yeniden:
+            print(f"• {i}: zaten var ({kayit.get(i, '?')}); yeniden üretmek için --yeniden {i}")
+            continue
+        if sahte:
+            hk.ornek_png(k["dosya"])
+            kayit[i] = "sahte"
+            print(f"✅ {i}: sahte kare")
+            continue
+        girdiler = []
+        if k.get("taban"):
+            if not os.path.isfile(dosya[k["taban"]]):
+                print(f"❌ {i}: taban karesi {k['taban']} henüz yok.")
+                return 1
+            girdiler.append(("BASE FRAME", dosya[k["taban"]]))
+        if k.get("kompozisyon"):
+            girdiler.append(("COMPOSITION", os.path.expanduser(k["kompozisyon"])))
+        girdiler += [(g["etiket"], os.path.expanduser(g["dosya"])) for g in k.get("girdiler") or []]
+        eksik = [d for _, d in girdiler if not os.path.isfile(d)]
+        if eksik:
+            print(f"❌ {i}: girdi görseli yok: {', '.join(eksik)}")
+            return 1
+        print(f"⏳ {i} karesi üretiliyor ({len(girdiler)} girdi görseli)…", flush=True)
+        try:
+            metin = kare.kare_metni(k["tarif"], senaryo["stil"], taban=bool(k.get("taban")),
+                                    kompozisyon=bool(k.get("kompozisyon")))
+            model = kare.kare_uret(metin, anahtar, k["dosya"], girdiler, boyut)
+        except Exception as e:  # noqa: BLE001
+            print(f"❌ {i}: {str(e).replace(anahtar, '***')}")
+            ortak.json_yaz(yol, senaryo)
+            return 1
+        kayit[i] = model
+        print(f"✅ {i}: {k['dosya']} ({model})")
+    ortak.json_yaz(yol, senaryo)
+    print("Kareleri sırayla aç ve kontrol et (kimlik, kompozisyon, ilk→son farkı). Muse: sonra orhan'a onaylat.")
+    return 0
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(description="Uzun video senaryosu (GPU'suz)")
     alt = p.add_subparsers(dest="komut", required=True)
-    for ad in ("kart", "gorsel", "plan"):
+    for ad in ("kart", "gorsel", "plan", "kareler"):
         q = alt.add_parser(ad)
         q.add_argument("--h3", help="h3 klasörü (varsayılan: bu deponun h3/ klasörü)")
         q.add_argument("--dizin", required=True, help="Bu uzun videonun klasörü")
@@ -186,6 +258,10 @@ def main(argv=None):
             q.add_argument("--ilham", action="append", default=[], metavar="ID=YOL",
                            help="Görseli üretirken bu fotoğrafı/resmi Gemini'ye ilham olarak ver (MEKAN: mimari "
                                 "referans; karakter: kıyafet/zırh ilhamı). --yeniden ile birlikte mevcut görseli yeniler")
+            q.add_argument("--yeniden", action="append", default=[], metavar="ID")
+        if ad == "kareler":
+            q.add_argument("--ref", action="append", default=[], metavar="ID=YOL",
+                           help="Bu kareyi üretme; verilen görseli kırpıp kullan")
             q.add_argument("--yeniden", action="append", default=[], metavar="ID")
         if ad == "plan":
             q.add_argument("--kol", choices=("ref", "metin", "ikisi"), default="ref")
@@ -203,7 +279,7 @@ def main(argv=None):
     from h3app import hikaye as hk
     pw.used_models.clear()
     try:
-        return {"kart": kmt_kart, "gorsel": kmt_gorsel, "plan": kmt_plan}[a.komut](a, config, pw, hk)
+        return {"kart": kmt_kart, "gorsel": kmt_gorsel, "plan": kmt_plan, "kareler": kmt_kareler}[a.komut](a, config, pw, hk)
     except SystemExit:
         raise
     except Exception as e:  # noqa: BLE001

@@ -5,10 +5,11 @@ h3_uret.py yükler, başlatır, yoklar, sonucu indirir.
 Gemini'ye hiç gitmez: izleme, yeniden üretim kararı, süreklilik puanı ve köprü prompt'u Muse'un makinesinde yapılır
 (Muse'un kasası anahtarı yalnızca o makineden çıkan isteklerde gerçek anahtarla değiştirir).
 
-Girdi (DIZIN içinde): h3app.tar, senaryo.json, is.json, ref_*.png / kopru_*.png
+Girdi (DIZIN içinde): h3app.tar, senaryo.json, is.json, ref_*.png / kopru_*.png / kare_*.png
   is.json türleri:
     {"no": n, "tur": "tek", "seed": s}                       tek video (h3app.ui._generate_job, izlemesiz)
     {"no": n, "tur": "blok", "kol", "blok", "sure", "prompt", "seed", "refs": [dosya adları]}
+        isteğe bağlı "kareler": [ilk, son] (dosya adı ya da null) — anahtar kareli FL2VA, refs boş olmalı
     {"no": n, "tur": "birlestir", "kol", "dosyalar": [dosya adları]}
 Çıktı (DIZIN içinde): durum.json (sürekli güncellenir; "is_no" alanı), gunluk.txt, teslim_<no>_<i>.tar (bitince)
 """
@@ -167,8 +168,10 @@ def is_blok(senaryo, is_, dizin, log):
     te = uzun.prepare(senaryo["yontem"], with_refs=bool(is_.get("refs")), without_refs=not is_.get("refs"), log=log)
     ad = f"{is_['kol']}_blok{is_['blok']}_{config.METHODS[senaryo['yontem']]['file']}_seed{is_['seed']}.mp4"
     log(f"▶ [{is_['kol']}] Blok {is_['blok']} · {is_['sure']} sn · seed {is_['seed']}")
+    kareler = [os.path.join(dizin, x) if x else None for x in is_.get("kareler") or []] or None
     r = uzun.render_block(senaryo["yontem"], is_["prompt"], is_["seed"], is_["sure"], senaryo["cozunurluk"],
-                          senaryo["stil"], ad, [os.path.join(dizin, x) for x in is_.get("refs") or []], te, log)
+                          senaryo["stil"], ad, [os.path.join(dizin, x) for x in is_.get("refs") or []], te, log,
+                          frames=kareler)
     pfile = r["yol"][:-4] + "_prompt.txt"
     open(pfile, "w", encoding="utf-8").write(is_["prompt"].strip() + "\n")
     temel = [x for x in (r["yol"], pfile, r["temas"]) if x]

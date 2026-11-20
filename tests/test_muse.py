@@ -460,3 +460,50 @@ def test_yeniden_esik_orta(ortam):
                      "--anahtar", ortam["anahtar"], "--aralik", "1", "--yeniden-esik", esik, env=env)
         assert r.returncode == 0, r.stdout + r.stderr
         assert len(json.loads((oturum / "oturum.json").read_text())["isler"]) == beklenen
+
+
+def kare_senaryosu(ortam, eksik=False):
+    d = ortam["tmp"] / "kare"
+    d.mkdir()
+    sys.path.insert(0, H3)
+    from h3app import kare
+    kareler = [{"id": i, "dosya": str(d / "kareler" / f"{i}.png"), "tarif": "x", "girdiler": [],
+                "taban": "C1a" if i == "C1b" else None, "kompozisyon": None} for i in ("C1a", "C1b", "C2a")]
+    bloklar = [{"blok": 1, "sure": 5, "ilk": "C1a", "son": "C1b", "istek": "",
+                "prompt": kare.prompt_kur(5, "[Shot 1] x", "y")},
+               {"blok": 2, "sure": 5, "ilk": "C2a", "son": "C9z" if eksik else None, "istek": "",
+                "prompt": kare.prompt_kur(5, "[Shot 1] x", "y", son=False)}]
+    s = {"surum": 2, "tur": "uzun", "h3app_surum": ortak.h3app_surum(H3), "fikir": "deneme", "sure": 10,
+         "stil": "real", "yontem": "pika", "cozunurluk": ortak.COZUNURLUKLER["yatay"], "seed": 22,
+         "referanslar": [], "kareler": kareler, "hikaye": {}, "dunya_capasi": "", "plan": {},
+         "kollar": {"kare": {"ref": False, "kare": True, "bloklar": bloklar}}, "yeniden_uretim": 0,
+         "kopru": False, "deney": False, "brief": "", "sorunlar": [], "sahte": True, "durum": "hazir"}
+    (d / "uzun_senaryo.json").write_text(json.dumps(s, ensure_ascii=False))
+    return d
+
+
+def test_anahtar_kare_uctan_uca(ortam):
+    d = kare_senaryosu(ortam)
+    oturum = ortam["tmp"] / "kare_oturum"
+    erken = calistir(os.path.join(MUSE, "h3_uret.py"), "uret", "--senaryo", str(d / "uzun_senaryo.json"),
+                     "--oturum-dizini", str(oturum), "--anahtar", "", "--aralik", "1", env=ortam["env"])
+    assert erken.returncode != 0 and "Anahtar kareler eksik" in erken.stdout + erken.stderr
+    assert not (ortam["kok"] / "cagrilar.jsonl").exists()            # GPU açılmadı
+    r = calistir(os.path.join(MUSE, "uzun_senaryo.py"), "kareler", "--h3", H3, "--dizin", str(d), env=ortam["env"])
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert sorted(os.listdir(d / "kareler")) == ["C1a.png", "C1b.png", "C2a.png"]
+    r = calistir(os.path.join(MUSE, "h3_uret.py"), "uret", "--senaryo", str(d / "uzun_senaryo.json"),
+                 "--oturum-dizini", str(oturum), "--anahtar", "", "--aralik", "1", env=ortam["env"])
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "anahtar kareli, FL2VA" in r.stdout
+    yuklenen = [x[-1] for x in cagrilar(ortam) if x[0] == "upload"]
+    assert {"content/h3muse/kare_C1a.png", "content/h3muse/kare_C1b.png", "content/h3muse/kare_C2a.png"} <= set(yuklenen)
+    o = json.loads((oturum / "oturum.json").read_text())
+    assert o["video"]["yol"].endswith("kare_pika_h3_flex_birlesik.mp4")
+
+
+def test_anahtar_kare_tanimsiz_kimlik(ortam):
+    d = kare_senaryosu(ortam, eksik=True)
+    r = calistir(os.path.join(MUSE, "h3_uret.py"), "uret", "--senaryo", str(d / "uzun_senaryo.json"),
+                 "--oturum-dizini", str(ortam["tmp"] / "o"), "--anahtar", "", env=ortam["env"])
+    assert r.returncode != 0 and "C9z (tanımsız, blok 2)" in r.stdout + r.stderr
