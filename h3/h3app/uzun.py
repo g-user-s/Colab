@@ -67,7 +67,7 @@ def prepare(method, with_refs=True, without_refs=False, log=print):
 
 def render_block(method, prompt, seed, seconds, resolution, style, name, refs=(), te=None, log=print, frames=None):
     """Bir bloğu üretir (refs verilirse Ref2VA; frames=(ilk, son) verilirse anahtar kareli FL2VA — biri None
-    olabilir), sesi dengeler, otomatik kontrol yapar.
+    olabilir) ve otomatik kontrol yapar. Sesi dengelemez (dengeleme birleşik filmde, bkz. merge).
     {'yol','sure_sn','kontrol','temas','kirpinti'} döner."""
     width, height = config.RESOLUTIONS[resolution]
     out_dir = config.OUTPUT_DIR
@@ -98,7 +98,8 @@ def render_block(method, prompt, seed, seconds, resolution, style, name, refs=()
             if sec // 60 > shown:
                 shown = sec // 60
                 log(f"   … {shown} dk")
-    qa.normalize_audio(dest)
+    # Blok sesi tek tek dengelenmez: her bloğu -16 LUFS'a çekmek sessiz sahneyi mehter kadar yükseltip filmin ses
+    # dinamiğini eziyordu (20.11.2026 Fatih kare: kesmede +19 dB sıçrama). Dengeleme yalnızca birleşik filmde (merge).
     out = {"yol": dest, "sure_sn": int(time.time() - t0), "kontrol": None, "temas": None, "kirpinti": None}
     try:
         r = qa.check(dest, prompt, sheet=dest[:-4] + "_kontrol.jpg", crops=dest[:-4] + "_kirpinti.jpg", style=style)

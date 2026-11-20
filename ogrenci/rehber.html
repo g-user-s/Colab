@@ -62,6 +62,7 @@
 <tr><td><b>Anahtar kare</b></td><td>Çekimin belirlenmiş bir anı; önceden fotoğraf olarak üretilir.</td></tr>
 <tr><td><b>İlk kare (a) / son kare (b)</b></td><td>Çekim tam olarak ilk kareyle başlar, son kareyle biter. Adlandırma: <code>C4a</code>, <code>C4b</code>.</td></tr>
 <tr><td><b>Taban kare</b></td><td>Bir kareyi sıfırdan değil, başka bir karenin <b>aynı kamera açısıyla, yalnızca söylenen şey değişmiş</b> hâli olarak üretmek. Kamera kilitli kalır, a ile b birbirine oturur.</td></tr>
+<tr><td><b>Mekân plakası (ana kare)</b></td><td>Videoya girmeyen, mekânın tek ve kesin görüntüsü. Mekânı gören bütün kareler buna "ana kare" olarak bağlanır; böylece kapı, duvar ve sancaklar her çekimde aynı kalır.</td></tr>
 <tr><td><b>Kompozisyon referansı</b></td><td>Bir tablo ya da fotoğraf, yalnızca <b>düzen</b> için verilir: kim nerede, kamera nereden bakıyor. Üslubu kopyalanmaz.</td></tr>
 <tr><td><b>Oyuncu ve mekân görselleri</b></td><td>Her karakterin boydan bir fotoğrafı ve mekânın boş hâli (K1, K2, K3, MEKAN). Her karede kimliği bunlar taşır.</td></tr>
 <tr><td><b>Konuşmacı kimliği (S1, S2)</b></td><td>Konuşan karaktere verilir; sesi tarif edilir. Konuşmayanlara verilmez.</td></tr>
@@ -88,6 +89,7 @@
 <li><b>İlk ve son kare arasındaki fark ölçülü olmalı.</b> Model iki kareyi akıcı bir hareketle bağlar. Fark ne kadar büyükse (kişi kadrajın öbür ucuna gitmiş, ışık değişmiş) ara hareket o kadar uydurulur. İyi farklar: kamera 5 m alçalmış, kişi başını çevirmiş, alay 10 m yaklaşmış, kalabalık diz çökmüş.</li>
 <li><b>Son kareyi tabanla üret.</b> b karesi, a karesinin tabanıyla yazılır: "aynı kamera, yalnızca şu değişti". İstisna: asıl hedef son kareyse (ör. tablo anı) önce b'yi yaz, a'yı ondan geriye türet.</li>
 <li><b>Çekimler arası geçiş bir kesmedir.</b> Bir çekimin son karesiyle sonrakinin ilk karesi farklı açıdan olabilir; bu normal sinema kurgusudur. Aynı açıyla devam etmek istersen sonraki çekimin ilk karesini öncekinin son karesinden türet (örnek: C10a, C1b'den).</li>
+<li><b>Mekân tek bir plakadan türer.</b> Gemini mekânı her karede biraz farklı çizer. Fatih 1. sürümde kapı 1. çekimde dendanlı, freskolu bir kemerken 3. çekimde bambaşka bir yapıya dönüştü; seyirci "başka yere geçtik" sanır. Önce mekânın boş bir plakasını üret (<code>P_YOL</code>), mekânı gören her kareyi ona bağla. Sistem, mekânı birbirinden bağımsız çizen kareleri kabul etmez.</li>
 <li><b>Her kare kendi başına okunabilir olmalı.</b> Gemini her kareyi ayrı çizer. Bir kare tarifinde "yukarıdaki gibi" yazma; o karede görünen her şeyi yaz.</li>
 </ol>
 
@@ -178,6 +180,7 @@ düzende, Zonaro'nun anında bitiyor.</div>
 <li><b>Ortam sesi (sahnedekilerin duyduğu):</b> rüzgâr, nal, mehter, kalabalık uğultusu, nefes. Mehter sahnede çaldığı için ortam sesidir.</li>
 <li><b>Müzik (yalnızca seyircinin duyduğu):</b> çalgı, tempo, gelişim. Duygu sözcüğü yazma; "yavaş, sürekli, alçak kontrbas uğultusu" yaz. Gerekmiyorsa "yok".</li>
 </ul>
+<div class="kutu"><b>Ses seviyesi:</b> Sistem sesi yalnızca birleşik filmde bir kez dengeler; çekimlerin göreli seviyesi korunur. Bu yüzden sessizliği gerçekten sessiz yazabilirsin ("derin sessizlik, yalnızca rüzgâr"). Eskiden her çekim ayrı dengelenince mehterden sonraki sessizlik mehter kadar yüksek çıkıyordu.</div>
 <div class="kutu"><b>Dikkat:</b> Her çekim kendi sesini ayrı üretir. Çekimler arasında süren bir ses (mehter marşı) kesmelerde kopabilir. Süreklilik istiyorsan ardışık çekimlerde aynı sesi aynı sözcüklerle tarif et ve sesin yükselişini planla: "boğuk ve uzak" → "yaklaşıyor" → "tam güçte" → "son davul".</div>
 
 <h2 class="sayfa">10. Örnek: Fatih sahnesi (özet)</h2>
@@ -206,8 +209,19 @@ düzende, Zonaro'nun anında bitiyor.</div>
 <tr><td>Bir çekimin içine kesme yazmak</td><td>Yeni bir çekim aç.</td></tr>
 <tr><td>Uzun repliği kısa çekime sıkıştırmak</td><td>Kelimeyi say; çekimi uzat ya da repliği böl.</td></tr>
 <tr><td>Kalabalığı modelin sınırı diye küçültmek</td><td>Sahne ne istiyorsa onu yaz; sınırı deneme gösterir.</td></tr>
-<tr><td>Tarihî hata: sancakta yıldız, yazı</td><td>Dönem bilgisini tarifte açıkça yaz ("yalnızca tek beyaz hilal, yıldız ve yazı yok").</td></tr>
+<tr><td>Olumsuz ifade: "sancakta yıldız yok"</td><td>Olumsuz cümle nesneyi çağırır; model kırmızı sancak + hilali Türk bayrağına tamamladı. İstediğini olumlu yaz: "düz kırmızı ve düz yeşil sancak, üzerinde hiçbir işaret yok". İstemediğin şeyin adını hiç anma.</td></tr>
+<tr><td>Mekânı her karede ayrı çizdirmek (Fatih 1. sürüm: kapı her çekimde başka bir yapıydı)</td><td>Önce bir <b>mekân plakası</b> üret; mekânı gören her kare ondan ya da bir tabandan türesin.</td></tr>
 <tr><td>"Yukarıdaki gibi" demek</td><td>Her kare kendi tarifini taşır; taban kullanılıyorsa yalnızca değişeni yaz.</td></tr>
+</table>
+
+<h3>Modelin zayıf yerleri ve sinemacı çözümleri (Fatih sonuçlarından)</h3>
+<table>
+<tr><th style="width:30%">Zayıf yer</th><th>Çözüm (kadrajla, hareketle)</th></tr>
+<tr><td>Eller ve parmaklar bozuluyor</td><td>Elleri gizle ya da hareketsiz tut: şalın altında, çocuğun sırtında, cübbe yeninde, kadraj dışında.</td></tr>
+<tr><td>Yürüyen at bacakları kayıyor</td><td>Yürüyüşü yavaşlat; bacakları kadrajın alt kenarında bırak; atı geniş planda uzun yürütme.</td></tr>
+<tr><td>Kalabalığın toplu hareketi (diz çökme, kalkma) titriyor</td><td>Hareketi ön sırada göster, arka kalabalığı durağan bırak; hareketi kısa tut.</td></tr>
+<tr><td>Çalgı vuruşu sesle senkron değil</td><td>Davulcuyu uzağa ya da kadraj dışına al; vuruşu yakın planda gösterme.</td></tr>
+<tr><td>Arka plandaki uzak kalabalıkta doku titremesi</td><td>Sığ alan derinliği (flu arka plan) ya da durağan kamera.</td></tr>
 </table>
 
 <h2 class="sayfa">12. Boş çekim defteri şablonu</h2>
@@ -230,8 +244,9 @@ Kamera X'e bakınca: …   Kamera X'e sırtını dönünce: …
 (Kroki: kapı, güneş, kalabalık, kamera konumları)
 
 ## 4. Anahtar kareler
-| Kare | Taban | Girdi görselleri | Tarif |
-| C1a | — | MEKAN | plan, kamera, figürler, arka plan (ne görünmüyor), ışık |
+| Kare | Taban / Ana | Girdi görselleri | Tarif |
+| P_&lt;açı&gt; | — (plaka) | MEKAN | mekânın boş, kesin görüntüsü; videoya girmez |
+| C1a | ana: P_&lt;açı&gt; | (karakterler) | plan, kamera, figürler, arka plan (ne görünmüyor), ışık |
 | C1b | C1a | MEKAN | yalnızca değişen |
 
 ## 5. Çekimler
@@ -265,11 +280,13 @@ Kamera X'e bakınca: …   Kamera X'e sırtını dönünce: …
 <tr><td>☐</td><td>Her kare tarifinde plan, kamera, figürler, arka plan ve ışık yazılı.</td></tr>
 <tr><td>☐</td><td>Kamera yönüyle arka plan ve ışık uyumlu; görünmemesi gereken şey açıkça "görünmüyor".</td></tr>
 <tr><td>☐</td><td>Son kareler tabanla; taban kare listede önce geliyor.</td></tr>
+<tr><td>☐</td><td>Mekânı gören her kare plakadan ya da tabandan türüyor; mekânı bağımsız çizen tek kare plaka.</td></tr>
+<tr><td>☐</td><td>İstenmeyen şeyler olumsuz cümleyle değil, istenenin olumlu tarifiyle yazıldı.</td></tr>
 <tr><td>☐</td><td>Görünen her karakterin görseli o karenin girdisinde.</td></tr>
 <tr><td>☐</td><td>Replikler harfi harfine; kelime sayısına göre süre hesaplandı; ilk ve son saniye sessiz.</td></tr>
 <tr><td>☐</td><td>Konuşmacıların sesi tarif edildi, her çekimde aynı.</td></tr>
 <tr><td>☐</td><td>Ortam sesi ve müzik ayrı yazıldı; süren sesler ardışık çekimlerde planlandı.</td></tr>
-<tr><td>☐</td><td>Dönem doğruluğu ve yasaklar (yazı, sembol, şiddet) her karede.</td></tr>
+<tr><td>☐</td><td>Dönem doğruluğu her karede; eller, at bacakları ve kalabalık hareketi zayıf yerlere göre kadrajlandı.</td></tr>
 </table>
 <p class="k">Kaynaklar: MiniMax H3 resmî prompt rehberi (h3-prompt-writing: base-en, ref-en); ComfyUI MiniMax H3 düğümleri; topluluktan "son kareyi ilk kare tabanıyla üret" ipucu. Örnek sahne: Fausto Zonaro, "Fatih'in İstanbul'a Girişi" (1903).</p>
 </body>

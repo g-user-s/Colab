@@ -269,8 +269,11 @@ def yukle(c, o, senaryo_yol):
     dosya_yukle(c, o, senaryo_yol, "senaryo.json")
     for i, r in enumerate(senaryo.get("referanslar") or [], 1):
         dosya_yukle(c, o, r["dosya"], f"ref_{i}{os.path.splitext(r['dosya'])[1].lower() or '.png'}")
+    kullanilan = {x for kol in (senaryo.get("kollar") or {}).values() for bl in kol["bloklar"]
+                  for x in (bl.get("ilk"), bl.get("son")) if x}
     for k in senaryo.get("kareler") or []:
-        dosya_yukle(c, o, k["dosya"], kare_rt(k["id"]))
+        if k["id"] in kullanilan:      # plakalar ve kullanılmayan kareler yüklenmez
+            dosya_yukle(c, o, k["dosya"], kare_rt(k["id"]))
     o.kaydet(asama="yuklendi", uretim_baslangic=o.v.get("uretim_baslangic") or time.time())
 
 

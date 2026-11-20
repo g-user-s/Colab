@@ -469,6 +469,9 @@ def kare_senaryosu(ortam, eksik=False):
     from h3app import kare
     kareler = [{"id": i, "dosya": str(d / "kareler" / f"{i}.png"), "tarif": "x", "girdiler": [],
                 "taban": "C1a" if i == "C1b" else None, "kompozisyon": None} for i in ("C1a", "C1b", "C2a")]
+    kareler.insert(0, {"id": "P", "dosya": str(d / "kareler" / "P.png"), "tarif": "plaka", "girdiler": [],
+                       "plaka": True})
+    kareler[1]["ana"] = "P"
     bloklar = [{"blok": 1, "sure": 5, "ilk": "C1a", "son": "C1b", "istek": "",
                 "prompt": kare.prompt_kur(5, "[Shot 1] x", "y")},
                {"blok": 2, "sure": 5, "ilk": "C2a", "son": "C9z" if eksik else None, "istek": "",
@@ -491,13 +494,14 @@ def test_anahtar_kare_uctan_uca(ortam):
     assert not (ortam["kok"] / "cagrilar.jsonl").exists()            # GPU açılmadı
     r = calistir(os.path.join(MUSE, "uzun_senaryo.py"), "kareler", "--h3", H3, "--dizin", str(d), env=ortam["env"])
     assert r.returncode == 0, r.stdout + r.stderr
-    assert sorted(os.listdir(d / "kareler")) == ["C1a.png", "C1b.png", "C2a.png"]
+    assert sorted(os.listdir(d / "kareler")) == ["C1a.png", "C1b.png", "C2a.png", "P.png"]
     r = calistir(os.path.join(MUSE, "h3_uret.py"), "uret", "--senaryo", str(d / "uzun_senaryo.json"),
                  "--oturum-dizini", str(oturum), "--anahtar", "", "--aralik", "1", env=ortam["env"])
     assert r.returncode == 0, r.stdout + r.stderr
     assert "anahtar kareli, FL2VA" in r.stdout
     yuklenen = [x[-1] for x in cagrilar(ortam) if x[0] == "upload"]
     assert {"content/h3muse/kare_C1a.png", "content/h3muse/kare_C1b.png", "content/h3muse/kare_C2a.png"} <= set(yuklenen)
+    assert "content/h3muse/kare_P.png" not in yuklenen                 # plaka videoya girmez, yüklenmez
     o = json.loads((oturum / "oturum.json").read_text())
     assert o["video"]["yol"].endswith("kare_pika_h3_flex_birlesik.mp4")
 

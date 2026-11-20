@@ -5,6 +5,7 @@ Kişisel ajan Muse'un, [H3 Video Stüdyosu](https://github.com/orha9n/h3-video-s
 - **[masaustu/BENIOKU.md](masaustu/BENIOKU.md)**: **H3 Stüdyo** — Linux masaüstü uygulaması (PySide6). Kurulum: `bash masaustu/kur.sh`.
 - **[MUSE_REHBERI.md](MUSE_REHBERI.md)**: adım adım rehber. Buradan başla.
 - **[GOREV_UZUN_VIDEO_URETIM.md](GOREV_UZUN_VIDEO_URETIM.md)**: ilk gerçek uzun video (45 sn, ref, yeniden üretim açık).
+- **[GOREV_FATIH_KARE_2.md](GOREV_FATIH_KARE_2.md)**: anahtar kare 2. sürüm — mekân plakası (kapı her çekimde aynı), sembolsüz sancaklar, ses yalnızca birleşik filmde dengelenir.
 - **[GOREV_FATIH_KARE.md](GOREV_FATIH_KARE.md)**: aynı Fatih sahnesi, anahtar kare yöntemiyle (FL2VA): 10 tek çekim, her çekimin ilk/son karesi Gemini ile önceden üretilir (`h3/h3app/kare.py`, `uzun_senaryo.py kareler`).
 - **[GOREV_FATIH.md](GOREV_FATIH.md)**: Fatih'in İstanbul'a girişi — Zonaro'nun tablosunun canlı hâli, elle yazılmış senaryo (`muse_gorevleri/20261119_fatih4/`), 60 sn.
 - **[GOREV_UZUN_VIDEO_2.md](GOREV_UZUN_VIDEO_2.md)**: uzun video 2 — aydınlık mutfak, köprü açık, kadraj sürekliliği, eşik orta.

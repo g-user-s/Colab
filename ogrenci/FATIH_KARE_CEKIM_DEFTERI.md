@@ -1,6 +1,6 @@
 # Çekim Defteri — Fatih'in İstanbul'a Girişi (anahtar kare yöntemi)
 
-> Bu belge, Muse'a verilen `GOREV_FATIH_KARE.md` görevinin **tamamen Türkçe** karşılığıdır. C2 ve C8'deki kapı hatası düzeltilmiş hâlidir. Bundan sonraki görevler bu defter örnek alınarak yazılır. Nasıl yazılacağı `H3_Ogrenme_Rehberi.pdf` içinde anlatılıyor.
+> Bu belge, Muse'a verilen `GOREV_FATIH_KARE.md` görevinin (ve 2. sürümü `GOREV_FATIH_KARE_2.md`) **tamamen Türkçe** karşılığıdır. C2 ve C8'deki kapı hatası düzeltilmiş hâlidir. Bundan sonraki görevler bu defter örnek alınarak yazılır. Nasıl yazılacağı `H3_Ogrenme_Rehberi.pdf` içinde anlatılıyor.
 
 ## 1. Künye
 
@@ -15,7 +15,7 @@
 
 **Her karede geçerli yasaklar:**
 - okunabilir yazı ve hat yok;
-- sancaklarda yıldız yok, yalnızca tek beyaz hilal;
+- sancaklar düz kırmızı ve düz yeşil, üzerinde hiçbir işaret yok (2. sürüm; 1. sürümde hilal yazılınca model yıldız ekledi);
 - kan, yara ve ceset yok.
 
 ## 2. Oyuncular ve mekân (fatih4'ten hazır görseller)
@@ -34,7 +34,9 @@
 - **Kamera kapıya bakmıyorsa** (anne çekimleri): kapı kadraj **dışında**, solda kalır. Güneş yüzlere soldan, yandan vurur. Annenin arkasında yalnızca kalabalık ve bir ev duvarı görünür.
 - **Sultan'ın yakın planları:** Sultan kapıdan geldiği için kameraya bakarken arkasında kemer görünür. Bu doğrudur.
 
-## 4. Anahtar kareler (20 kare)
+## 4. Anahtar kareler (20 kare + 1 plaka)
+
+**2. sürüm:** Önce bir mekân plakası (`P_YOL`) üretilir: kapı yol hizasından tam karşıdan, yol boş, sancaklar düz. Videoya girmez. Kapıyı gören bütün kareler (C1a, C3a, C4b, C5a, C6a, C7a, C9a) bu plakaya "ana kare" olarak bağlanır, MEKAN görseli ayrıca verilmez. Böylece kapı her çekimde aynı yapı olur.
 
 Her çekimin iki karesi var:
 - **a** = ilk kare;

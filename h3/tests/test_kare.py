@@ -53,3 +53,18 @@ def test_kare_metni():
     m = kare.kare_metni("A man stands.", taban=True, kompozisyon=True)
     assert "BASE FRAME" in m and "COMPOSITION" in m and m.rstrip().endswith("A man stands.")
     assert config.STYLES["real"]["kind"] in m
+
+
+def test_kare_denetle_mekan_tek_kokten():
+    m = {"etiket": "the place", "dosya": "/x/MEKAN.png"}
+    bagimsiz = [{"id": "A", "girdiler": [m]}, {"id": "B", "girdiler": [m]}]
+    assert any("bağımsız" in s for s in kare.kare_denetle(bagimsiz))
+    plakali = [{"id": "P", "girdiler": [m], "plaka": True}, {"id": "A", "ana": "P"}, {"id": "B", "taban": "A"},
+               {"id": "C", "girdiler": [{"etiket": "anne", "dosya": "/x/K3.png"}]}]
+    assert kare.kare_denetle(plakali) == []
+    assert any("önce gelmeli" in s for s in kare.kare_denetle([{"id": "A", "ana": "P"}, {"id": "P"}]))
+    assert any("listede yok" in s for s in kare.kare_denetle([{"id": "A", "taban": "Z"}]))
+
+
+def test_kare_metni_ana_kural():
+    assert "MASTER PLATE" in kare.kare_metni("x", ana=True) and "MASTER PLATE" not in kare.kare_metni("x")

@@ -29,6 +29,11 @@ TABAN_KURALI = """The image labelled BASE FRAME is the first frame of the same c
 position, lens, height, framing, horizon, lighting, colours, place and the identity and clothing of every person;
 change ONLY what is described below, as it looks a few seconds later in the same shot."""
 
+ANA_KURALI = """The image labelled MASTER PLATE is the canonical view of this place for the whole film. Keep its
+architecture EXACTLY: the shape, size, materials, banding, damage and decoration of every wall, arch, tower and house,
+the fresco, the paving, the colours of the banners and the positions of the cordon and the crowd. Only the camera
+position and the people may differ, exactly as described below; never redesign the place."""
+
 KOMPOZISYON_KURALI = """The image labelled COMPOSITION is a reference for the layout only (camera angle, where the
 main figures stand, what fills the background). Recreate that arrangement as a real photograph of the people and the
 place in the other references. Do not copy its painting style, brushwork, colours or any detail that the description
@@ -43,12 +48,14 @@ def hizala(kaynak, hedef, genislik, yukseklik):
     return hedef
 
 
-def kare_metni(tarif, style=config.DEFAULT_STYLE, taban=False, kompozisyon=False):
+def kare_metni(tarif, style=config.DEFAULT_STYLE, taban=False, kompozisyon=False, ana=False):
     s = config.STYLES[style]
     look = f"Style: {s['look']}. Avoid: {s['avoid']}." if s.get("look") else "Photorealistic, natural skin texture."
     parcalar = [KARE_KURALI.format(kind=s["kind"], look=look)]
     if taban:
         parcalar.append(TABAN_KURALI)
+    if ana:
+        parcalar.append(ANA_KURALI)
     if kompozisyon:
         parcalar.append(KOMPOZISYON_KURALI)
     parcalar.append("The frame:\n" + tarif.strip())
@@ -148,4 +155,27 @@ def kontrol(prompt, saniye, ilk=True, son=True, replikler=()):
         sorun.append(f"Çekim çok kısa ({saniye} sn); H3'ün eğitildiği aralık 124-362 kare (~5,2-15 sn).")
     if "```" in prompt:
         sorun.append("Kod bloğu işareti var.")
+    return sorun
+
+
+def kare_denetle(kareler, mekan_etiketi="MEKAN"):
+    """Kare listesinin tutarlılık sorunları (boş liste = iyi):
+    - taban/ana önce üretilmiş olmalı;
+    - mekânı gören kareler mekânı birbirinden bağımsız çizmemeli. 20.11.2026 Fatih kare: her kare mekân görselinden
+      ayrı ayrı çizilince kapı her çekimde başka bir yapıya dönüştü. Mekânı gören her kare ya bir tabandan ya da bir
+      ana kareden (plaka) türetilmeli; bağımsız çizilen en fazla bir kök olabilir (o da ana kare olmalı)."""
+    sorun, sira = [], {k["id"]: i for i, k in enumerate(kareler)}
+    for k in kareler:
+        for alan in ("taban", "ana"):
+            x = k.get(alan)
+            if x and x not in sira:
+                sorun.append(f"{k['id']}: {alan} '{x}' listede yok.")
+            elif x and sira[x] > sira[k["id"]]:
+                sorun.append(f"{k['id']}: {alan} '{x}' ondan sonra üretiliyor; önce gelmeli.")
+    kokler = [k["id"] for k in kareler if not k.get("taban") and not k.get("ana")
+              and any(mekan_etiketi in str(g.get("etiket", "")) or os.path.basename(str(g.get("dosya", ""))).startswith(mekan_etiketi)
+                      for g in k.get("girdiler") or [])]
+    if len(kokler) > 1:
+        sorun.append("Mekânı birbirinden bağımsız çizen kareler: " + ", ".join(kokler) + ". Mekân her seferinde farklı "
+                     "çizilir; bir ana kare (\"plaka\": true) üretip bu karelere \"ana\" ya da \"taban\" olarak ver.")
     return sorun

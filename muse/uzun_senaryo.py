@@ -16,8 +16,9 @@ GPU açmaz, CCU harcamaz (Gemini kotası harcar). Asıl iş h3app.hikaye'de; bu 
 
   kareler Anahtar kareli senaryoda (uzun_senaryo.json içinde "kareler") her çekimin ilk/son karesini Gemini görsel
           modeliyle üretir (kareler/<id>.png, tam çözünürlüğe kırpılmış). Senaryo elle (ör. olustur.py) yazılmıştır;
-          bu komut yalnızca görselleri üretir. --yeniden ID, --ref ID=YOL.png. Taban karesi değişirse ona bağlı
-          kareleri de --yeniden ile yenile.
+          bu komut yalnızca görselleri üretir. --yeniden ID, --ref ID=YOL.png. Taban ya da ana kare (plaka)
+          değişirse ona bağlı kareleri de --yeniden ile yenile. Plakalar ("plaka": true) yalnızca mekânı sabitler,
+          videoya girmez.
 
 Çıkış kodları: 0 = hazır, 2 = yazıldı ama denetimde sorun var, 1 = hata.
 """
@@ -183,6 +184,10 @@ def kmt_kareler(a, config, pw, hk):
     if not liste:
         print("❌ Bu senaryoda anahtar kare yok (\"kareler\" boş).")
         return 1
+    sorun = kare.kare_denetle(liste)
+    if sorun:
+        print("❌ Kare listesinde tutarlılık sorunu (senaryoyu yazan düzeltmeli):\n  - " + "\n  - ".join(sorun))
+        return 1
     boyut = tuple(config.RESOLUTIONS[senaryo["cozunurluk"]])
     verilen = {k: os.path.expanduser(v) for k, v in (r.split("=", 1) for r in a.ref)}
     bilinen = {k["id"] for k in liste}
@@ -216,6 +221,11 @@ def kmt_kareler(a, config, pw, hk):
                 print(f"❌ {i}: taban karesi {k['taban']} henüz yok.")
                 return 1
             girdiler.append(("BASE FRAME", dosya[k["taban"]]))
+        if k.get("ana"):
+            if not os.path.isfile(dosya[k["ana"]]):
+                print(f"❌ {i}: ana kare {k['ana']} henüz yok.")
+                return 1
+            girdiler.append(("MASTER PLATE", dosya[k["ana"]]))
         if k.get("kompozisyon"):
             girdiler.append(("COMPOSITION", os.path.expanduser(k["kompozisyon"])))
         girdiler += [(g["etiket"], os.path.expanduser(g["dosya"])) for g in k.get("girdiler") or []]
@@ -226,7 +236,7 @@ def kmt_kareler(a, config, pw, hk):
         print(f"⏳ {i} karesi üretiliyor ({len(girdiler)} girdi görseli)…", flush=True)
         try:
             metin = kare.kare_metni(k["tarif"], senaryo["stil"], taban=bool(k.get("taban")),
-                                    kompozisyon=bool(k.get("kompozisyon")))
+                                    kompozisyon=bool(k.get("kompozisyon")), ana=bool(k.get("ana")))
             model = kare.kare_uret(metin, anahtar, k["dosya"], girdiler, boyut)
         except Exception as e:  # noqa: BLE001
             print(f"❌ {i}: {str(e).replace(anahtar, '***')}")
